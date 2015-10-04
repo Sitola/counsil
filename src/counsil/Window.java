@@ -10,8 +10,29 @@ package counsil;
  * @author xminarik
  */
 public class Window{
+    
+    boolean demanding;
+    boolean active;
 
     public Window() {
+        demanding = false;
+        active = false;
+    }
+    
+    public void setActive(){
+        active = true;
+    }
+    
+    void unsetActive() {
+        active = false;
+    }
+
+    void setDemanding() {
+        demanding = true;
+    }
+    
+    void unsetDemanding() {
+        demanding = false;
     }
     
 }

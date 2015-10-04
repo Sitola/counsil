@@ -14,17 +14,16 @@ import java.util.List;
  */
 public interface LayoutManager {
     public void LayoutManager();
+    
     public void setActiveSource(PairWindowSourceInfo wsi);
-    public void setDemandingSource(PairWindowSourceInfo wsi);
+    public void setDemandingSource(PairWindowSourceInfo wsi);    
     public void unsetActiveSource(PairWindowSourceInfo wsi);
-    public void unsetActiveSource(int position);
     public void unsetDemandingSource(PairWindowSourceInfo wsi);
-    public void unsetDemandingSource(int position);
     public String getConfiguration();           //how is returned configuration, need for setConfiguration of getConfiguration is reed from outside and save somewhere
     public void calculateNewLayout();
     public void listenLayoutUpdate();
     public void updateLayout();
     public void showLayout();                   //how to show
     
-    List<PairWindowSourceInfo> windowsInfo = new ArrayList<>();
+
 }

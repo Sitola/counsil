@@ -23,6 +23,23 @@ public class PairWindowSourceInfo {
         return soi;
     }
     
+    public void setActive(){
+        win.setActive();
+    }
+    
     private final Window win;
     private final SourceInfo soi;
+
+    void setDemanding() {
+        win.setDemanding();
+    }
+    
+    
+    void unsetDemanding() {
+        win.setDemanding();
+    }
+    
+    void unsetActive() {
+        win.unsetActive();
+    }
 }
