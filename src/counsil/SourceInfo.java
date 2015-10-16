@@ -5,7 +5,7 @@
  */
 package counsil;
 
-import netscape.javascript.JSObject;
+import org.json.JSONObject;
 
 /**
  *
@@ -13,9 +13,9 @@ import netscape.javascript.JSObject;
  */
 public interface SourceInfo {
     public void SourceInfo();
-    public void SourceInfo(JSObject newRole);
-    public JSObject getRole();
-    public void setRole(JSObject newRole);           //is role a JSObject?
+    public void SourceInfo(JSONObject newRole);
+    public JSONObject getRole();
+    public void setRole(JSONObject newRole);           //is role a JSONObject?
     public void setCouniverseAtributes(String atributes);
     
     //private JSObject role;

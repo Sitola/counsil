@@ -10,9 +10,10 @@ package counsil;
  * @author xminarik
  */
 public class Window{
-    
+    public String role; //temporary variabile for first implementation of recalculate, in future recalculae will be using other class as input or this wariabile get getter and setter
     boolean demanding;
     boolean active;
+    Position position;
 
     public Window() {
         demanding = false;
@@ -35,4 +36,27 @@ public class Window{
         demanding = false;
     }
     
+    Position getPosition(){
+        return position;
+    }
+    
+    void setPosition(Position position){
+        this.position = position;
+    }
+    
+}
+
+//is position in pixels or in % of screen ???
+class Position{
+    int x;
+    int y;
+    public Position(int x, int y){
+        this.x = x;
+        this.y = y;
+    }
+    public Position(){
+        x = 0;
+        y = 0;
+    }
+
 }

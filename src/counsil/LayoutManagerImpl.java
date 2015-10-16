@@ -6,7 +6,10 @@
 package counsil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.json.JSONObject;
 
 /**
  *
@@ -15,6 +18,32 @@ import java.util.List;
 public class LayoutManagerImpl implements LayoutManager {
     
     List<PairWindowSourceInfo> windowsInfo;
+    
+    /*
+    * recalculate new layout from JSON layout file and array of nodes or something with specify role 
+    * return layout with position nad id|name 
+    * !!!!!!!not finished!!!!!!!
+    */
+    private Layout recalculate(JSONObject input, List<Window> winsToPlace){
+        if(input == null){
+            return null;
+        }
+        Layout newLayout = new LayoutImpl();
+        Map<String, Integer> numRoles;
+        numRoles = new HashMap();
+        //TO DO: here set all roles from input (mabe some checking if role have set size of screen, not obligatory)
+        
+        //for each role in input count how many windows is to distribute
+        for (Window win : winsToPlace) {
+            if(numRoles.containsKey(win.role)){
+                Integer intIncrem = numRoles.get(win.role);
+                intIncrem++;
+                numRoles.replace(win.role, intIncrem);
+            }
+        }
+        
+        return new LayoutImpl();
+    }
     
     @Override public void LayoutManager(){
         windowsInfo = new ArrayList<>();
@@ -60,7 +89,6 @@ public class LayoutManagerImpl implements LayoutManager {
         // show it!
     }                   //how to show
 
-  
-    
+
 
 }

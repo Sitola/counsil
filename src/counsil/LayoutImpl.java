@@ -5,43 +5,33 @@
  */
 package counsil;
 
-import org.json.JSONObject;
+import java.util.List;
 
 /**
  *
  * @author xminarik
  */
-public class SourceInfoImpl implements SourceInfo{
+public class LayoutImpl implements Layout{
     
-    private JSONObject role;
+    List<Window> windows;
 
     @Override
-    public void SourceInfo() {
+    public void Layout() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    
-    }
-    
-    @Override
-    public void SourceInfo(JSONObject newRole) {
-        role = newRole;
-        this.SourceInfo();
     }
 
     @Override
-    public void setCouniverseAtributes(String atributes) {
+    public void addWindow(Window win) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    
     }
 
     @Override
-    public JSONObject getRole() {
-        return role;
-    }
-    
-    @Override
-    public void setRole(JSONObject newRole) {
-        role = newRole;
+    public void removeWindow(Window win) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    
+    @Override
+    public Window getWindow() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }
