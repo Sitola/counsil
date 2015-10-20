@@ -9,33 +9,21 @@ package counsil;
  *
  * @author xminarik
  */
-public class Window{
+public class Window {
+    
+    wddman.Window window;
+    
     public String role; //temporary variabile for first implementation of recalculate, in future recalculae will be using other class as input or this wariabile get getter and setter
-    boolean demanding;
-    boolean active;
     Position position;
+       
 
-    public Window() {
-        demanding = false;
-        active = false;
-    }
-    
-    public void setActive(){
-        active = true;
-    }
-    
-    void unsetActive() {
-        active = false;
+    public Window(wddman.Window window, String role) {
+        
+      this.window = window;
+      this.role = role;
+      
     }
 
-    void setDemanding() {
-        demanding = true;
-    }
-    
-    void unsetDemanding() {
-        demanding = false;
-    }
-    
     Position getPosition(){
         return position;
     }
