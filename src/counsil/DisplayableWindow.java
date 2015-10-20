@@ -5,6 +5,11 @@
  */
 package counsil;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import wddman.WDDMan;
+import wddman.WDDManException;
+
 /**
  *
  * @author desanka
@@ -23,7 +28,16 @@ class DisplayableWindow {
         this.content = new Window(window, role, true);
     }
     
-    public void adjustWindow(){
+    public void adjustWindow(WDDMan wd) throws WDDManException{
+        try {
+            transparent.window.resize(position.x, position.y, width, height);
+            transparent.window.move(position.x, position.y);
+            
+            content.window.resize(position.x, position.y, width, height);
+            content.window.move(position.x, position.y);
+        } catch (WDDManException ex) {            
+            Logger.getLogger(DisplayableWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
     }
     
