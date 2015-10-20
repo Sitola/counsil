@@ -23,8 +23,8 @@ class DisplayableWindow {
         this.content = new Window(window, role, true);
     }
     
-    public void adjustWindows(){
-        //! todo
+    public void adjustWindow(){
+        
     }
     
     Position getPosition(){
@@ -50,6 +50,16 @@ class DisplayableWindow {
     public void setWidth(int width) {
         this.width = width;
     }
+
+    public Window getContent() {
+        return content;
+    }
+
+    public Window getTransparent() {
+        return transparent;
+    }
+    
+    
 
     
     

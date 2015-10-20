@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.json.JSONObject;
+import wddman.WDDMan;
 
 /**
  *
@@ -17,7 +18,8 @@ import org.json.JSONObject;
  */
 public class LayoutManagerImpl implements LayoutManager {
     
-    List<PairWindowSourceInfo> windowsInfo;
+    List<DisplayableWindow> windows;
+    private WDDMan wd;
     
     /*
     * recalculate new layout from JSON layout file and array of nodes or something with specify role 
@@ -46,48 +48,22 @@ public class LayoutManagerImpl implements LayoutManager {
     }
     
     @Override public void LayoutManager(){
-        windowsInfo = new ArrayList<>();
+        windows = new ArrayList<>();
     }  
      
-    @Override public void setActiveSource(PairWindowSourceInfo wsi){
-        PairWindowSourceInfo toBeActivated = windowsInfo.get(windowsInfo.indexOf(wsi));
-        toBeActivated.setActive();
+   
+    @Override
+    public void applyChanges(){
+        for (DisplayableWindow window : windows){
+            window.adjustWindow();
+        }
     }
     
-    @Override public void setDemandingSource(PairWindowSourceInfo wsi){
-       PairWindowSourceInfo toBeDemanding = windowsInfo.get(windowsInfo.indexOf(wsi)); 
-       toBeDemanding.setDemanding(); 
+    public void update(List<ContentHandle> list){
+       
+        
     }
-    
-    @Override public void unsetActiveSource(PairWindowSourceInfo wsi){
-       PairWindowSourceInfo toBeDeactivated = windowsInfo.get(windowsInfo.indexOf(wsi)); 
-       toBeDeactivated.unsetActive(); 
-    }
-    
-    @Override public void unsetDemandingSource(PairWindowSourceInfo wsi){
-       PairWindowSourceInfo toBeUndemanding = windowsInfo.get(windowsInfo.indexOf(wsi)); 
-       toBeUndemanding.unsetDemanding(); 
-    }
-
-    @Override public String getConfiguration(){
-        throw new UnsupportedOperationException("Not supported yet."); 
-    }          //how is returned configuration, need for setConfiguration of getConfiguration is reed from outside and save somewhere
-    @Override public void calculateNewLayout(){
-        throw new UnsupportedOperationException("Not supported yet."); 
-        // WDDman?
-    }
-    @Override public void listenLayoutUpdate(){
-        throw new UnsupportedOperationException("Not supported yet."); 
-        // communication with sessionmanager
-    }
-    @Override public void updateLayout(){
-        throw new UnsupportedOperationException("Not supported yet."); 
-        // change layout
-    }
-    @Override public void showLayout(){
-        throw new UnsupportedOperationException("Not supported yet."); 
-        // show it!
-    }                   //how to show
+   
 
 
 

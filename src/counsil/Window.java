@@ -23,11 +23,10 @@ public class Window {
       this.visible = visible;
       this.window = window;
       this.role = role;      
-    }
-    
+    }    
 }
 
-//is position in pixels or in % of screen ???
+//is position in pixels or in % of screen ??? probably pixels
 class Position{
     int x;
     int y;

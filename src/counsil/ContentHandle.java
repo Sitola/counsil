@@ -9,6 +9,7 @@ package counsil;
  *
  * @author desanka
  */
+
 class ContentHandle {
     
     private final String role; //? public/private?
