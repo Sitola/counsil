@@ -15,21 +15,14 @@ public class Window {
     
     public String role; //temporary variabile for first implementation of recalculate, in future recalculae will be using other class as input or this wariabile get getter and setter
     Position position;
+    Boolean visible;
        
 
-    public Window(wddman.Window window, String role) {
+    public Window(wddman.Window window, String role, Boolean visible) {
         
+      this.visible = visible;
       this.window = window;
-      this.role = role;
-      
-    }
-
-    Position getPosition(){
-        return position;
-    }
-    
-    void setPosition(Position position){
-        this.position = position;
+      this.role = role;      
     }
     
 }
