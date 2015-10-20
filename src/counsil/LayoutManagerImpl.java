@@ -9,8 +9,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.JSONObject;
+import wddman.UnsupportedOperatingSystemException;
 import wddman.WDDMan;
+import wddman.WDDManException;
 
 /**
  *
@@ -47,20 +51,35 @@ public class LayoutManagerImpl implements LayoutManager {
         return new LayoutImpl();
     }
     
-    @Override public void LayoutManager(){
+    @Override 
+    public void LayoutManager(){
+        
         windows = new ArrayList<>();
+        
+        try {
+            wd = new WDDMan();
+        } catch (UnsupportedOperatingSystemException ex) {
+            Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
     }  
      
    
     @Override
     public void applyChanges(){
         for (DisplayableWindow window : windows){
-            window.adjustWindow();
+            try {
+                window.adjustWindow(wd);
+            } catch (WDDManException ex) {
+                Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
     
     public void update(List<ContentHandle> list){
-       
+       for (ContentHandle content : list){
+           //! TODO
+       }
         
     }
    
