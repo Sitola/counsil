@@ -12,7 +12,6 @@ import java.io.IOException;
  * @author xminarik
  */
 public interface SessionManager {
-
     /**
      * Stats Couniverse core and counsil components
      * 

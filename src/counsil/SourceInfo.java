@@ -5,18 +5,20 @@
  */
 package counsil;
 
+import org.json.JSONObject;
+
 /**
  *
  * @author xminarik
  */
 public interface SourceInfo {
     public void SourceInfo();
-    public void SourceInfo(String newRole);
-    public String getRole();
-    public void setRole(String newRole);           //is role a String?
+    public void SourceInfo(JSONObject newRole);
+    public JSONObject getRole();
+    public void setRole(JSONObject newRole);           //is role a JSONObject?
     public void setCouniverseAtributes(String atributes);
     
-    String role = new String();
+    //private JSObject role;
     //probly some have some private atribute couniverse or at least some part of couniverse to be able set couniverse atributes
 }
 

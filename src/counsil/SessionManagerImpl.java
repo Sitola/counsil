@@ -184,7 +184,7 @@ public class SessionManagerImpl implements SessionManager {
         Set<MediaApplication> applications = node.getApplications();
         String requredProducer = node2producer.get(node.getName());
         for (MediaApplication app : applications) {
-            if (app.getName() == requredProducer) {
+            if (app.getName().equals(requredProducer)) {
                 return;
             }
         }

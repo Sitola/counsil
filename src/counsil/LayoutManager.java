@@ -5,26 +5,19 @@
  */
 package counsil;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  *
  * @author xminarik
  */
 public interface LayoutManager {
     public void LayoutManager();
-    public void setActiveSource(PairWindowSourceInfo wsi);
-    public void setDemandingSource(PairWindowSourceInfo wsi);
-    public void unsetActiveSource(PairWindowSourceInfo wsi);
-    public void unsetActiveSource(int position);
-    public void unsetDemandingSource(PairWindowSourceInfo wsi);
-    public void unsetDemandingSource(int position);
-    public String getConfiguration();           //how is returned configuration, need for setConfiguration of getConfiguration is reed from outside and save somewhere
-    public void calculateNewLayout();
-    public void listenLayoutUpdate();
-    public void updateLayout();
-    public void showLayout();                   //how to show
+    public void applyChanges();
+    public void addToLayout(String title, String role);
+    public void removeFromLayout(String title);
+
+    public void delete(String requredProducer);
+
+    public void add(String createConsumer, String string);
     
-    List<PairWindowSourceInfo> windowsInfo = new ArrayList<>();
+
 }

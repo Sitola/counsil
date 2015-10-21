@@ -5,9 +5,6 @@
  */
 package counsil;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  *
  * @author xminarik
@@ -17,5 +14,8 @@ public interface Layout {
     /**
      *
      */
-    List<Window> windows = new ArrayList<>();
+    public void Layout();
+    public void addWindow(Window win);
+    public void removeWindow(Window win);
+    public Window getWindow();
 }

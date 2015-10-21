@@ -5,6 +5,9 @@
  */
 package counsil;
 
+import couniverse.core.Core;
+import java.io.IOException;
+
 /**
  *
  * @author xminarik
@@ -14,8 +17,8 @@ public class CoUnSil {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        // TODO code application logic here
+    public static void main(String[] args) throws IOException, InterruptedException {
+        SessionManager sm = new SessionManagerImpl(null);
+        sm.initCounsil();
     }
-    
 }
