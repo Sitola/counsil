@@ -5,9 +5,6 @@
  */
 package counsil;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  *
  * @author xminarik
@@ -15,7 +12,8 @@ import java.util.List;
 public interface LayoutManager {
     public void LayoutManager();
     public void applyChanges();
-    public void update(List<ContentHandle> list);
-    //todo
+    public void addToLayout(String title, String role);
+    public void removeFromLayout(String title);
+    
 
 }

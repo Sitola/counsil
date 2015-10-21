@@ -19,8 +19,11 @@ class DisplayableWindow {
     private int height;
     private int width;
     private Position position;
+    public String role; 
+    
     private final Window transparent;
     private final Window content;
+    
     
     DisplayableWindow(wddman.Window window, String role){
         
@@ -71,6 +74,10 @@ class DisplayableWindow {
 
     public Window getTransparent() {
         return transparent;
+    }
+
+    public void getRole(String role) {
+        this.role = role;
     }
     
     

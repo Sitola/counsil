@@ -12,17 +12,13 @@ package counsil;
 public class Window {
     
     wddman.Window window;
-    
-    public String role; //temporary variabile for first implementation of recalculate, in future recalculae will be using other class as input or this wariabile get getter and setter
-    Position position;
     Boolean visible;
        
 
     public Window(wddman.Window window, String role, Boolean visible) {
         
       this.visible = visible;
-      this.window = window;
-      this.role = role;      
+      this.window = window;          
     }    
 }
 

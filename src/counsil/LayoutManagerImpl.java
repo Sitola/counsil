@@ -76,11 +76,17 @@ public class LayoutManagerImpl implements LayoutManager {
         }
     }
     
-    public void update(List<ContentHandle> list){
-       for (ContentHandle content : list){
-           //! TODO
-       }
+    @Override
+    public void addToLayout(String title, String role){
+       
+       
+       //! todo
         
+    }
+    
+    @Override
+    public void removeFromLayout(String title){
+        //! todo
     }
    
 
