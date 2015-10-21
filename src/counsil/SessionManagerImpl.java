@@ -163,7 +163,6 @@ public class SessionManagerImpl implements SessionManager {
         for (MediaApplication app : applications) {
             if (app instanceof MediaApplication) {
                 try {
-                    // notify layoutManager
                     layoutManager.add(createConsumer(app, node), (String) node.getProperty("role"));
                 } catch (IOException ex) {
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
