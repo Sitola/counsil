@@ -11,15 +11,23 @@ package counsil;
  */
 public class Window {
     
-    wddman.Window window;
-    Boolean visible;
-       
+    private wddman.Window window;
+    private Boolean visible;       
 
-    public Window(wddman.Window window, String role, Boolean visible) {
+    public Window(wddman.Window window, Boolean visible) {
         
       this.visible = visible;
       this.window = window;          
     }    
+
+    public wddman.Window getWindow() {
+        return window;
+    }
+
+    public Boolean getVisible() {
+        return visible;
+    }
+        
 }
 
 //is position in pixels or in % of screen ??? probably pixels
@@ -35,4 +43,5 @@ class Position{
         y = 0;
     }
 
+    
 }

@@ -27,17 +27,18 @@ class DisplayableWindow {
     
     DisplayableWindow(wddman.Window window, String role){
         
-        this.transparent = new Window(window, role, false);
-        this.content = new Window(window, role, true);
+        this.role = role;
+        this.transparent = new Window(window, false);
+        this.content = new Window(window, true);
     }
     
     public void adjustWindow(WDDMan wd) throws WDDManException{
         try {
-            transparent.window.resize(position.x, position.y, width, height);
-            transparent.window.move(position.x, position.y);
+            transparent.getWindow().resize(position.x, position.y, width, height);
+            transparent.getWindow().move(position.x, position.y);
             
-            content.window.resize(position.x, position.y, width, height);
-            content.window.move(position.x, position.y);
+            content.getWindow().resize(position.x, position.y, width, height);
+            content.getWindow().move(position.x, position.y);
         } catch (WDDManException ex) {            
             Logger.getLogger(DisplayableWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
