@@ -1,0 +1,40 @@
+{
+    "connector": {
+        "serverAddress": "localhost",
+        "serverPort": 9701,
+        "startServer": true
+    },
+    "localNode": {
+        "name": "pandora",
+        "interfaces": [
+            {
+                "name": "world",
+                "address": "localhost",
+                "subnetName": "wlp3s0",
+                "bandwidth": 1000,
+                "isFullDuplex": true,
+                "properties": {}
+            }
+        ],
+        "properties": {
+            "role" : "cool",
+            "windowName" : "cool"
+        }
+    },
+    "templates": {
+        "producer" : {
+            "path" : "/home/palci/development/ultragrid/bin/uv",
+            "arguments" : "",
+            "video" : "testcard:256:256:30:UYVY"
+        },
+        "distributor" : {
+            "path" : "~/development/ultragrid/bin/hd-rum-transcode",
+            "arguments" : "8M"
+        },
+        "consumer" : {
+            "path" : "/development/ultragrid/bin/uv",
+            "arguments" : "",
+            "video" : "sdl"
+        }
+    }
+}

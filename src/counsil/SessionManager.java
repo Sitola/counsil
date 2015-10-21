@@ -5,23 +5,19 @@
  */
 package counsil;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 
 /**
  *
  * @author xminarik
  */
 public interface SessionManager {
-    public void initCouniverse();
-    public void listenMessages();
-    public void updateCouniverse();
-    public void addToSourceList(SourceInfo soi);
-    public void addToSourceList(SourceInfo soi, int position);  //???? probably dont need this one
-    public void removeFromSourceList(int position);
-    public void removeFromSourceList(SourceInfo toRemove);
-    public SourceInfo getFormSourceList();              //???? return last or first
-    public SourceInfo getFormSourceList(int position);
-    
-    List<SourceInfo> soiList = new ArrayList<>();
+
+    /**
+     * Stats Couniverse core and counsil components
+     * 
+     * @throws IOException if it's not possible to start Couniverse core or producer on local node
+     * @throws InterruptedException if it's not possible to start Couniverse core 
+     */
+    public void initCounsil() throws IOException, InterruptedException;
 }
