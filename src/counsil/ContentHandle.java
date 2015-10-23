@@ -12,7 +12,7 @@ package counsil;
 
 class ContentHandle {
     
-    private final String role; //? public/private?
+    private final String role; 
     private final String title;
 
     public ContentHandle(String role, String title) {

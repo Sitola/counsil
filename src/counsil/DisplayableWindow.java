@@ -22,8 +22,7 @@ class DisplayableWindow {
     public String role; 
     
     private final Window transparent;
-    private final Window content;
-    
+    private final Window content;    
     
     DisplayableWindow(wddman.Window window, String role){
         
@@ -43,6 +42,10 @@ class DisplayableWindow {
             Logger.getLogger(DisplayableWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+    }
+    
+    public Boolean contains(wddman.Window window){
+        return window == content.getWindow();
     }
     
     Position getPosition(){
@@ -80,9 +83,6 @@ class DisplayableWindow {
     public void getRole(String role) {
         this.role = role;
     }
-    
-    
-
-    
+   
     
 }

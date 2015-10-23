@@ -22,8 +22,9 @@ import wddman.WDDManException;
  */
 public class LayoutManagerImpl implements LayoutManager {
     
-    List<DisplayableWindow> windows;
+    private List<DisplayableWindow> windows;
     private WDDMan wd;
+    private InteractionMenu menu;
     
     /*
     * recalculate new layout from JSON layout file and array of nodes or something with specify role 
@@ -56,6 +57,11 @@ public class LayoutManagerImpl implements LayoutManager {
         
         windows = new ArrayList<>();
         
+        // tu potrebujeme dostat current role 
+        String role; 
+        
+        menu = new InteractionMenu(role); 
+        
         try {
             wd = new WDDMan();
         } catch (UnsupportedOperatingSystemException ex) {
@@ -78,15 +84,43 @@ public class LayoutManagerImpl implements LayoutManager {
     
     @Override
     public void addToLayout(String title, String role){
-       
-       
-       //! todo
+        
+        try {
+            DisplayableWindow newWin = new DisplayableWindow(wd.getWindowByTitle(title), role);
+            windows.add(newWin);
+        } catch (WDDManException ex) {
+            Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
     }
     
     @Override
     public void removeFromLayout(String title){
-        //! todo
+        
+        wddman.Window wddWin;
+        
+        try {
+            wddWin = wd.getWindowByTitle(title);
+            for (DisplayableWindow window : windows){           
+                
+                if (window.contains(wddWin)) {
+                    windows.remove(window);
+                    break;
+                }             
+            }
+        } catch (WDDManException ex) {
+            Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public void delete(String requredProducer) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void add(String createConsumer, String string) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
    
 
