@@ -328,7 +328,7 @@ public class InteractionMenu extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new InteractionMenu().setVisible(true);
+                //new InteractionMenu().setVisible(true);
             }
         });
     }
@@ -342,6 +342,5 @@ public class InteractionMenu extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     // End of variables declaration//GEN-END:variables
-
-
+}
 

@@ -31,7 +31,7 @@ public class LayoutManagerImpl implements LayoutManager {
     * return layout with position nad id|name 
     * !!!!!!!not finished!!!!!!!
     */
-    private Layout recalculate(JSONObject input, List<Window> winsToPlace){
+    /*private Layout recalculate(JSONObject input, List<Window> winsToPlace){
         if(input == null){
             return null;
         }
@@ -50,15 +50,14 @@ public class LayoutManagerImpl implements LayoutManager {
         }
         
         return new LayoutImpl();
-    }
+    }*/
     
-    @Override 
-    public void LayoutManager(){
+    public LayoutManagerImpl(){
         
         windows = new ArrayList<>();
         
         // tu potrebujeme dostat current role 
-        String role; 
+        String role = null; 
         
         menu = new InteractionMenu(role); 
         
