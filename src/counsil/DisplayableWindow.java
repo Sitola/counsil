@@ -80,8 +80,8 @@ class DisplayableWindow {
         return transparent;
     }
 
-    public void getRole(String role) {
-        this.role = role;
+    public String getRole() {
+        return role;
     }
    
     

@@ -1,0 +1,7 @@
+{
+    "fields": [
+        {"x": "0", "y": "0", "height": "720", "width": "960", "role": "teacher", "windowRatio": "1,33333333"},
+        {"x": "960", "y": "0", "height": "720", "width": "960", "role": "transleder", "windowRatio": "1,33333333"},
+        {"x": "0", "y": "360", "height": "500", "width": "1920", "role": "student", "windowRatio": "1,33333333"}
+    ]
+}
