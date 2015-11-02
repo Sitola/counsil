@@ -5,8 +5,10 @@
  */
 package counsil;
 
+import java.awt.Color;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import wddman.UnsupportedOperatingSystemException;
 import wddman.WDDMan;
 import wddman.WDDManException;
 
@@ -22,27 +24,64 @@ class DisplayableWindow {
     public String role; 
     
     private final Window transparent;
-    private final Window content;    
+    private final Window content;  
     
-    DisplayableWindow(wddman.Window window, String role){
+    private boolean talking;
+    private boolean alerting;
+    
+    DisplayableWindow(wddman.Window window, String role) throws WDDManException, UnsupportedOperatingSystemException{
         
         this.role = role;
-        this.transparent = new Window(window, false);
-        this.content = new Window(window, true);
+        this.talking = false;
+        this.alerting = false;
+        this.transparent = new Window(window.getTitle(), position, height, width);
+        this.content = new Window(window);     
+        
+        transparent.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (!role.equals("student")){
+                     //! do something to get it to couniverse!
+                }
+            }
+        });
+        
+        
     }
     
     public void adjustWindow(WDDMan wd) throws WDDManException{
         try {
-            transparent.getWindow().resize(position.x, position.y, width, height);
-            transparent.getWindow().move(position.x, position.y);
-            
+            transparent.getWindow().resize(position.x, position.y, width, height);         
             content.getWindow().resize(position.x, position.y, width, height);
-            content.getWindow().move(position.x, position.y);
+          
         } catch (WDDManException ex) {            
             Logger.getLogger(DisplayableWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
         
     }
+    
+    public void talk(){
+        if (talking){
+            transparent.unshowFrame();         
+        }
+        else {
+            alerting = false;            
+            transparent.showFrame(Color.BLUE);
+        }  
+        talking = !talking;
+        
+    }
+    
+    public void alert(){
+        if (alerting){            
+            transparent.unshowFrame();
+        }
+        else {
+            transparent.showFrame(Color.RED);            
+        }
+        alerting = !alerting;
+        
+    }   
     
     public Boolean contains(wddman.Window window){
         return window == content.getWindow();

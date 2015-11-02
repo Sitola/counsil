@@ -23,11 +23,12 @@ import wddman.WDDManException;
  *
  * @author desanka
  */
+
 public class LayoutManagerImpl implements LayoutManager {
     
     private List<DisplayableWindow> windows;
     private WDDMan wd;
-    private InteractionMenu menu;
+    //private InteractionMenu menu;
     
     /*
     * recalculate new layout from JSON layout file and array of nodes or something with specify role 
@@ -238,7 +239,7 @@ public class LayoutManagerImpl implements LayoutManager {
         // tu potrebujeme dostat current role 
         String role = null; 
         
-        menu = new InteractionMenu(role); 
+        // menu = new InteractionMenu(role); 
         
         try {
             wd = new WDDMan();
@@ -251,13 +252,13 @@ public class LayoutManagerImpl implements LayoutManager {
    
     @Override
     public void applyChanges(){
-        for (DisplayableWindow window : windows){
+        windows.stream().forEach((window) -> {
             try {
                 window.adjustWindow(wd);
             } catch (WDDManException ex) {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
+        });
     }
     
     @Override
@@ -270,6 +271,8 @@ public class LayoutManagerImpl implements LayoutManager {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+        
+        //! todo recalculate(null, windows); applyChanges();
     }
     
     @Override
@@ -289,6 +292,8 @@ public class LayoutManagerImpl implements LayoutManager {
         } catch (WDDManException ex) {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+          //! todo recalculate(null, windows); applyChanges();
     }
 
     @Override

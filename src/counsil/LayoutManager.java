@@ -10,6 +10,7 @@ package counsil;
  * @author xminarik
  */
 public interface LayoutManager {
+    
     public void applyChanges();
     public void addToLayout(String title, String role);
     public void removeFromLayout(String title);

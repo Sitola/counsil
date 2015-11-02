@@ -5,32 +5,67 @@
  */
 package counsil;
 
+import java.awt.Color;
+import java.awt.GridBagLayout;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import wddman.UnsupportedOperatingSystemException;
+import wddman.WDDMan;
+import wddman.WDDManException;
+
 /**
  *
- * @author xminarik
+ * @author xminarik, desanka
+ * 
  */
-public class Window {
+public class Window extends JFrame{
     
-    private wddman.Window window;
-    private Boolean visible;       
-
-    public Window(wddman.Window window, Boolean visible) {
+    private wddman.Window window; 
+    
+    public Window(String title, Position position, int height, int width) throws WDDManException, UnsupportedOperatingSystemException{
         
-      this.visible = visible;
-      this.window = window;          
+        super(title + "TW");
+        
+        pairWddmanWindow(title + "TW");
+                
+        setLayout(new GridBagLayout());
+        setUndecorated(true);
+        
+        setBackground(new Color(0, 0, 0, (float) 0.0025)); 
+        setAlwaysOnTop(true);
+        setResizable(false);
+
+        setSize(width, height);
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+    
+    public void showFrame(Color color){
+        getRootPane().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, color));   
+    }
+    
+    public void unshowFrame(){
+         getRootPane().setBorder(BorderFactory.createEmptyBorder());         
+    }
+
+    public Window(wddman.Window window) {      
+        this.window = window;          
     }    
 
     public wddman.Window getWindow() {
         return window;
     }
 
-    public Boolean getVisible() {
-        return visible;
+    private void pairWddmanWindow(String title) throws UnsupportedOperatingSystemException, WDDManException {
+        
+        WDDMan wd = new WDDMan();
+        window = wd.getWindowByTitle(title);
+        
     }
         
 }
 
-//is position in pixels or in % of screen ??? probably pixels
+
 class Position{
     int x;
     int y;
