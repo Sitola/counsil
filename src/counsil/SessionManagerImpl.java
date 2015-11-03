@@ -55,9 +55,9 @@ public class SessionManagerImpl implements SessionManager {
      * @param layoutManager
      */
     public SessionManagerImpl(LayoutManager layoutManager) {
-        /*if (layoutManager == null) {
+        if (layoutManager == null) {
          throw new IllegalArgumentException("layoutManager is null");
-         }*/
+        }
         this.layoutManager = layoutManager;
     }
 
@@ -77,8 +77,9 @@ public class SessionManagerImpl implements SessionManager {
 
         nodesAggregator = RemoteNodesAggregator.newInstance(core.getConnector());
         local = core.getLocalNode();
-        // create produrer for local content
-        createProducent();
+        // create produrer for local content\
+        System.out.println();
+        createProducent((String)local.getProperty("role"));
         final Object myLock = new Object();
         synchronized (myLock) {
             Set<NetworkNode> nodes = nodesAggregator.addNodePresenceListener(new RemoteNodesAggregator.NodePresenceListener() {
@@ -116,9 +117,11 @@ public class SessionManagerImpl implements SessionManager {
      *
      * @throws IOException if there is problem during starting MediaApplication
      */
-    private void createProducent() throws IOException {
+    private void createProducent(String role) throws IOException {
         // TODO name content properly
         // think how to name content properly
+        // todo start different producer with different role
+        // no sound, better quality, framerate etc
         ObjectNode prod = core.newApplicationTemplate("producer");
         prod.put("content", "producer0");
         prod.put("name", "Producer 0");
@@ -143,15 +146,15 @@ public class SessionManagerImpl implements SessionManager {
         }
         // get content destriptor from producer
         String content = app.getProvidedContentDescriptor();
-        // todo toto je zle podla mna treba to premysliet
+        // podla mna treba to premysliet
         String windowName = (String) node.getProperty("windowName");
         producer2consumer.put(app.getName(), content);
         node2producer.put(node.getName(), app.getName());
         ObjectNode cons = core.newApplicationTemplate("consumer");
         // content from producer is consumer's source
         cons.put("source", content);
-        //cons.put("name", windowName);
-        //cons.put("arguments", "--window-title " + windowName);
+        cons.put("name", windowName);
+        cons.put("arguments", "--window-title " + windowName);
         core.startApplication(cons, "consumer");
         return windowName;
     }
@@ -172,9 +175,9 @@ public class SessionManagerImpl implements SessionManager {
                 UltraGridProducerApplication producer = (UltraGridProducerApplication) app;
                 try {
                     if (!producer.getProvidedContentDescriptor().equals(producer2consumer.get(producer.getName()))) {
-                        createConsumer(producer, node);
+                        layoutManager.addNode(createConsumer(producer, node), (String) node.getProperty("role"));
                     }
-                    //layoutManager.add(createConsumer(producer, node), (String) node.getProperty("role"));
+                    //
                 } catch (IOException ex) {
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -211,11 +214,11 @@ public class SessionManagerImpl implements SessionManager {
                 if (consumer.equals(con.getRequestedContentDescriptor())) {
                     node2producer.remove(node.getName());
                     producer2consumer.remove(requredProducer); 
+                    layoutManager.removeNode(requredProducer);
                     core.stopApplication(app);
                 }
             }
         }
         // notify layoutManager
-        //layoutManager.delete(requredProducer);
     }
 }

@@ -18,7 +18,8 @@ public class CoUnSil {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException, InterruptedException {
-        SessionManager sm = new SessionManagerImpl(null);
+        LayoutManager lm = new LayoutManagerImpl();
+        SessionManager sm = new SessionManagerImpl(lm);
         sm.initCounsil();
     }
 }
