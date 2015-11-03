@@ -13,7 +13,7 @@ import wddman.WDDMan;
 import wddman.WDDManException;
 
 /**
- *
+ * Represents displayable window - pair of transparent and non-transparent windows
  * @author desanka
  */
 class DisplayableWindow {
@@ -29,13 +29,13 @@ class DisplayableWindow {
     private boolean talking;
     private boolean alerting;
     
-    DisplayableWindow(wddman.Window window, String role) throws WDDManException, UnsupportedOperatingSystemException{
+    DisplayableWindow(String title, String role) throws WDDManException, UnsupportedOperatingSystemException{
         
         this.role = role;
         this.talking = false;
         this.alerting = false;
-        this.transparent = new Window(window.getTitle(), position, height, width);
-        this.content = new Window(window);     
+        this.transparent = new Window(title, position, height, width);
+        this.content = new Window(title);     
         
         transparent.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -72,6 +72,7 @@ class DisplayableWindow {
         
     }
     
+   
     public void alert(){
         if (alerting){            
             transparent.unshowFrame();
@@ -83,10 +84,15 @@ class DisplayableWindow {
         
     }   
     
+    /**
+     * Checks if DisplayableWindow is associated with argument wddman window
+     * @param window
+     * @return true, if Displayable window contains wddman window
+     */
     public Boolean contains(wddman.Window window){
         return window == content.getWindow();
     }
-    
+
     Position getPosition(){
         return position;
     }

@@ -5,82 +5,120 @@
  */
 package counsil;
 
+import java.awt.Color;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.LayoutStyle;
 
 /**
  *
  * @author desanka
  */
-public class InteractionMenu extends javax.swing.JFrame {
-
+public class InteractionMenu extends JFrame {
+    
+    /**
+     * Represents current state of raise hand button
+     */
     private boolean raisedHand;
     
-    //! todo documentation
-    private final List<javax.swing.JButton> buttons;
+    /**
+     * Represents buttons in current menu instance
+     */
+    private final List<JButton> buttons;
 
-    //! todo documentation
-    public enum ButtonType { 
+    /**
+     * Represents button types
+     */
+    private enum ButtonType { 
         ABOUT, EXIT, ATTENTION, MUTE, VOLUME 
     }
-
-    //! todo documentation
-    public InteractionMenu(String role) {  
+    
+    /**
+     * Initializes menu
+     * @param role role of current user
+     */
+    public InteractionMenu(String role){    
         
+        super("Menu");         
+        setLayout(new GridBagLayout());
+        setUndecorated(true);
+        getRootPane().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.BLACK));        
+        setBackground(new Color(0, 0, 0, (float) 1)); 
+        setAlwaysOnTop(true);
+        setResizable(false);
+        setSize(150, 200);
+        setLocationRelativeTo(null);
+        setVisible(true);
+        
+        buttons = new ArrayList<>();
         raisedHand = false;
-        buttons = new ArrayList<>();        
-        initComponents(getButtonsByRole(role));  
+        initComponents(getButtonsByRole(role));   
+      
+        buttons.stream().forEach((button) -> {
+            add(button);
+        });
+     
+        JFrame.setDefaultLookAndFeelDecorated(true);
     }
     
-    //! todo documentation
-    private List<ButtonType> getButtonsByRole(String role){
-         List<ButtonType> list = new ArrayList<>();
+   /**
+    * Creates list of button types according to user role
+    * @param role
+    * @return list of buttons types, which will menu contain
+    */
+    private List<InteractionMenu.ButtonType> getButtonsByRole(String role){
+         List<InteractionMenu.ButtonType> list = new ArrayList<>();
                   
          if ("student".equals(role.toLowerCase())){
-              list.add(ButtonType.ATTENTION);             
+              list.add(InteractionMenu.ButtonType.ATTENTION);             
          }
          else {
-             list.add(ButtonType.MUTE);
-             list.add(ButtonType.VOLUME);
+             list.add(InteractionMenu.ButtonType.MUTE);
+             list.add(InteractionMenu.ButtonType.VOLUME);
          }
          
-         list.add(ButtonType.ABOUT);
-         list.add(ButtonType.EXIT);
+         list.add(InteractionMenu.ButtonType.ABOUT);
+         list.add(InteractionMenu.ButtonType.EXIT);
          
          return list;
     }
-
-    //! todo documentation
-    private void initComponents(List<ButtonType> descriptions){        
+    
+    /**
+     * Creates buttons for menu, according to button types
+     * @param descriptions types of buttons, to be used
+     */
+    private void initComponents(List<InteractionMenu.ButtonType> descriptions){   
        
-        descriptions.stream().forEach((type) -> {
+        for (ButtonType type : descriptions) {
             
-            javax.swing.JButton button = new javax.swing.JButton();
+            JButton button = new JButton();
             button.setFont(new java.awt.Font("Tahoma", 0, 18));
             button.setMaximumSize(new java.awt.Dimension(109, 25));
             button.setMinimumSize(new java.awt.Dimension(109, 25));
             button.setPreferredSize(new java.awt.Dimension(117, 31));
-            
-            setSpecificAttributes(button, type);
-        });
+
+            setSpecificAttributes(button, type);  
+            buttons.add(button);        
+        }        
         
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setAlwaysOnTop(true);
-        setUndecorated(true);
-        setResizable(false);
-        
-        
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        setAlwaysOnTop(true);  
+        setResizable(false);        
+       
+        GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);        
-        
-        ParallelGroup hGroup = layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING);
+           
+        GroupLayout.ParallelGroup hGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
         buttons.stream().forEach((button) -> {
-            hGroup.addComponent(button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
+            hGroup.addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
         });
         
         layout.setHorizontalGroup(hGroup);
@@ -88,65 +126,70 @@ public class InteractionMenu extends javax.swing.JFrame {
         
         GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
         buttons.stream().forEach((button) -> {
-            vGroup.addComponent(button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED);
+            vGroup.addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
         });
         
         layout.setVerticalGroup(vGroup);
 
-        pack();      
-        
-        
+        pack();  
+ 
     }
     
-   //! todo documentation
-   private void setSpecificAttributes (javax.swing.JButton button, ButtonType type){
+    /**
+     * Sets specific attributes to menu button (title, action, ...)
+     * @param button instance of button
+     * @param type type to be button associated with
+     */
+    private void setSpecificAttributes (JButton button, InteractionMenu.ButtonType type){
        
-       if (type == ButtonType.EXIT){
+       if (type == InteractionMenu.ButtonType.EXIT){
            button.setText("Exit");
-           button.addActionListener((java.awt.event.ActionEvent evt) -> {
+           button.addActionListener((ActionEvent evt) -> {
                ExitButtonActionPerformed();
            });
        }
-       else if (type == ButtonType.ABOUT){
+       else if (type == InteractionMenu.ButtonType.ABOUT){
            button.setText("About");
-           button.addActionListener((java.awt.event.ActionEvent evt) -> {
+           button.addActionListener((ActionEvent evt) -> {
                AboutButtonActionPerformed();
            });
        }
-       else if (type == ButtonType.ATTENTION){
+       else if (type == InteractionMenu.ButtonType.ATTENTION){
             button.setText("Raise hand");
-            button.addActionListener((java.awt.event.ActionEvent evt) -> {
+            button.addActionListener((ActionEvent evt) -> {
                 AttentionButtonActionPerformed(button);
             });
        }
-       else if (type == ButtonType.MUTE){
+       else if (type == InteractionMenu.ButtonType.MUTE){
            button.setText("Mute");
            //! todo
        }
        
-       else if (type == ButtonType.VOLUME){
+       else if (type == InteractionMenu.ButtonType.VOLUME){
            button.setText("Volume");
            //! todo
        }     
        
     }   
-   
-   //! todo documentation
+    
+   /**
+    * Shows message after "About" button is clicked
+    */
    private void AboutButtonActionPerformed() {                                                 
         JOptionPane.showMessageDialog(null, "THIS IS ABOUT TEXT!"); 
-        //!todo about text
-        //! todo will it even work?
+        //!todo about text      
        
     }   
    
-    //! todo documentation
+    /**
+    * Starts exiting program when "Exit" button is clicked
+    */
     private void ExitButtonActionPerformed() {                                                 
         String message = "Do you really want to quit CoUnSil?";
         String title = "Quit CoUnSil?";
         int reply = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
-        if (reply == JOptionPane.YES_OPTION) {
-            //! todo why sleep?             
+        if (reply == JOptionPane.YES_OPTION) {                        
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {
@@ -157,190 +200,18 @@ public class InteractionMenu extends javax.swing.JFrame {
         }
     }   
    
-    //! todo documentation
-    private void AttentionButtonActionPerformed(javax.swing.JButton button) {                                                 
+    /**
+     * Starts raise/lower hand interaction when button is clicked
+     * @param button clicked button 
+     */
+    private void AttentionButtonActionPerformed(JButton button) {                                                 
         if (raisedHand) {
-            button.setText("Raise hand");
-            //! todo
+            button.setText("Raise hand");            
         } else {
-            button.setText("Lower hand"); 
-            //! todo
+            button.setText("Lower hand");             
         }
         raisedHand = !raisedHand;
 
     }  
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
     
-    
-    //! remove
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        jButton1 = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
-        WantToTalkButton = new javax.swing.JButton();
-        DisconnectButton = new javax.swing.JButton();
-        ResetLayoutJButton = new javax.swing.JButton();
-
-        jButton1.setText("jButton1");
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
-        );
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setAlwaysOnTop(true);
-        setUndecorated(true);
-        setResizable(false);
-
-        WantToTalkButton.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        WantToTalkButton.setText("Raise hand");
-        WantToTalkButton.setMaximumSize(new java.awt.Dimension(109, 25));
-        WantToTalkButton.setMinimumSize(new java.awt.Dimension(109, 25));
-        WantToTalkButton.setPreferredSize(new java.awt.Dimension(117, 31));
-        WantToTalkButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                WantToTalkButtonActionPerformed(evt);
-            }
-        });
-
-        DisconnectButton.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        DisconnectButton.setText("Quit");
-        DisconnectButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                DisconnectButtonActionPerformed(evt);
-            }
-        });
-
-        ResetLayoutJButton.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        ResetLayoutJButton.setText("Reset layout");
-        ResetLayoutJButton.setPreferredSize(new java.awt.Dimension(117, 31));
-        ResetLayoutJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ResetLayoutJButtonActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(DisconnectButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(WantToTalkButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(ResetLayoutJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(WantToTalkButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ResetLayoutJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(DisconnectButton, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE))
-        );
-
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
-
-    private void DisconnectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DisconnectButtonActionPerformed
-
-    }//GEN-LAST:event_DisconnectButtonActionPerformed
-
-    private void WantToTalkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_WantToTalkButtonActionPerformed
-
-    }//GEN-LAST:event_WantToTalkButtonActionPerformed
-
-    private void ResetLayoutJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ResetLayoutJButtonActionPerformed
-
-    }//GEN-LAST:event_ResetLayoutJButtonActionPerformed
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(InteractionMenu.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(InteractionMenu.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(InteractionMenu.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(InteractionMenu.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                //new InteractionMenu().setVisible(true);
-            }
-        });
-    }
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton DisconnectButton;
-    private javax.swing.JButton ResetLayoutJButton;
-    private javax.swing.JButton WantToTalkButton;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    // End of variables declaration//GEN-END:variables
 }
-

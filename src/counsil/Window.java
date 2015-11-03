@@ -14,15 +14,27 @@ import wddman.WDDMan;
 import wddman.WDDManException;
 
 /**
- *
- * @author xminarik, desanka
+ * Represents universal window
+ * @author desanka
  * 
  */
 public class Window extends JFrame{
     
+    /**
+     * wddman window 
+     */
     private wddman.Window window; 
     
-    public Window(String title, Position position, int height, int width) throws WDDManException, UnsupportedOperatingSystemException{
+    /**
+     * Creates transparent window according to given attributes
+     * @param title title of paired non-transparent window
+     * @param position position of window
+     * @param height height of window
+     * @param width width of window
+     * @throws WDDManException
+     * @throws UnsupportedOperatingSystemException 
+     */
+    Window(String title, Position position, int height, int width) throws WDDManException, UnsupportedOperatingSystemException{
         
         super(title + "TW");
         
@@ -40,10 +52,27 @@ public class Window extends JFrame{
         setVisible(true);
     }
     
+    /**
+     * Creates non-transparent window
+     * @param title title of wwdman window
+     * @throws UnsupportedOperatingSystemException
+     * @throws WDDManException 
+     */
+    Window(String title) throws UnsupportedOperatingSystemException, WDDManException {
+        pairWddmanWindow(title);
+    }
+    
+    /**
+     * Shows color frame on transparent window
+     * @param color 
+     */
     public void showFrame(Color color){
         getRootPane().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, color));   
     }
     
+    /**
+     * Unshows current frame
+     */
     public void unshowFrame(){
          getRootPane().setBorder(BorderFactory.createEmptyBorder());         
     }
@@ -56,6 +85,12 @@ public class Window extends JFrame{
         return window;
     }
 
+    /**
+     * Pairs wddman window according to title
+     * @param title window title 
+     * @throws UnsupportedOperatingSystemException
+     * @throws WDDManException 
+     */
     private void pairWddmanWindow(String title) throws UnsupportedOperatingSystemException, WDDManException {
         
         WDDMan wd = new WDDMan();
@@ -65,6 +100,10 @@ public class Window extends JFrame{
         
 }
 
+/**
+ * Represents x,y position on screen
+ * @author xminarik
+ */
 
 class Position{
     int x;

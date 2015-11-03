@@ -10,14 +10,8 @@ package counsil;
  * @author xminarik
  */
 public interface LayoutManager {
-    
-    public void applyChanges();
-    public void addToLayout(String title, String role);
-    public void removeFromLayout(String title);
 
-    public void delete(String requredProducer);
-
-    public void add(String createConsumer, String string);
-    
+    public void addNode(String title, String role);
+    public void removeNode(String title);
 
 }
