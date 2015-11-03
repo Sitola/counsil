@@ -18,17 +18,54 @@ import wddman.WDDManException;
  */
 class DisplayableWindow {
     
+    
+    /**
+     * Height of window
+     */
     private int height;
+
+    /**
+     * Width of window
+     */
     private int width;
+  
+    /**
+     * Position of winodw
+     */
     private Position position;
+    
+    /**
+     * Window role
+     */
     public String role; 
     
+    /**
+     * transparent Window
+     */
     private final Window transparent;
+    
+    /**
+     * Paired non-transparent(content) window
+     */
     private final Window content;  
     
+    /**
+     * True if window is currently talking, false otherwise
+     */
     private boolean talking;
+    
+    /**
+     * True if window wants to speak, false otherwise
+     */
     private boolean alerting;
     
+    /**
+     * Initializes arguments, creates transparent window to non-transparent window
+     * @param title title of new window
+     * @param role role of window
+     * @throws WDDManException
+     * @throws UnsupportedOperatingSystemException 
+     */
     DisplayableWindow(String title, String role) throws WDDManException, UnsupportedOperatingSystemException{
         
         this.role = role;
@@ -36,19 +73,15 @@ class DisplayableWindow {
         this.alerting = false;
         this.transparent = new Window(title, position, height, width);
         this.content = new Window(title);     
-        
-        transparent.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (!role.equals("student")){
-                     //! do something to get it to couniverse!
-                }
-            }
-        });
-        
+                     
         
     }
     
+    /**
+     * Applies DisplayableWindow parameters to actual windows
+     * @param wd wddman instance
+     * @throws WDDManException 
+     */  
     public void adjustWindow(WDDMan wd) throws WDDManException{
         try {
             transparent.getWindow().resize(position.x, position.y, width, height);         
@@ -60,6 +93,9 @@ class DisplayableWindow {
         
     }
     
+    /**
+     * Un/shows blue frame if was user chosen to speak
+     */
     public void talk(){
         if (talking){
             transparent.unshowFrame();         
@@ -72,7 +108,9 @@ class DisplayableWindow {
         
     }
     
-   
+    /**
+     * Un/shows red frame if user wants to speak
+     */
     public void alert(){
         if (alerting){            
             transparent.unshowFrame();

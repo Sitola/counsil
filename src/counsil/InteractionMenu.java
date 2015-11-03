@@ -48,7 +48,7 @@ public class InteractionMenu extends JFrame {
      */
     public InteractionMenu(String role){    
         
-        super("Menu");         
+        super("CoUnSil");         
         setLayout(new GridBagLayout());
         setUndecorated(true);
         getRootPane().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.BLACK));        

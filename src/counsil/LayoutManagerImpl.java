@@ -20,14 +20,25 @@ import wddman.WDDMan;
 import wddman.WDDManException;
 
 /**
- *
- * @author desanka
+ * Represents structure which manipulates with layout
+ * @author desanka, xminarik
  */
 
 public class LayoutManagerImpl implements LayoutManager {
     
+    /**
+     * List of current active windows
+     */
     private List<DisplayableWindow> windows;
+    
+    /**
+     * Instance of wddman
+     */
     private WDDMan wd;
+    
+    /**
+     * Instance of CoUnSIl menu
+     */
     private InteractionMenu menu;
     
     /*
@@ -232,24 +243,28 @@ public class LayoutManagerImpl implements LayoutManager {
         return k;
     }
     
+    /**
+     * Inicializes layout
+     */
     public LayoutManagerImpl(){
         
         windows = new ArrayList<>();
         
         // tu potrebujeme dostat current role 
-        String role = null; 
+        String role = "student"; 
         
-        menu = new InteractionMenu("student");  //!
-        
+        menu = new InteractionMenu(role);  
+               
         try {
             wd = new WDDMan();
         } catch (UnsupportedOperatingSystemException ex) {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
+        }                        
     }  
        
-   
+   /**
+    * Applies calculated layout 
+    */
     private void applyChanges(){
         windows.stream().forEach((window) -> {
             try {
@@ -260,11 +275,16 @@ public class LayoutManagerImpl implements LayoutManager {
         });
     }
     
+     /**
+     * Adds new node window to layout
+     * @param title window title
+     * @param role tole of window user
+     */
     @Override
     public void addNode(String title, String role){
         
         try {
-            DisplayableWindow newWin = new DisplayableWindow(title, role);
+            DisplayableWindow newWin = new DisplayableWindow(title, role);            
             windows.add(newWin);
         } catch (WDDManException | UnsupportedOperatingSystemException ex) {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -273,6 +293,10 @@ public class LayoutManagerImpl implements LayoutManager {
 
     }
     
+    /**
+     * Removes window from layout
+     * @param title window title
+     */
     @Override
     public void removeNode(String title){
         
