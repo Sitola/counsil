@@ -49,6 +49,7 @@ public class Window extends JFrame{
 
         setSize(width, height);
         setLocationRelativeTo(null);
+        setLocation(position.x, position.y);
         setVisible(true);
     }
     
