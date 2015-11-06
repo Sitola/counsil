@@ -12,6 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.BooleanControl;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.Mixer;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -43,10 +47,16 @@ public class InteractionMenu extends JFrame {
     }
     
     /**
+     * Represents current state of sound
+     */
+    private boolean muted;
+    
+    /**
      * Initializes menu
      * @param role role of current user
+     * @param position menu position
      */
-    public InteractionMenu(String role){    
+    public InteractionMenu(String role, Position position){    
         
         super("CoUnSil");         
         setLayout(new GridBagLayout());
@@ -57,10 +67,12 @@ public class InteractionMenu extends JFrame {
         setResizable(false);
         setSize(150, 200);
         setLocationRelativeTo(null);
+        setLocation(position.x, position.y);
         setVisible(true);
         
         buttons = new ArrayList<>();
         raisedHand = false;
+        muted = false;
         initComponents(getButtonsByRole(role));   
       
         buttons.stream().forEach((button) -> {
@@ -102,9 +114,9 @@ public class InteractionMenu extends JFrame {
             
             JButton button = new JButton();
             button.setFont(new java.awt.Font("Tahoma", 0, 18));
-            button.setMaximumSize(new java.awt.Dimension(109, 25));
+            button.setMaximumSize(new java.awt.Dimension(150, 25));
             button.setMinimumSize(new java.awt.Dimension(109, 25));
-            button.setPreferredSize(new java.awt.Dimension(117, 31));
+            button.setPreferredSize(new java.awt.Dimension(130, 31));
 
             setSpecificAttributes(button, type);  
             buttons.add(button);        
@@ -115,21 +127,19 @@ public class InteractionMenu extends JFrame {
        
         GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);        
-           
+                   
         GroupLayout.ParallelGroup hGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
         buttons.stream().forEach((button) -> {
             hGroup.addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
         });
-        
-        layout.setHorizontalGroup(hGroup);
-        
-        
+               
         GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
         buttons.stream().forEach((button) -> {
             vGroup.addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
         });
         
+        layout.setHorizontalGroup(hGroup);
         layout.setVerticalGroup(vGroup);
 
         pack();  
@@ -163,7 +173,9 @@ public class InteractionMenu extends JFrame {
        }
        else if (type == InteractionMenu.ButtonType.MUTE){
            button.setText("Mute");
-           //! todo
+           button.addActionListener((ActionEvent evt) -> {
+               MuteButtonActionPerformed(button);
+           });           
        }
        
        else if (type == InteractionMenu.ButtonType.VOLUME){
@@ -177,9 +189,8 @@ public class InteractionMenu extends JFrame {
     * Shows message after "About" button is clicked
     */
    private void AboutButtonActionPerformed() {                                                 
-        JOptionPane.showMessageDialog(null, "THIS IS ABOUT TEXT!"); 
-        //!todo about text      
-       
+        JOptionPane.showMessageDialog(null, " CoUnSiL\n" +"(CoUniverse for Sign Language)\n" +"\n" +"\n" +
+            "Videoconferencing environment for remote interpretation of sign language.");           
     }   
    
     /**
@@ -213,5 +224,42 @@ public class InteractionMenu extends JFrame {
         raisedHand = !raisedHand;
 
     }  
+    
+    //! TODO: test this 
+    
+    /**
+     * Mutes/unmutes sound
+     * @param button clicked button
+     */
+    private void MuteButtonActionPerformed(JButton button) {
+        if (muted){
+            button.setText("Mute");           
+            Mixer.Info[] infos = AudioSystem.getMixerInfo();
+            for (Mixer.Info info: infos) {
+                Mixer mixer = AudioSystem.getMixer(info);
+                for (Line line : mixer.getSourceLines()){
+                    BooleanControl bc = (BooleanControl) line.getControl(BooleanControl.Type.MUTE);
+                    if (bc != null) {
+                        bc.setValue(false); 
+                    }
+                }
+            }
+        }
+        else {
+            button.setText("Unmute");
+            Mixer.Info[] infos = AudioSystem.getMixerInfo();
+            for (Mixer.Info info: infos) {
+                Mixer mixer = AudioSystem.getMixer(info);
+                for (Line line : mixer.getSourceLines()){
+                    BooleanControl bc = (BooleanControl) line.getControl(BooleanControl.Type.MUTE);
+                    if (bc != null) {
+                        bc.setValue(true); 
+                    }
+                }
+            }
+        }
+        
+        muted = !muted;        
+    }
     
 }

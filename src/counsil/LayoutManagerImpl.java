@@ -5,10 +5,14 @@
  */
 package counsil;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,13 +45,18 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     private InteractionMenu menu;
     
+    /**
+     * JSON configure file object
+     */
+    private JSONObject input;
+    
     /*
     * recalculate new layout from JSON layout file and array of nodes or something with specify role 
     * return layout with position nad id|name 
     * !!!!!!!nearly finished!!!!!!!
     * to do: finish when field is higher then wider; check if I did't forgot implement some future :/
     */
-    private void recalculate(JSONObject input, List<DisplayableWindow> winsToPlace){
+    private void recalculate(){
         if(input == null){
             return;
         }
@@ -64,7 +73,7 @@ public class LayoutManagerImpl implements LayoutManager {
         }
         
         //for each role in input put windows to distribute in them
-        for (DisplayableWindow win : winsToPlace) {
+        for (DisplayableWindow win : windows) {
             if(numRoles.containsKey(win.getRole())){
                 List<DisplayableWindow> intIncrem = numRoles.get(win.getRole());
                 intIncrem.add(win);
@@ -109,10 +118,10 @@ public class LayoutManagerImpl implements LayoutManager {
                     rowsLim = upperRowLimit(fieldRatio, windowRatio, winList.size());
                     if(unusedSpace(fieldRatio, windowRatio, rowsLim, winList.size()) <= unusedSpace(fieldRatio, windowRatio, rowsLim-1, winList.size())){ // cose if is better use rowsLim rows or rowsLim-1 rows
                         // distribute windows using rowsLim
-                        distributeWindows(new Position(fieldX, fieldY), fieldHeight, fieldWidth, winsToPlace, rowsLim, fieldRatio, windowRatio);
+                        distributeWindows(new Position(fieldX, fieldY), fieldHeight, fieldWidth, windows, rowsLim, fieldRatio, windowRatio);
                     }else{
                         // distribute windows using rowsLim-1
-                        distributeWindows(new Position(fieldX, fieldY), fieldHeight, fieldWidth, winsToPlace, rowsLim - 1, fieldRatio, windowRatio);
+                        distributeWindows(new Position(fieldX, fieldY), fieldHeight, fieldWidth, windows, rowsLim - 1, fieldRatio, windowRatio);
                     }
                 }else{                              // field is better filled with windows verticly
                     //to do: if field is better filed horizontly
@@ -245,15 +254,17 @@ public class LayoutManagerImpl implements LayoutManager {
     
     /**
      * Inicializes layout
+     * @throws org.json.JSONException
+     * @throws java.io.FileNotFoundException
      */
-    public LayoutManagerImpl(){
+    public LayoutManagerImpl() throws JSONException, FileNotFoundException, IOException{
         
-        windows = new ArrayList<>();
+        windows = new ArrayList<>(); 
+              
+        String entireFileText = new Scanner(new File("layoutConfig.json")).useDelimiter("\\A").next();
+        input = new JSONObject(entireFileText);       
         
-        // tu potrebujeme dostat current role 
-        String role = "student"; 
-        
-        menu = new InteractionMenu(role);  
+        menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());  
                
         try {
             wd = new WDDMan();
@@ -261,7 +272,28 @@ public class LayoutManagerImpl implements LayoutManager {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
         }                        
     }  
+    
+    /**
+     * gets role from configure file
+     * @return role of current user
+     * @throws JSONException 
+     */
+    private String getMenuUserRole() throws JSONException{
+        return input.getJSONObject("menu").get("role").toString();
+    }
        
+    /**
+     * Gets menu position from configure file
+     * @return menu position
+     * @throws JSONException 
+     */
+    private Position getMenuPostion() throws JSONException {
+        Position position = new Position();
+        position.x = (int) input.getJSONObject("menu").get("x");
+        position.y = (int) input.getJSONObject("menu").get("y");
+        return position;
+    }
+    
    /**
     * Applies calculated layout 
     */
@@ -289,7 +321,8 @@ public class LayoutManagerImpl implements LayoutManager {
         } catch (WDDManException | UnsupportedOperatingSystemException ex) {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
-        //! todo recalculate(null, windows); applyChanges();
+        recalculate(); 
+        applyChanges();
 
     }
     
@@ -315,7 +348,10 @@ public class LayoutManagerImpl implements LayoutManager {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-          //! todo recalculate(null, windows); applyChanges();
+          recalculate(); 
+          applyChanges();
     }
+
+ 
    
 }
