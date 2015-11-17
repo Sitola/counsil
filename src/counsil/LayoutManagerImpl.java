@@ -105,8 +105,9 @@ public class LayoutManagerImpl implements LayoutManager {
             winList = numRoles.get(role);           //list of windows to distribute in this field
             
             //distribution of windows in field
-            //# windows = 1
-            if(winList.size() == 1){
+            if(winList.size() == 0){
+                
+            }else if(winList.size() == 1){        //# windows = 1
                 //centralize / fill field with window
                 DisplayableWindow win = winList.get(0);
                 win.setPosition(new Position(fieldX, fieldY));
@@ -317,7 +318,6 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     @Override
     public void addNode(String title, String role){
-        
         try {
             DisplayableWindow newWin = new DisplayableWindow(title, role);            
             windows.add(newWin);
