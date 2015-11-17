@@ -37,9 +37,7 @@ public class Window extends JFrame{
     Window(String title, Position position, int height, int width) throws WDDManException, UnsupportedOperatingSystemException{
         
         super(title + "TW");
-        
-        pairWddmanWindow(title + "TW");
-                
+                               
         setLayout(new GridBagLayout());
         setUndecorated(true);
         
@@ -50,7 +48,10 @@ public class Window extends JFrame{
         setSize(width, height);
         setLocationRelativeTo(null);
         setLocation(position.x, position.y);
-        setVisible(true);
+        setVisible(true); //! false
+        //! isnt untouchable yet?
+        
+        pairWddmanWindow(title + "TW");
     }
     
     /**
@@ -94,7 +95,7 @@ public class Window extends JFrame{
      */
     private void pairWddmanWindow(String title) throws UnsupportedOperatingSystemException, WDDManException {
         
-        WDDMan wd = new WDDMan();
+        WDDMan wd = new WDDMan();      
         window = wd.getWindowByTitle(title);
         
     }

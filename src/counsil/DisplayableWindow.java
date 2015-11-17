@@ -68,12 +68,21 @@ class DisplayableWindow {
      */
     DisplayableWindow(String title, String role) throws WDDManException, UnsupportedOperatingSystemException{
         
+        this.position = new Position();
+        
+        //! change this to something smarter
+        
+        this.position.x = 0; 
+        this.position.y = 0;
+        width = 200;
+        height = 200;
+                
         this.role = role;
         this.talking = false;
         this.alerting = false;
-        this.transparent = new Window(title, position, height, width);
         this.content = new Window(title);     
-                     
+        this.transparent = new Window(title, position, height, width);
+                          
         
     }
     
@@ -83,7 +92,7 @@ class DisplayableWindow {
      * @throws WDDManException 
      */  
     public void adjustWindow(WDDMan wd) throws WDDManException{
-        try {
+        try {           
             transparent.getWindow().resize(position.x, position.y, width, height);         
             content.getWindow().resize(position.x, position.y, width, height);
           
