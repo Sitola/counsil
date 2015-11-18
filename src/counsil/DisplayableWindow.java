@@ -6,8 +6,9 @@
 package counsil;
 
 import java.awt.Color;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.GridBagLayout;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
 import wddman.UnsupportedOperatingSystemException;
 import wddman.WDDMan;
 import wddman.WDDManException;
@@ -38,17 +39,7 @@ class DisplayableWindow {
      * Window role
      */
     public String role; 
-    
-    /**
-     * transparent Window
-     */
-    private final Window transparent;
-    
-    /**
-     * Paired non-transparent(content) window
-     */
-    private final Window content;  
-    
+       
     /**
      * True if window is currently talking, false otherwise
      */
@@ -59,6 +50,10 @@ class DisplayableWindow {
      */
     private boolean alerting;
     
+    wddman.Window content;
+    JFrame transparent;
+    
+    
     /**
      * Initializes arguments, creates transparent window to non-transparent window
      * @param title title of new window
@@ -66,23 +61,34 @@ class DisplayableWindow {
      * @throws WDDManException
      * @throws UnsupportedOperatingSystemException 
      */
-    DisplayableWindow(String title, String role) throws WDDManException, UnsupportedOperatingSystemException{
+    DisplayableWindow(WDDMan wd, String title, String role) throws WDDManException, UnsupportedOperatingSystemException{
+               
+        content = wd.getWindowByTitle(title);
         
-        this.position = new Position();
+        position = new Position(content.getLeft(), content.getTop()); 
+        width = content.getWidth();
+        height = content.getHeight();
         
-        //! change this to something smarter
-        
-        this.position.x = 0; 
-        this.position.y = 0;
-        width = 200;
-        height = 200;
+        System.out.println(width + " " + height + " " + position.x + " " + position.y);
                 
         this.role = role;
-        this.talking = false;
-        this.alerting = false;
-        this.content = new Window(title);     
-        this.transparent = new Window(title, position, height, width);
-                          
+        talking = false;
+        alerting = false;
+        
+        transparent = new JFrame();
+        transparent.setName(title + "TW");
+                
+        transparent.setLayout(new GridBagLayout());
+        transparent.setUndecorated(true);        
+        transparent.setBackground(new Color(0, 0, 0, (float) 0.0025)); 
+        transparent.setAlwaysOnTop(true);
+        transparent.setResizable(false);
+        transparent.setSize(width, height);
+        transparent.setLocationRelativeTo(null);
+        transparent.setLocation(position.x, position.y);
+        transparent.setVisible(true); //! false
+        //! doesnt work transparent.setBounds(position.x, position.y, width, height);
+                
         
     }
     
@@ -92,14 +98,13 @@ class DisplayableWindow {
      * @throws WDDManException 
      */  
     public void adjustWindow(WDDMan wd) throws WDDManException{
-        try {           
-            transparent.getWindow().resize(position.x, position.y, width, height);         
-            content.getWindow().resize(position.x, position.y, width, height);
-          
-        } catch (WDDManException ex) {            
-            Logger.getLogger(DisplayableWindow.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        content.move(position.x, position.y);
+        content.resize(position.x, position.y, width, height);
         
+        
+        transparent.setSize(width, height);
+        //! doesnt work transparent.setBounds(position.x, position.y, width, height);
+        transparent.setLocation(position.x, position.y);
     }
     
     /**
@@ -107,11 +112,11 @@ class DisplayableWindow {
      */
     public void talk(){
         if (talking){
-            transparent.unshowFrame();         
+           transparent.getRootPane().setBorder(BorderFactory.createEmptyBorder());           
         }
         else {
             alerting = false;            
-            transparent.showFrame(Color.BLUE);
+            transparent.getRootPane().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.BLUE));
         }  
         talking = !talking;
         
@@ -122,14 +127,14 @@ class DisplayableWindow {
      */
     public void alert(){
         if (alerting){            
-            transparent.unshowFrame();
+            transparent.getRootPane().setBorder(BorderFactory.createEmptyBorder());   
         }
         else {
-            transparent.showFrame(Color.RED);            
+           transparent.getRootPane().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.RED));          
         }
         alerting = !alerting;
         
-    }   
+    } 
     
     /**
      * Checks if DisplayableWindow is associated with argument wddman window
@@ -137,7 +142,7 @@ class DisplayableWindow {
      * @return true, if Displayable window contains wddman window
      */
     public Boolean contains(wddman.Window window){
-        return window == content.getWindow();
+        return window == content;
     }
 
     Position getPosition(){
@@ -164,11 +169,11 @@ class DisplayableWindow {
         this.width = width;
     }
 
-    public Window getContent() {
+    public wddman.Window getContent() {
         return content;
     }
 
-    public Window getTransparent() {
+    public JFrame getTransparent() {
         return transparent;
     }
 

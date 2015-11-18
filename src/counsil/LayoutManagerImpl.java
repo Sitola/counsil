@@ -319,7 +319,7 @@ public class LayoutManagerImpl implements LayoutManager {
     @Override
     public void addNode(String title, String role){
         try {
-            DisplayableWindow newWin = new DisplayableWindow(title, role);            
+            DisplayableWindow newWin = new DisplayableWindow(wd, title, role);            
             windows.add(newWin);
         } catch (WDDManException | UnsupportedOperatingSystemException ex) {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
