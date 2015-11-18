@@ -9,13 +9,17 @@ package counsil;
  *
  * @author xminarik
  */
-public interface Layout {
+class Position{
+    public int x;
+    public int y;
+    
+    public Position(int x, int y){
+        this.x = x;
+        this.y = y;
+    }        
 
-    /**
-     *
-     */
-    public void Layout();
-    public void addWindow(Window win);
-    public void removeWindow(Window win);
-    public Window getWindow();
+    Position() {
+          this.x = 0;
+          this.y = 0;
+    }
 }

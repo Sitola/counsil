@@ -304,7 +304,7 @@ public class LayoutManagerImpl implements LayoutManager {
     private void applyChanges(){
         windows.stream().forEach((window) -> {
             try {
-                window.adjustWindow(wd);
+                window.adjustWindow(wd); 
             } catch (WDDManException ex) {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             }

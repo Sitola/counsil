@@ -68,8 +68,6 @@ class DisplayableWindow {
         position = new Position(content.getLeft(), content.getTop()); 
         width = content.getWidth();
         height = content.getHeight();
-        
-        System.out.println(width + " " + height + " " + position.x + " " + position.y);
                 
         this.role = role;
         talking = false;
@@ -180,6 +178,7 @@ class DisplayableWindow {
     public String getRole() {
         return role;
     }
-   
+     
     
 }
+
