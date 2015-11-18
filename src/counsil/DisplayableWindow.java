@@ -5,10 +5,14 @@
  */
 package counsil;
 
+import com.sun.jna.platform.win32.WinDef;
 import java.awt.Color;
 import java.awt.GridBagLayout;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
+import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE;
 import wddman.UnsupportedOperatingSystemException;
 import wddman.WDDMan;
 import wddman.WDDManException;
@@ -84,8 +88,17 @@ class DisplayableWindow {
         transparent.setSize(width, height);
         transparent.setLocationRelativeTo(null);
         transparent.setLocation(position.x, position.y);
-        transparent.setVisible(true); //! false
+        transparent.setVisible(true); 
+        transparent.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+   
         //! doesnt work transparent.setBounds(position.x, position.y, width, height);
+        
+        transparent.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentMoved(ComponentEvent e) {
+                transparent.setLocation(position.x, position.y);
+            }                       
+        });
                 
         
     }
