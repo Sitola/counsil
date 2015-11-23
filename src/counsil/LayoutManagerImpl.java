@@ -116,23 +116,17 @@ public class LayoutManagerImpl implements LayoutManager {
             }else{  //# windows > 1
                 int rowsLim = 0;        //number of rows that may be used
                 if(fieldRatio/windowRatio >= 1){    // field is better filled with windows horizontly 
-                    System.out.println("1");
                     rowsLim = upperRowLimit(fieldRatio, windowRatio, winList.size());
                     if(unusedSpace(fieldRatio, windowRatio, rowsLim, winList.size()) <= unusedSpace(fieldRatio, windowRatio, rowsLim-1, winList.size())){ // chose if is better use rowsLim rows or rowsLim-1 rows
                         // distribute windows using rowsLim
-                        System.out.println("2");
                         distributeWindows(new Position(fieldX, fieldY), fieldHeight, fieldWidth, winList, rowsLim, fieldRatio, windowRatio);
-                        System.out.println("2.5");
                     }else{
-                        System.out.println("3");
                         // distribute windows using rowsLim-1
                         distributeWindows(new Position(fieldX, fieldY), fieldHeight, fieldWidth, winList, rowsLim - 1, fieldRatio, windowRatio);
                     }
                 }else{                              // field is better filled with windows verticly
                     //to do: if field is better filed horizontly
-                    System.out.println("4");
                 }
-                System.out.println("5");
             }
             
         }
@@ -141,11 +135,7 @@ public class LayoutManagerImpl implements LayoutManager {
     private void distributeWindows(Position fieldPosition, int fieldHeight, int fieldWidth, List<DisplayableWindow> winsToPlace, int rows, double fieldRatio, double windowRatio){
         Vector<Integer> numWindowsInRows = howManyWindowsInRows(winsToPlace.size(), rows);
         int numWindowsPlaced = 0;
-        System.out.println(numWindowsInRows);
-        System.out.println(rows);
         for(int i=0; i<rows; i++){
-            System.out.print("field y ");
-            System.out.println(fieldPosition.y);
             Position rowPosition = new Position(fieldPosition.x, fieldPosition.y + (fieldHeight * i) / rows);
             List<DisplayableWindow> windowsInRow = winsToPlace.subList(numWindowsPlaced, numWindowsPlaced + numWindowsInRows.get(i));
             numWindowsPlaced += numWindowsInRows.get(i);
@@ -154,9 +144,6 @@ public class LayoutManagerImpl implements LayoutManager {
     }
     
     private void distributeWindowsInRow(Position rowPosition, int rowHeight, int rowWidth, List<DisplayableWindow> winsToPlace, double rowRatio, double windowRatio){
-        System.out.println("row distribution");
-        System.out.println(winsToPlace.size());
-        System.out.println(windowRatio);
         if(rowRatio/windowRatio <= winsToPlace.size()){
             //space under and over the windows
             int windowWidth = rowWidth / winsToPlace.size();
@@ -170,7 +157,6 @@ public class LayoutManagerImpl implements LayoutManager {
                 lastPosition += windowWidth;
             }
         }else{
-            System.out.println("hehe");
             //space left and right of windows
             int windowHeight = rowHeight;
             int windowWidth = (int) Math.round(windowRatio * windowHeight);
@@ -203,7 +189,6 @@ public class LayoutManagerImpl implements LayoutManager {
             }
             numWindowsInRows.add(i, windowsInRow);
         }
-        System.out.println(numWindowsInRows);
         return numWindowsInRows;
     }
     
