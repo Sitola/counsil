@@ -5,14 +5,10 @@
  */
 package counsil;
 
-import com.sun.jna.platform.win32.WinDef;
 import java.awt.Color;
-import java.awt.GridBagLayout;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
-import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE;
+import javax.swing.JWindow;
 import wddman.UnsupportedOperatingSystemException;
 import wddman.WDDMan;
 import wddman.WDDManException;
@@ -21,9 +17,8 @@ import wddman.WDDManException;
  * Represents displayable window - pair of transparent and non-transparent windows
  * @author desanka
  */
-class DisplayableWindow {
-    
-    
+class DisplayableWindow extends JFrame {
+        
     /**
      * Height of window
      */
@@ -54,10 +49,17 @@ class DisplayableWindow {
      */
     private boolean alerting;
     
+    /**
+     * Content window
+     */
     wddman.Window content;
-    JFrame transparent;
     
+    /**
+     * Top transparent window
+     */
     
+    JWindow transparent;
+
     /**
      * Initializes arguments, creates transparent window to non-transparent window
      * @param title title of new window
@@ -77,30 +79,15 @@ class DisplayableWindow {
         talking = false;
         alerting = false;
         
-        transparent = new JFrame();
+        transparent = new JWindow();
         transparent.setName(title + "TW");
-                
-        transparent.setLayout(new GridBagLayout());
-        transparent.setUndecorated(true);        
-        transparent.setBackground(new Color(0, 0, 0, (float) 0.0025)); 
-        transparent.setAlwaysOnTop(true);
-        transparent.setResizable(false);
-        transparent.setSize(width, height);
         transparent.setLocationRelativeTo(null);
-        transparent.setLocation(position.x, position.y);
-        transparent.setVisible(true); 
-        transparent.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        transparent.setSize(width, height);
+        transparent.setLocation(position.x, position.y);     
+        transparent.setAlwaysOnTop(true);
+        transparent.setBackground(new Color(0, 0, 0, (float) 0.0025));        
+        transparent.setVisible(true);
    
-        //! doesnt work transparent.setBounds(position.x, position.y, width, height);
-        
-        transparent.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentMoved(ComponentEvent e) {
-                transparent.setLocation(position.x, position.y);
-            }                       
-        });
-                
-        
     }
     
     /**
@@ -109,12 +96,13 @@ class DisplayableWindow {
      * @throws WDDManException 
      */  
     public void adjustWindow(WDDMan wd) throws WDDManException{
+        
+        System.out.print("W: " + width + " H: " + height + " X: " + position.x + " Y: " + position.y + " R: " + role + "\n" ); 
+        
         content.move(position.x, position.y);
-        content.resize(position.x, position.y, width, height);
+        content.resize(position.x, position.y, width, height);        
         
-        
-        transparent.setSize(width, height);
-        //! doesnt work transparent.setBounds(position.x, position.y, width, height);
+        transparent.setSize(width, height);    
         transparent.setLocation(position.x, position.y);
     }
     
@@ -141,7 +129,7 @@ class DisplayableWindow {
             transparent.getRootPane().setBorder(BorderFactory.createEmptyBorder());   
         }
         else {
-           transparent.getRootPane().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.RED));          
+            transparent.getRootPane().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.RED));          
         }
         alerting = !alerting;
         
@@ -164,6 +152,7 @@ class DisplayableWindow {
         this.position = position;
     }
 
+    @Override
     public int getHeight() {
         return height;
     }
@@ -172,6 +161,7 @@ class DisplayableWindow {
         this.height = height;
     }
 
+    @Override
     public int getWidth() {
         return width;
     }
@@ -184,7 +174,7 @@ class DisplayableWindow {
         return content;
     }
 
-    public JFrame getTransparent() {
+    public JWindow getTransparent() {
         return transparent;
     }
 
