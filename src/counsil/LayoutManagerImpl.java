@@ -268,7 +268,7 @@ public class LayoutManagerImpl implements LayoutManager {
         menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());  
                
         try {
-            wd = new WDDMan();
+            wd = new WDDMan();            
         } catch (UnsupportedOperatingSystemException ex) {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
         }  

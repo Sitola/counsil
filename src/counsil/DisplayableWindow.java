@@ -59,6 +59,8 @@ class DisplayableWindow extends JFrame {
      */
     
     JWindow transparent;
+    
+    String title; //! to be removed
 
     /**
      * Initializes arguments, creates transparent window to non-transparent window
@@ -79,6 +81,8 @@ class DisplayableWindow extends JFrame {
         talking = false;
         alerting = false;
         
+        this.title = title; //! to be removed
+        
         transparent = new JWindow();
         transparent.setName(title + "TW");
         transparent.setLocationRelativeTo(null);
@@ -97,13 +101,14 @@ class DisplayableWindow extends JFrame {
      */  
     public void adjustWindow(WDDMan wd) throws WDDManException{
         
-        System.out.print("W: " + width + " H: " + height + " X: " + position.x + " Y: " + position.y + " R: " + role + "\n" ); 
+        System.out.print("W: " + width + " H: " + height + " X: " + position.x + " Y: " + position.y + " R: " + title + "\n" ); 
         
         content.move(position.x, position.y);
         content.resize(position.x, position.y, width, height);        
         
         transparent.setSize(width, height);    
         transparent.setLocation(position.x, position.y);
+        transparent.setBackground(new Color(0, 0, 0, (float) 0.0025));  
     }
     
     /**
