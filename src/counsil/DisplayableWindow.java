@@ -60,7 +60,11 @@ class DisplayableWindow extends JFrame {
     
     JWindow transparent;
     
-    String title; //! to be removed
+    /**
+     * Window title
+     */
+    
+    String title; 
 
     /**
      * Initializes arguments, creates transparent window to non-transparent window
@@ -76,12 +80,11 @@ class DisplayableWindow extends JFrame {
         position = new Position(content.getLeft(), content.getTop()); 
         width = content.getWidth();
         height = content.getHeight();
-                
+        
+        this.title = title;         
         this.role = role;
         talking = false;
-        alerting = false;
-        
-        this.title = title; //! to be removed
+        alerting = false;       
         
         transparent = new JWindow();
         transparent.setName(title + "TW");
@@ -141,12 +144,13 @@ class DisplayableWindow extends JFrame {
     } 
     
     /**
-     * Checks if DisplayableWindow is associated with argument wddman window
-     * @param window
+     * Checks if DisplayableWindow is associated with argument title
+     * @param title 
      * @return true, if Displayable window contains wddman window
      */
-    public Boolean contains(wddman.Window window){
-        return window == content;
+    public Boolean contains(String title){
+        return title.equals(this.title);
+       
     }
 
     Position getPosition(){

@@ -5,9 +5,10 @@
  */
 package counsil;
 
-//import couniverse.core.Core;
+import couniverse.core.Core;
 import java.io.IOException;
 import org.json.JSONException;
+import wddman.WDDManException;
 
 /**
  *
@@ -21,15 +22,9 @@ public class CoUnSil {
      * @throws java.lang.InterruptedException
      * @throws org.json.JSONException
      */
-    public static void main(String[] args) throws IOException, InterruptedException, JSONException {
-        LayoutManager lm = new LayoutManagerImpl();
-//        SessionManager sm = new SessionManagerImpl(lm);
-        //sm.initCounsil();
-       lm.addNode("desanka@localhost:~/counsil/counsil/src/counsil", "teacher");
-       lm.addNode("desanka@localhost:~/counsil", "transleder");
-       lm.addNode("desanka@localhost:~/counsil/counsil", "student");
-        lm.addNode("desanka@localhost:~/counsil/counsil/src", "student");
-        
-       // lm.addNode("Shakira - La Tortura ft. Alejandro Sanz - YouTube - Mozilla Firefox", "student");
-    }
+    public static void main(String[] args) throws IOException, InterruptedException, JSONException, WDDManException {
+        LayoutManagerImpl lm = new LayoutManagerImpl();
+        SessionManager sm = new SessionManagerImpl(lm);
+        sm.initCounsil();
+  }
 }

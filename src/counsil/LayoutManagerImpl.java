@@ -283,6 +283,17 @@ public class LayoutManagerImpl implements LayoutManager {
     private String getMenuUserRole() throws JSONException{
         return input.getJSONObject("menu").get("role").toString();
     }
+    
+    /**
+     * just temporary function for alerting ...
+     * @param node
+     * @throws WDDManException 
+     */
+    public void attention(String node) throws WDDManException{
+        windows.stream().filter((w) -> (w.contains(node))).forEach((w) -> {
+            w.talk(); //!!!
+        });
+    }
        
     /**
      * Gets menu position from configure file
@@ -340,7 +351,7 @@ public class LayoutManagerImpl implements LayoutManager {
             wddWin = wd.getWindowByTitle(title);
             for (DisplayableWindow window : windows){           
                 
-                if (window.contains(wddWin)) {
+                if (window.contains(title)) {
                     windows.remove(window);
                     break;
                 }             
