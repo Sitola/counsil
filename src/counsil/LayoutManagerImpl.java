@@ -5,6 +5,7 @@
  */
 package counsil;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -53,6 +54,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * JSON configure file object
      */
     private JSONObject input;
+
     
     /*
     * recalculate new layout from JSON layout file and array of nodes or something with specify role 
@@ -266,8 +268,17 @@ public class LayoutManagerImpl implements LayoutManager {
               
         String entireFileText = new Scanner(new File("layoutConfig.json")).useDelimiter("\\A").next();
         input = new JSONObject(entireFileText);       
+          EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {  
+                    menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());
+                } catch (JSONException ex) {
+                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+       
         
-        menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());         
                
         try {
             wd = new WDDMan();            
