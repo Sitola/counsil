@@ -125,8 +125,7 @@ public class InteractionMenu extends JFrame {
         setAlwaysOnTop(true);  
         setResizable(false);        
        
-        GroupLayout layout = new GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);        
+        GroupLayout layout = new GroupLayout(getContentPane());               
                    
         GroupLayout.ParallelGroup hGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
         buttons.stream().forEach((button) -> {
@@ -141,6 +140,7 @@ public class InteractionMenu extends JFrame {
         
         layout.setHorizontalGroup(hGroup);
         layout.setVerticalGroup(vGroup);
+        getContentPane().setLayout(layout); 
 
         pack();  
  

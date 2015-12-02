@@ -5,6 +5,10 @@
  */
 package counsil;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -263,7 +267,7 @@ public class LayoutManagerImpl implements LayoutManager {
         String entireFileText = new Scanner(new File("layoutConfig.json")).useDelimiter("\\A").next();
         input = new JSONObject(entireFileText);       
         
-        menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());  
+        menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());         
                
         try {
             wd = new WDDMan();            
@@ -285,15 +289,32 @@ public class LayoutManagerImpl implements LayoutManager {
     }
     
     /**
-     * just temporary function for alerting ...
+     * User is alerting
      * @param node
      * @throws WDDManException 
      */
-    public void attention(String node) throws WDDManException{
+    @Override
+    public void alert(String node) throws WDDManException{
         windows.stream().filter((w) -> (w.contains(node))).forEach((w) -> {
-            w.talk(); //!!!
+            w.alert();
         });
     }
+    
+    /**
+     * User is talking
+     * @param node
+     * @throws WDDManException 
+     */
+    @Override
+    public void talk(String node)throws WDDManException{
+        windows.stream().filter((w) -> (w.contains(node))).forEach((w) -> {
+            w.talk(); 
+        });
+    }
+    
+    
+    
+    
        
     /**
      * Gets menu position from configure file
@@ -328,7 +349,7 @@ public class LayoutManagerImpl implements LayoutManager {
     @Override
     public void addNode(String title, String role){
         try {
-            DisplayableWindow newWin = new DisplayableWindow(wd, title, role);            
+            DisplayableWindow newWin = new DisplayableWindow(wd, title, role);                
             windows.add(newWin);
         } catch (WDDManException | UnsupportedOperatingSystemException ex) {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -343,27 +364,18 @@ public class LayoutManagerImpl implements LayoutManager {
      * @param title window title
      */
     @Override
-    public void removeNode(String title){
-        
-        wddman.Window wddWin;
-        
-        try {
-            wddWin = wd.getWindowByTitle(title);
-            for (DisplayableWindow window : windows){           
-                
-                if (window.contains(title)) {
-                    windows.remove(window);
-                    break;
-                }             
+    public void removeNode(String title){        
+        for (DisplayableWindow window : windows){
+            
+            if (window.contains(title)) {
+                windows.remove(window);
+                break;             
             }
-        } catch (WDDManException ex) {
-            Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
         
           recalculate(); 
           applyChanges();
     }
-
  
    
 }
