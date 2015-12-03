@@ -17,16 +17,9 @@ import couniverse.monitoring.TopologyUpdate;
 import couniverse.ultragrid.UltraGridConsumerApplication;
 import couniverse.ultragrid.UltraGridProducerApplication;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,30 +32,37 @@ public class SessionManagerImpl implements SessionManager {
     /**
      * Maps consumers on producers Producers are keys
      */
-    Map<String, String> producer2consumer = new TreeMap<>();
+    Map<UltraGridProducerApplication, UltraGridConsumerApplication> producer2consumer = new HashMap<>();
+
     /**
      * Maps producers to nodes where are running Nodes are keys
      */
-    Map<String, String> node2producer = new TreeMap<>();
+    Map<NetworkNode, UltraGridProducerApplication> node2producer = new HashMap<>();
+
+    /**
+     *
+     */
+    Map<UltraGridConsumerApplication, String> consumer2name = new HashMap<>();
+
     /**
      * Stored instance of node representing current computer
      */
     NetworkNode local;
     /**
-     * Instance of Couniverse Core
+     * Instance of couniverse Core
      */
     Core core;
+
+    /**
+     * represents number of active windows
+     */
+    int windowCounter = 0;
+
     /**
      * Instance of LayoutManager to notify Layout about changes
      */
     LayoutManager layoutManager;
     TopologyAggregator topologyAggregator;
-    //RemoteNodesAggregator nodesAggregator;
-
-    /**
-     * Node identificator
-     */
-    String ident = "";
 
     /**
      * Constructor to initialize LayoutManager
@@ -70,73 +70,33 @@ public class SessionManagerImpl implements SessionManager {
      * @param layoutManager
      */
     public SessionManagerImpl(LayoutManager layoutManager) {
+        // TODO check this and finish listener
         /*if (layoutManager == null) {
          throw new IllegalArgumentException("layoutManager is null");
          }*/
         this.layoutManager = layoutManager;
-        this.layoutManager.addLayoutManagerListener(new LayoutManagerListener() {
+        //this.layoutManager.addLayoutManagerListener(new LayoutManagerListener() {
+          //  @Override
+           // public void alertActionPerformed() {
+             //   throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            //}
 
-            @Override
-            public void alertActionPerformed() {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
+            //@Override
+            //public void windowChosenActionPerformed(String title) {
+              //  throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            //}
 
-            @Override
-            public void windowChosenActionPerformed(String title) {               
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public void muteActionPerformed() {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-        });
-        getMac();
-    }
-
-    /**
-     * This method find mac adress and fill ident If it fails, ident is empty
-     * string - TODO anything random
-     */
-    private void getMac() {
-        try {
-            NetworkInterface network = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
-            byte[] mac = network.getHardwareAddress();
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < mac.length; i++) {
-                sb.append(String.format("%02X", mac[i]));
-            }
-            ident = sb.toString();
-        } catch (UnknownHostException | SocketException ex) {
-            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
-            macToMD5();
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    /**
-     * this convert mac adress to md5 hash of it
-     * @throws NoSuchAlgorithmException if MD5 algorithm is not find
-     */
-    private void macToMD5() throws NoSuchAlgorithmException {
-        MessageDigest m = MessageDigest.getInstance("MD5");
-        m.reset();
-        m.update(ident.getBytes());
-        byte[] digest = m.digest();
-        BigInteger bigInt = new BigInteger(1, digest);
-        ident = bigInt.toString(16);
-        // Now we need to zero pad it if you actually want the full 32 chars.
-        while (ident.length() < 32) {
-            ident = ident + "0";
-        }
+            //@Override
+            //public void muteActionPerformed() {
+              //  throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            //}
+        //});
     }
 
     /**
      *
-     * Starts producer on local node and listens to other nodes changes
+     * Starts producer on local node and listens to other nodes changes init
+     * iterates all nodes from initial topology and checks
      *
      * @throws IOException
      * @throws InterruptedException
@@ -148,18 +108,14 @@ public class SessionManagerImpl implements SessionManager {
         NetworkNode.addPropertyParser("role", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("windowName", NodePropertyParser.STRING_PARSER);
         core = Main.startCoUniverse();
-        
-       
 
-        //nodesAggregator = RemoteNodesAggregator.newInstance(core.getConnector());
         topologyAggregator = TopologyAggregator.newInstance(core);
         local = core.getLocalNode();
-        //local.getUuid();
         // create produrer for local content
         createProducent((String) local.getProperty("role"));
+
         final Object myLock = new Object();
         synchronized (myLock) {
-            //Set<NetworkNode> nodes = nodesAggregator.addNodePresenceListener(new RemoteNodesAggregator.NodePresenceListener() {
             topologyAggregator.addListener(new NodePresenceListener() {
 
                 @Override
@@ -178,19 +134,17 @@ public class SessionManagerImpl implements SessionManager {
                 public void onNodeChanged(NetworkNode node) {
                     // check name
                     synchronized (myLock) {
-                        if (node == local) {
+                        if (node.equals(local)) {
                             return;
                         }
                         // Check if there is new media application
-                        seekForProducent(node);
-                        // Check if there are still running registered applications
-                        checkLeft(node);
+                        checkProducent(node);
                     }
                 }
 
                 @Override
                 public void onNodeLeft(NetworkNode node) {
-                    onNodeChanged(node);
+                    stopConsumer(node);
                 }
             });
         }
@@ -212,16 +166,14 @@ public class SessionManagerImpl implements SessionManager {
      * @throws IOException if there is problem during starting Producer
      */
     private void createProducent(String role) throws IOException {
-        // I want to start distributor
+        // start distributor
         createDistrubutor();
-        // TODO name constartApplicationtent properly
-        // think how to name content properly
-        // todo start different producer with different role
-        // no sound, better quality, framerate etc
+        // TODO create different producer accourding to role
         ObjectNode prodConfig = core.newApplicationTemplate("producer");
-        String identification = "Producer #" + ident;
+        String identification = local.getUuid().toString();
         prodConfig.put("content", identification);
-        prodConfig.put("name", identification);
+        prodConfig.put("name", "Producer #" + identification);
+
         core.startApplication(prodConfig, "producer");
     }
 
@@ -242,29 +194,30 @@ public class SessionManagerImpl implements SessionManager {
             throw new IllegalArgumentException("node is null");
         }
         // get content destriptor from producer
-        // TODO I want to split content and extract number to name window by Consumer
-        // + given number
         String content = app.getProvidedContentDescriptor();
-        // podla mna treba to premysliet - content = windowName
-        //String windowName = (String) node.getProperty("windowName");
-        producer2consumer.put(app.getName(), content);
-        node2producer.put(node.getName(), app.getName());
         ObjectNode cons = core.newApplicationTemplate("consumer");
-        // content from producer is consumer's source
+        // Source is content
+        String name = "\"Consumer #" + windowCounter + "\"";
         cons.put("source", content);
-        cons.put("name", content);
-        cons.put("arguments", "--window-title " + content);
-        core.startApplication(cons, "consumer");
-        return content;
+        cons.put("name", name);
+        cons.put("arguments", "--window-title " + name);
+        UltraGridConsumerApplication con = (UltraGridConsumerApplication) core.startApplication(cons, "consumer");
+        producer2consumer.put(app, con);
+        node2producer.put(node, app);
+        consumer2name.put(con, name);
+        windowCounter++;
+        return name.replace("\"", "");
     }
 
     /**
-     * Check if there is any new MediaApplication running on given node
+     * Check if there is any new MediaApplication running on given node Iterate
+     * all node's applications and on these which are UG Producer Check if there
+     * is assigned any Consumer app If not assign one == create consumer
      *
      * @param node where I check applications
      * @throws IllegalArgumentException if node is null
      */
-    private void seekForProducent(NetworkNode node) throws IllegalArgumentException {
+    private void checkProducent(NetworkNode node) throws IllegalArgumentException {
         if (node == null) {
             throw new IllegalArgumentException("node is null");
         }
@@ -273,11 +226,9 @@ public class SessionManagerImpl implements SessionManager {
             if (app instanceof UltraGridProducerApplication) {
                 UltraGridProducerApplication producer = (UltraGridProducerApplication) app;
                 try {
-                    if (!producer.getProvidedContentDescriptor().equals(producer2consumer.get(producer.getName()))) {
-                        createConsumer(producer, node);
-                        //layoutManager.addNode(createConsumer(producer, node), (String) node.getProperty("role"));
+                    if (producer2consumer.containsKey(producer) == false) {
+                        layoutManager.addNode(createConsumer(producer, node), (String) node.getProperty("role"));
                     }
-                    //
                 } catch (IOException ex) {
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -286,40 +237,16 @@ public class SessionManagerImpl implements SessionManager {
     }
 
     /**
-     * Check whether is MediaApplication assigned to given node still running
+     * After receiving leftNode update that node left I will stop UltraGridConsumer
      *
-     * @param node where I check applications
-     * @throws IllegalArgumentException if node is null
+     * @param node
      */
-    private void checkLeft(NetworkNode node) throws IllegalArgumentException {
+    private void stopConsumer(NetworkNode node) {
         if (node == null) {
             throw new IllegalArgumentException("node is null");
         }
-        UltraGridConsumerApplication con = null;
-        Set<MediaApplication> applications = node.getApplications();
-        String requredProducer = node2producer.get(node.getName());
-        if (requredProducer == null) {
-            return;
-        }
-        // if all apps are running it's ok
-        for (MediaApplication app : applications) {
-            if (app.getName().equals(requredProducer)) {
-                return;
-            }
-        }
-        String consumer = producer2consumer.get(requredProducer);
-        for (MediaApplication app : core.getLocalNode().getApplications()) {
-            if (app instanceof UltraGridConsumerApplication) {
-                con = (UltraGridConsumerApplication) app;
-                if (consumer.equals(con.getRequestedContentDescriptor())) {
-                    node2producer.remove(node.getName());
-                    producer2consumer.remove(requredProducer);
-                    // notify layoutManager
-                    //layoutManager.removeNode(requredProducer);
-                    core.stopApplication(app);
-                }
-            }
-        }
+        MediaApplication ugCon = producer2consumer.remove(node2producer.remove(node));
+        layoutManager.removeNode(consumer2name.get(ugCon));
+        core.stopApplication(ugCon);
     }
 }
-

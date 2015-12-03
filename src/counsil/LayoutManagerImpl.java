@@ -395,6 +395,7 @@ public class LayoutManagerImpl implements LayoutManager {
         }
         recalculate(); 
         applyChanges();
+        applyChanges();
 
     }
     

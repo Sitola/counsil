@@ -2,7 +2,7 @@
     "connector": {
         "serverAddress": "localhost",
         "serverPort": 9701,
-        "startServer": true
+        "startServer": false
     },
     "localNode": {
         "name": "pandora",
@@ -17,22 +17,23 @@
             }
         ],
         "properties": {
+            "agc" : "dummy",
             "role" : "cool",
             "windowName" : "cool"
         }
     },
     "templates": {
         "producer" : {
-            "path" : "/home/palci/development/ultragrid/bin/uv",
+            "path" : "/home/pkajaba/Work/sitola/ultragrid/bin/uv",
             "arguments" : "",
-            "video" : "testcard:256:256:30:UYVY"
+            "video" : "no"
         },
         "distributor" : {
-            "path" : "/home/palci/development/ultragrid/bin/hd-rum-transcode",
+            "path" : "/home/pkajaba/Work/sitola/ultragrid/bin/hd-rum-transcode",
             "arguments" : "8M"
         },
         "consumer" : {
-            "path" : "/home/palci/development/ultragrid/bin/uv",
+            "path" : "/home/pkajaba/Work/sitola/ultragrid/bin/uv",
             "arguments" : "",
             "video" : "sdl"
         }

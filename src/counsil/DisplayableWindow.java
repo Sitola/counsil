@@ -87,6 +87,7 @@ class DisplayableWindow extends JFrame {
         this.windowListeners = new ArrayList<>();
                
         content = wd.getWindowByTitle(title);
+        System.err.println("My name is" + title);
         
         position = new Position(content.getLeft(), content.getTop()); 
         width = content.getWidth();
