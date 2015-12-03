@@ -6,10 +6,6 @@
 package counsil;
 
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -49,6 +45,12 @@ public class LayoutManagerImpl implements LayoutManager {
      * Instance of CoUnSIl menu
      */
     private InteractionMenu menu;
+
+    /**
+     * List of layout manager listeners
+     */
+    
+    private List<LayoutManagerListener> layoutManagerListeners;
     
     /**
      * JSON configure file object
@@ -263,23 +265,31 @@ public class LayoutManagerImpl implements LayoutManager {
      * @throws java.io.FileNotFoundException
      */
     public LayoutManagerImpl() throws JSONException, FileNotFoundException, IOException{
+        this.layoutManagerListeners = new ArrayList<>();
         
         windows = new ArrayList<>(); 
-              
+        
         String entireFileText = new Scanner(new File("layoutConfig.json")).useDelimiter("\\A").next();
         input = new JSONObject(entireFileText);       
           EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {  
                     menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());
+                    menu.addRaiseHandButtonListener(new RaiseHandButtonListener() {
+
+                        @Override
+                        public void raiseHandActionPerformed() {                             
+                            layoutManagerListeners.stream().forEach((listener) -> {
+                            listener.alertActionPerformed();
+                            });
+                        }
+                    });
                 } catch (JSONException ex) {
                     Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-        });
-       
+        });     
         
-               
         try {
             wd = new WDDMan();            
         } catch (UnsupportedOperatingSystemException ex) {
@@ -360,7 +370,18 @@ public class LayoutManagerImpl implements LayoutManager {
     @Override
     public void addNode(String title, String role){
         try {
-            DisplayableWindow newWin = new DisplayableWindow(wd, title, role);                
+            DisplayableWindow newWin = new DisplayableWindow(wd, title, role);    
+            newWin.addWindowClickEventListener(new WindowClickEventListener() {
+               
+                @Override
+                public void windowClickActionPerformed() {
+                   layoutManagerListeners.stream().forEach((listener) -> {
+                    listener.windowChosenActionPerformed(newWin.getTitle());
+                   });
+                }
+
+                               
+            });
             windows.add(newWin);
         } catch (WDDManException | UnsupportedOperatingSystemException ex) {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -369,6 +390,15 @@ public class LayoutManagerImpl implements LayoutManager {
         applyChanges();
 
     }
+    
+     /**
+     * adds listener of layout manager events
+     * @param listener
+     */
+    public void addLayoutManagerListener(LayoutManagerListener listener) {
+        layoutManagerListeners.add(listener);
+    }
+    
     
     /**
      * Removes window from layout

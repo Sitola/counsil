@@ -6,6 +6,10 @@
 package counsil;
 
 import java.awt.Color;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JWindow;
@@ -65,6 +69,12 @@ class DisplayableWindow extends JFrame {
      */
     
     String title; 
+    
+    /**
+     * list of window on click listeners
+     */
+
+    private List<WindowClickEventListener> windowListeners;
 
     /**
      * Initializes arguments, creates transparent window to non-transparent window
@@ -74,6 +84,7 @@ class DisplayableWindow extends JFrame {
      * @throws UnsupportedOperatingSystemException 
      */
     DisplayableWindow(WDDMan wd, String title, String role) throws WDDManException, UnsupportedOperatingSystemException{
+        this.windowListeners = new ArrayList<>();
                
         content = wd.getWindowByTitle(title);
         
@@ -94,7 +105,38 @@ class DisplayableWindow extends JFrame {
         transparent.setAlwaysOnTop(true);
         transparent.setBackground(new Color(0, 0, 0, (float) 0.0025));        
         transparent.setVisible(true);
+        
+        transparent.addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                windowListeners.stream().forEach((listener) -> {
+                    listener.windowClickActionPerformed();
+            });
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {}
+
+            @Override
+            public void mouseReleased(MouseEvent e) {}
+
+            @Override
+            public void mouseEntered(MouseEvent e) {}
+
+            @Override
+            public void mouseExited(MouseEvent e) {}
+        });
+        
    
+    }
+    
+     /**
+     * adds listener of onclick window event
+     * @param listener
+     */
+    public void addWindowClickEventListener(WindowClickEventListener listener) {
+        windowListeners.add(listener);
     }
     
     /**

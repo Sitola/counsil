@@ -12,10 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.BooleanControl;
-import javax.sound.sampled.Line;
-import javax.sound.sampled.Mixer;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -52,11 +48,24 @@ public class InteractionMenu extends JFrame {
     private boolean muted;
     
     /**
+     * List of raiseHandButton listeners
+     */
+    private final List<RaiseHandButtonListener> raiseButtonListeners = new ArrayList<>();
+            
+    /**
+     * adds listener of button
+     * @param listener
+     */
+    public void addRaiseHandButtonListener(RaiseHandButtonListener listener) {
+        raiseButtonListeners.add(listener);
+    }
+    
+    /**
      * Initializes menu
      * @param role role of current user
      * @param position menu position
      */
-    public InteractionMenu(String role, Position position){    
+    InteractionMenu(String role, Position position){    
         
         super("CoUnSil");         
         setLayout(new GridBagLayout());
@@ -80,6 +89,7 @@ public class InteractionMenu extends JFrame {
         });
      
         JFrame.setDefaultLookAndFeelDecorated(true);
+        
     }
     
    /**
@@ -156,25 +166,25 @@ public class InteractionMenu extends JFrame {
        if (type == InteractionMenu.ButtonType.EXIT){
            button.setText("Exit");
            button.addActionListener((ActionEvent evt) -> {
-               ExitButtonActionPerformed();
+               exitButtonActionPerformed();
            });
        }
        else if (type == InteractionMenu.ButtonType.ABOUT){
            button.setText("About");
            button.addActionListener((ActionEvent evt) -> {
-               AboutButtonActionPerformed();
+               aboutButtonActionPerformed();
            });
        }
        else if (type == InteractionMenu.ButtonType.ATTENTION){
             button.setText("Raise hand");
             button.addActionListener((ActionEvent evt) -> {
-                AttentionButtonActionPerformed(button);
+                attentionButtonActionPerformed(button);
             });
        }
        else if (type == InteractionMenu.ButtonType.MUTE){
            button.setText("Mute");
            button.addActionListener((ActionEvent evt) -> {
-               MuteButtonActionPerformed(button);
+               muteButtonActionPerformed(button);
            });           
        }
        
@@ -188,7 +198,7 @@ public class InteractionMenu extends JFrame {
    /**
     * Shows message after "About" button is clicked
     */
-   private void AboutButtonActionPerformed() {                                                 
+   private void aboutButtonActionPerformed() {                                                 
         JOptionPane.showMessageDialog(null, " CoUnSiL\n" +"(CoUniverse for Sign Language)\n" +"\n" +"\n" +
             "Videoconferencing environment for remote interpretation of sign language.");           
     }   
@@ -196,7 +206,7 @@ public class InteractionMenu extends JFrame {
     /**
     * Starts exiting program when "Exit" button is clicked
     */
-    private void ExitButtonActionPerformed() {                                                 
+    private void exitButtonActionPerformed() {                                                 
         String message = "Do you really want to quit CoUnSil?";
         String title = "Quit CoUnSil?";
         int reply = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
@@ -215,48 +225,31 @@ public class InteractionMenu extends JFrame {
      * Starts raise/lower hand interaction when button is clicked
      * @param button clicked button 
      */
-    private void AttentionButtonActionPerformed(JButton button) {                                                 
+    private void attentionButtonActionPerformed(JButton button) {                                                 
         if (raisedHand) {
             button.setText("Raise hand");            
         } else {
             button.setText("Lower hand");             
         }
         raisedHand = !raisedHand;
-
+        
+        raiseButtonListeners.stream().forEach((listener) -> {
+            listener.raiseHandActionPerformed();
+        });
     }  
     
-    //! TODO: test this 
+   
     
     /**
      * Mutes/unmutes sound
      * @param button clicked button
      */
-    private void MuteButtonActionPerformed(JButton button) {
+    private void muteButtonActionPerformed(JButton button) {
         if (muted){
-            button.setText("Mute");           
-            Mixer.Info[] infos = AudioSystem.getMixerInfo();
-            for (Mixer.Info info: infos) {
-                Mixer mixer = AudioSystem.getMixer(info);
-                for (Line line : mixer.getSourceLines()){
-                    BooleanControl bc = (BooleanControl) line.getControl(BooleanControl.Type.MUTE);
-                    if (bc != null) {
-                        bc.setValue(false); 
-                    }
-                }
-            }
+             //! todo
         }
         else {
-            button.setText("Unmute");
-            Mixer.Info[] infos = AudioSystem.getMixerInfo();
-            for (Mixer.Info info: infos) {
-                Mixer mixer = AudioSystem.getMixer(info);
-                for (Line line : mixer.getSourceLines()){
-                    BooleanControl bc = (BooleanControl) line.getControl(BooleanControl.Type.MUTE);
-                    if (bc != null) {
-                        bc.setValue(true); 
-                    }
-                }
-            }
+            //! todo
         }
         
         muted = !muted;        
