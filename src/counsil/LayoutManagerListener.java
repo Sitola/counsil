@@ -22,4 +22,6 @@ public interface LayoutManagerListener {
      */
     
     void windowChosenActionPerformed(String title);
+
+    public void muteActionPerformed();
 }

@@ -10,11 +10,20 @@ import couniverse.core.Core;
 import couniverse.core.NetworkNode;
 import couniverse.core.NodePropertyParser;
 import couniverse.core.mediaApplications.MediaApplication;
-import couniverse.monitoring.RemoteNodesAggregator;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import couniverse.monitoring.NodePresenceListener;
+import couniverse.monitoring.TopologyAggregator;
+import couniverse.monitoring.TopologyUpdate;
 import couniverse.ultragrid.UltraGridConsumerApplication;
 import couniverse.ultragrid.UltraGridProducerApplication;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -44,10 +53,16 @@ public class SessionManagerImpl implements SessionManager {
      */
     Core core;
     /**
-     * Instane of LayoutManager to notify Layout about changes
+     * Instance of LayoutManager to notify Layout about changes
      */
     LayoutManager layoutManager;
-    RemoteNodesAggregator nodesAggregator;
+    TopologyAggregator topologyAggregator;
+    //RemoteNodesAggregator nodesAggregator;
+
+    /**
+     * Node identificator
+     */
+    String ident = "";
 
     /**
      * Constructor to initialize LayoutManager
@@ -55,10 +70,68 @@ public class SessionManagerImpl implements SessionManager {
      * @param layoutManager
      */
     public SessionManagerImpl(LayoutManager layoutManager) {
-        if (layoutManager == null) {
+        /*if (layoutManager == null) {
          throw new IllegalArgumentException("layoutManager is null");
-        }
+         }*/
         this.layoutManager = layoutManager;
+        this.layoutManager.addLayoutManagerListener(new LayoutManagerListener() {
+
+            @Override
+            public void alertActionPerformed() {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void windowChosenActionPerformed(String title) {               
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void muteActionPerformed() {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        });
+        getMac();
+    }
+
+    /**
+     * This method find mac adress and fill ident If it fails, ident is empty
+     * string - TODO anything random
+     */
+    private void getMac() {
+        try {
+            NetworkInterface network = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+            byte[] mac = network.getHardwareAddress();
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < mac.length; i++) {
+                sb.append(String.format("%02X", mac[i]));
+            }
+            ident = sb.toString();
+        } catch (UnknownHostException | SocketException ex) {
+            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            macToMD5();
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * this convert mac adress to md5 hash of it
+     * @throws NoSuchAlgorithmException if MD5 algorithm is not find
+     */
+    private void macToMD5() throws NoSuchAlgorithmException {
+        MessageDigest m = MessageDigest.getInstance("MD5");
+        m.reset();
+        m.update(ident.getBytes());
+        byte[] digest = m.digest();
+        BigInteger bigInt = new BigInteger(1, digest);
+        ident = bigInt.toString(16);
+        // Now we need to zero pad it if you actually want the full 32 chars.
+        while (ident.length() < 32) {
+            ident = ident + "0";
+        }
     }
 
     /**
@@ -71,18 +144,30 @@ public class SessionManagerImpl implements SessionManager {
     @Override
     public void initCounsil() throws IOException, InterruptedException {
         // This parse additional attributes from configration file
+        NetworkNode.addPropertyParser("agc", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("role", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("windowName", NodePropertyParser.STRING_PARSER);
         core = Main.startCoUniverse();
+        
+       
 
-        nodesAggregator = RemoteNodesAggregator.newInstance(core.getConnector());
+        //nodesAggregator = RemoteNodesAggregator.newInstance(core.getConnector());
+        topologyAggregator = TopologyAggregator.newInstance(core);
         local = core.getLocalNode();
-        // create produrer for local content\
-        System.out.println();
-        createProducent((String)local.getProperty("role"));
+        //local.getUuid();
+        // create produrer for local content
+        createProducent((String) local.getProperty("role"));
         final Object myLock = new Object();
         synchronized (myLock) {
-            Set<NetworkNode> nodes = nodesAggregator.addNodePresenceListener(new RemoteNodesAggregator.NodePresenceListener() {
+            //Set<NetworkNode> nodes = nodesAggregator.addNodePresenceListener(new RemoteNodesAggregator.NodePresenceListener() {
+            topologyAggregator.addListener(new NodePresenceListener() {
+
+                @Override
+                public void init(Set<NetworkNode> nodes) {
+                    for (NetworkNode node : nodes) {
+                        onNodeChanged(node, TopologyUpdate.EMPTY_UPDATE);
+                    }
+                }
 
                 @Override
                 public void onNewNodeAppeared(NetworkNode node) {
@@ -108,24 +193,36 @@ public class SessionManagerImpl implements SessionManager {
                     onNodeChanged(node);
                 }
             });
-            // zpracuju nodes
         }
+    }
+
+    /**
+     * Starts distributor on local node
+     *
+     * @throws IOException if there is problem during starting Distributor
+     */
+    private void createDistrubutor() throws IOException {
+        ObjectNode distConfig = core.newApplicationTemplate("distributor");
+        core.startApplication(distConfig, "distributor");
     }
 
     /**
      * Starts producer from local node
      *
-     * @throws IOException if there is problem during starting MediaApplication
+     * @throws IOException if there is problem during starting Producer
      */
     private void createProducent(String role) throws IOException {
-        // TODO name content properly
+        // I want to start distributor
+        createDistrubutor();
+        // TODO name constartApplicationtent properly
         // think how to name content properly
         // todo start different producer with different role
         // no sound, better quality, framerate etc
-        ObjectNode prod = core.newApplicationTemplate("producer");
-        prod.put("content", "producer0");
-        prod.put("name", "Producer 0");
-        core.startApplication(prod, "producer");
+        ObjectNode prodConfig = core.newApplicationTemplate("producer");
+        String identification = "Producer #" + ident;
+        prodConfig.put("content", identification);
+        prodConfig.put("name", identification);
+        core.startApplication(prodConfig, "producer");
     }
 
     /**
@@ -145,18 +242,20 @@ public class SessionManagerImpl implements SessionManager {
             throw new IllegalArgumentException("node is null");
         }
         // get content destriptor from producer
+        // TODO I want to split content and extract number to name window by Consumer
+        // + given number
         String content = app.getProvidedContentDescriptor();
-        // podla mna treba to premysliet
-        String windowName = (String) node.getProperty("windowName");
+        // podla mna treba to premysliet - content = windowName
+        //String windowName = (String) node.getProperty("windowName");
         producer2consumer.put(app.getName(), content);
         node2producer.put(node.getName(), app.getName());
         ObjectNode cons = core.newApplicationTemplate("consumer");
         // content from producer is consumer's source
         cons.put("source", content);
-        cons.put("name", windowName);
-        cons.put("arguments", "--window-title " + windowName);
+        cons.put("name", content);
+        cons.put("arguments", "--window-title " + content);
         core.startApplication(cons, "consumer");
-        return windowName;
+        return content;
     }
 
     /**
@@ -175,7 +274,8 @@ public class SessionManagerImpl implements SessionManager {
                 UltraGridProducerApplication producer = (UltraGridProducerApplication) app;
                 try {
                     if (!producer.getProvidedContentDescriptor().equals(producer2consumer.get(producer.getName()))) {
-                        layoutManager.addNode(createConsumer(producer, node), (String) node.getProperty("role"));
+                        createConsumer(producer, node);
+                        //layoutManager.addNode(createConsumer(producer, node), (String) node.getProperty("role"));
                     }
                     //
                 } catch (IOException ex) {
@@ -213,12 +313,13 @@ public class SessionManagerImpl implements SessionManager {
                 con = (UltraGridConsumerApplication) app;
                 if (consumer.equals(con.getRequestedContentDescriptor())) {
                     node2producer.remove(node.getName());
-                    producer2consumer.remove(requredProducer); 
-                    layoutManager.removeNode(requredProducer);
+                    producer2consumer.remove(requredProducer);
+                    // notify layoutManager
+                    //layoutManager.removeNode(requredProducer);
                     core.stopApplication(app);
                 }
             }
         }
-        // notify layoutManager
     }
 }
+

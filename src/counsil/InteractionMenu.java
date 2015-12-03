@@ -50,14 +50,14 @@ public class InteractionMenu extends JFrame {
     /**
      * List of raiseHandButton listeners
      */
-    private final List<RaiseHandButtonListener> raiseButtonListeners = new ArrayList<>();
+        private final List<InteractionMenuListener> buttonListeners = new ArrayList<>();
             
     /**
      * adds listener of button
      * @param listener
      */
-    public void addRaiseHandButtonListener(RaiseHandButtonListener listener) {
-        raiseButtonListeners.add(listener);
+    public void addInteractionMenuListener(InteractionMenuListener listener) {
+        buttonListeners.add(listener);
     }
     
     /**
@@ -233,7 +233,7 @@ public class InteractionMenu extends JFrame {
         }
         raisedHand = !raisedHand;
         
-        raiseButtonListeners.stream().forEach((listener) -> {
+        buttonListeners.stream().forEach((listener) -> {
             listener.raiseHandActionPerformed();
         });
     }  
@@ -244,13 +244,17 @@ public class InteractionMenu extends JFrame {
      * Mutes/unmutes sound
      * @param button clicked button
      */
-    private void muteButtonActionPerformed(JButton button) {
-        if (muted){
-             //! todo
+    private void muteButtonActionPerformed(JButton button) {        
+        
+        if (muted) {
+            button.setText("Mute");            
+        } else {
+            button.setText("Unmute");             
         }
-        else {
-            //! todo
-        }
+        
+        buttonListeners.stream().forEach((listener) -> {
+            listener.muteActionPerformed();
+        });
         
         muted = !muted;        
     }

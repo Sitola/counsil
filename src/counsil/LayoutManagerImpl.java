@@ -275,12 +275,19 @@ public class LayoutManagerImpl implements LayoutManager {
             public void run() {
                 try {  
                     menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());
-                    menu.addRaiseHandButtonListener(new RaiseHandButtonListener() {
+                    menu.addInteractionMenuListener(new InteractionMenuListener() {
 
                         @Override
                         public void raiseHandActionPerformed() {                             
                             layoutManagerListeners.stream().forEach((listener) -> {
                             listener.alertActionPerformed();
+                            });
+                        }
+
+                        @Override
+                        public void muteActionPerformed() {
+                            layoutManagerListeners.stream().forEach((listener) -> {
+                            listener.muteActionPerformed();
                             });
                         }
                     });
@@ -395,6 +402,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * adds listener of layout manager events
      * @param listener
      */
+    @Override
     public void addLayoutManagerListener(LayoutManagerListener listener) {
         layoutManagerListeners.add(listener);
     }

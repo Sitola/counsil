@@ -106,7 +106,8 @@ class DisplayableWindow extends JFrame {
         transparent.setBackground(new Color(0, 0, 0, (float) 0.0025));        
         transparent.setVisible(true);
         
-        transparent.addMouseListener(new MouseListener() {
+        if (role.equals("teacher")){
+            transparent.addMouseListener(new MouseListener() {
 
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -126,7 +127,8 @@ class DisplayableWindow extends JFrame {
 
             @Override
             public void mouseExited(MouseEvent e) {}
-        });
+            });
+        }
         
    
     }

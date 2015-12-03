@@ -40,5 +40,11 @@ public interface LayoutManager {
      */
     public void talk(String node) throws WDDManException;
     
+    
+    /**
+     * adds listener of layout manager events
+     * @param listener
+     */
+    public void addLayoutManagerListener(LayoutManagerListener listener);
 
 }

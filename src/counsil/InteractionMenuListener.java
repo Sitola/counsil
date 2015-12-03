@@ -9,11 +9,13 @@ package counsil;
  *
  * @author desanka
  */
-public interface RaiseHandButtonListener {
+public interface InteractionMenuListener {
     
     /**
      * what to do when raise hand button is pushed
      */
     void raiseHandActionPerformed();
+
+    public void muteActionPerformed();
     
 }
