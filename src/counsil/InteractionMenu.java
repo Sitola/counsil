@@ -7,6 +7,7 @@ package counsil;
 
 import java.awt.Color;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,7 @@ import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 
 /**
@@ -190,7 +192,9 @@ public class InteractionMenu extends JFrame {
        
        else if (type == InteractionMenu.ButtonType.VOLUME){
            button.setText("Volume");
-           //! todo
+           button.addActionListener((ActionEvent evt) -> {
+               volumeButtonActionPerformed();
+           }); 
        }     
        
     }   
@@ -257,6 +261,11 @@ public class InteractionMenu extends JFrame {
         });
         
         muted = !muted;        
+    }
+    
+    private void volumeButtonActionPerformed() {
+         throw new UnsupportedOperationException("Not supported yet!");
+         //! 
     }
     
 }
