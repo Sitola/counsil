@@ -139,13 +139,10 @@ public class LayoutManagerImpl implements LayoutManager {
                // if(fieldRatio/windowRatio >= 1){    // field is better filled with windows horizontly 
                 //it work with fields with ratio < 1, but result may not be as expected, because it prefer spliting to rows not columbs, if needed can be change in future 
                     rowsLim = upperRowLimit(fieldRatio, windowRatio, winList.size());
-                    System.out.println("row " + unusedSpace(fieldRatio, windowRatio, rowsLim, winList.size()));
-                    System.out.println("row -1 " + unusedSpace(fieldRatio, windowRatio, rowsLim-1, winList.size()));
                     if(unusedSpace(fieldRatio, windowRatio, rowsLim, winList.size()) <= unusedSpace(fieldRatio, windowRatio, rowsLim-1, winList.size())){ // chose if is better use rowsLim rows or rowsLim-1 rows
                         // distribute windows using rowsLim
                         distributeWindows(new Position(fieldX, fieldY), fieldHeight, fieldWidth, winList, rowsLim, fieldRatio, windowRatio);
                     }else{
-                        System.out.println(rowsLim);
                         // distribute windows using rowsLim-1
                         distributeWindows(new Position(fieldX, fieldY), fieldHeight, fieldWidth, winList, rowsLim - 1, fieldRatio, windowRatio);
                     }
