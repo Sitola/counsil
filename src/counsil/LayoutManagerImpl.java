@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -430,11 +431,11 @@ public class LayoutManagerImpl implements LayoutManager {
      * @param title window title
      */
     @Override
-    public void removeNode(String title){        
-        for (DisplayableWindow window : windows){
-            
+    public void removeNode(String title){ 
+        for (Iterator<DisplayableWindow> iter = windows.iterator(); iter.hasNext();){
+            DisplayableWindow window = iter.next();
             if (window.contains(title)) {
-                windows.remove(window);
+                iter.remove();
                 break;             
             }
         }
