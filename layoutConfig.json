@@ -1,8 +1,8 @@
 {
     "fields": [
-        {"x": "0", "y": "0", "height": "720", "width": "890", "role": "teacher", "windowRatio": 1.33333333},
-        {"x": "890", "y": "0", "height": "720", "width": "890", "role": "transleder", "windowRatio": 1.33333333},
-        {"x": "0", "y": "720", "height": "500", "width": "1920", "role": "student", "windowRatio": 1.33333333}
+        {"x": "0.0", "y": "0.0", "height": "0.5", "width": "0.45", "role": "teacher", "windowRatio": 1.33333333},
+        {"x": "0.45", "y": "0.0", "height": "0.5", "width": "0.45", "role": "transleder", "windowRatio": 1.33333333},
+        {"x": "0.0", "y": "0.5", "height": "0.5", "width": "1.0", "role": "student", "windowRatio": 1.33333333}
     ],
     "menu" : {
         "role" : "teacher",

@@ -61,8 +61,9 @@ public class LayoutManagerImpl implements LayoutManager {
     /*
     * recalculate new layout from JSON layout file and array of nodes or something with specify role 
     * return layout with position nad id|name 
-    * !!!!!!!nearly finished!!!!!!!
-    * to do: finish when field is higher then wider; check if I did't forgot implement some future :/
+    *
+    * it work with fields with ratio < 1, but result may not be as expected, because it 
+    * prefer spliting to rows not columbs, if needed can be change in future
     */
     private void recalculate(){
         if(input == null){
@@ -93,6 +94,10 @@ public class LayoutManagerImpl implements LayoutManager {
             JSONObject field;
             int fieldWidth = 1;
             int fieldHeight = 1;
+            double relativeFieldWidth = 1.0;
+            double relativeFieldHeight = 1.0;
+            double relativeFieldX = 0.0;
+            double relativeFieldY = 0.0;
             int fieldX = 0;
             int fieldY  = 0;
             String role = null;
@@ -100,13 +105,21 @@ public class LayoutManagerImpl implements LayoutManager {
             double windowRatio = 1;             //windows ratio, use same ratio for all windows
             try {
                 field = fields.getJSONObject(i);
-                fieldWidth = field.getInt("width");
-                fieldHeight = field.getInt("height");
-                fieldX = field.getInt("x");
-                fieldY = field.getInt("y");
+                relativeFieldWidth = field.getDouble("width");
+                relativeFieldHeight = field.getDouble("height");
+                relativeFieldX = field.getDouble("x");
+                relativeFieldY = field.getDouble("y");
                 role = field.getString("role");
                 windowRatio = field.getDouble("windowRatio");
             } catch (JSONException ex) {
+                Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                fieldHeight = (int) (wd.getScreenHeight() * relativeFieldHeight);
+                fieldWidth = (int) (wd.getScreenWidth() * relativeFieldWidth);
+                fieldX = (int) (wd.getScreenWidth() * relativeFieldX);
+                fieldY = (int) (wd.getScreenHeight() * relativeFieldY);
+            } catch (WDDManException ex) {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
             double fieldRatio = (double)fieldWidth / (double)fieldHeight;  //field ratio
@@ -122,19 +135,23 @@ public class LayoutManagerImpl implements LayoutManager {
                 win.setWidth(fieldWidth);
                 win.setHeight(fieldHeight);
             }else{  //# windows > 1
-                int rowsLim = 0;        //number of rows that may be used
-                if(fieldRatio/windowRatio >= 1){    // field is better filled with windows horizontly 
+                int rowsLim;        //number of rows that may be used
+               // if(fieldRatio/windowRatio >= 1){    // field is better filled with windows horizontly 
+                //it work with fields with ratio < 1, but result may not be as expected, because it prefer spliting to rows not columbs, if needed can be change in future 
                     rowsLim = upperRowLimit(fieldRatio, windowRatio, winList.size());
+                    System.out.println("row " + unusedSpace(fieldRatio, windowRatio, rowsLim, winList.size()));
+                    System.out.println("row -1 " + unusedSpace(fieldRatio, windowRatio, rowsLim-1, winList.size()));
                     if(unusedSpace(fieldRatio, windowRatio, rowsLim, winList.size()) <= unusedSpace(fieldRatio, windowRatio, rowsLim-1, winList.size())){ // chose if is better use rowsLim rows or rowsLim-1 rows
                         // distribute windows using rowsLim
                         distributeWindows(new Position(fieldX, fieldY), fieldHeight, fieldWidth, winList, rowsLim, fieldRatio, windowRatio);
                     }else{
+                        System.out.println(rowsLim);
                         // distribute windows using rowsLim-1
                         distributeWindows(new Position(fieldX, fieldY), fieldHeight, fieldWidth, winList, rowsLim - 1, fieldRatio, windowRatio);
                     }
-                }else{                              // field is better filled with windows verticly
+            //    }else{                              // field is better filled with windows verticly
                     //to do: if field is better filed horizontly
-                }
+               // }
             }
             
         }
@@ -155,7 +172,8 @@ public class LayoutManagerImpl implements LayoutManager {
         if(rowRatio/windowRatio <= winsToPlace.size()){
             //space under and over the windows
             int windowWidth = rowWidth / winsToPlace.size();
-            int windowHeight = (int) Math.round(rowWidth / windowRatio);
+            int windowHeight = (int) Math.round(windowWidth / windowRatio);
+            System.out.println(windowHeight);
             int lastPosition = rowPosition.x;
             for (DisplayableWindow win : winsToPlace) {
                 Position windowPosition = new Position(lastPosition, rowPosition.y + (rowHeight - windowHeight) / 2);
@@ -202,17 +220,18 @@ public class LayoutManagerImpl implements LayoutManager {
     
     
     /*
+    *   @return should be value between 0 and 1
     *   R - field ratio
     *   r - window ratio
     *   n - # of windows
     *   rows - # rows
     */
     private double unusedSpace(double R, double r, int rows, int n){
-        Vector<Integer> numWindowsInRows = howManyWindowsInRows(n, rows);   
-        
+        Vector<Integer> numWindowsInRows = howManyWindowsInRows(n, rows);
         double sumEmptySpace = 0;
         for(int i=0; i<rows; i++){
-            if((R*rows)/r <= numWindowsInRows.get(i)){  //choose if is empty space on sides or over and under the windows
+            //R*rows - row ratio; r * n - ratio of windows in row
+            if((R*rows) <= (r * numWindowsInRows.get(i))){  //choose if is empty space on sides or over and under the windows
                 sumEmptySpace += 1 - unusedSpaceUnder(R, r, rows, numWindowsInRows.get(i));
             }else{
                 sumEmptySpace += 1 - unusedSpaceLeft(R, r, rows, numWindowsInRows.get(i));
@@ -233,17 +252,17 @@ public class LayoutManagerImpl implements LayoutManager {
     *   k - # of rows
     */
     private double unusedSpaceUnder(double R, double r, int k, int n){
-        return (R*k)/(r * Math.ceil(n/k));    // (R * k) / (r * ⌊n/k⌋)
+        return (R*k)/(r*n);    // (R * k) / (r * n⌋)
     }
        
     /*
     *   R - field ratio
     *   r - window ratio
     *   n - # of windows
-    *   k - # of rows
+    *   k - # of rows 
     */
     private double unusedSpaceLeft(double R, double r, int k, int n){
-        return (R * k * Math.ceil(n/k))/(r );    // (R * k * ⌊n/k⌋) / r
+        return (n * r)/(R * k);    // (n* r) / (R * k)
     }       
     
     /*
