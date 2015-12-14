@@ -198,15 +198,17 @@ public class SessionManagerImpl implements SessionManager {
         ObjectNode cons = core.newApplicationTemplate("consumer");
         // Source is content
         String name = "\"Consumer #" + windowCounter + "\"";
+        System.out.println("I have created : " + content + "\n\n\n\n\n");
+        cons.put("arguments", "--window-title " + name);
+        name = name.replace("\"", "");
         cons.put("source", content);
         cons.put("name", name);
-        cons.put("arguments", "--window-title " + name);
         UltraGridConsumerApplication con = (UltraGridConsumerApplication) core.startApplication(cons, "consumer");
         producer2consumer.put(app, con);
         node2producer.put(node, app);
         consumer2name.put(con, name);
         windowCounter++;
-        return name.replace("\"", "");
+        return name;
     }
 
     /**
