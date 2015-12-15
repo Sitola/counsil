@@ -76,20 +76,19 @@ public class SessionManagerImpl implements SessionManager {
          }*/
         this.layoutManager = layoutManager;
         //this.layoutManager.addLayoutManagerListener(new LayoutManagerListener() {
-          //  @Override
-           // public void alertActionPerformed() {
-             //   throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            //}
+        //  @Override
+        // public void alertActionPerformed() {
+        //   throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        //}
 
             //@Override
-            //public void windowChosenActionPerformed(String title) {
-              //  throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            //}
-
+        //public void windowChosenActionPerformed(String title) {
+        //  throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        //}
             //@Override
-            //public void muteActionPerformed() {
-              //  throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            //}
+        //public void muteActionPerformed() {
+        //  throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        //}
         //});
     }
 
@@ -239,7 +238,8 @@ public class SessionManagerImpl implements SessionManager {
     }
 
     /**
-     * After receiving leftNode update that node left I will stop UltraGridConsumer
+     * After receiving leftNode update that node left I will stop
+     * UltraGridConsumer
      *
      * @param node
      */
@@ -248,7 +248,14 @@ public class SessionManagerImpl implements SessionManager {
             throw new IllegalArgumentException("node is null");
         }
         MediaApplication ugCon = producer2consumer.remove(node2producer.remove(node));
-        layoutManager.removeNode(consumer2name.get(ugCon));
-        core.stopApplication(ugCon);
+        String removed = consumer2name.get(ugCon);
+        if (removed != null) {
+            layoutManager.removeNode(removed);
+            core.stopApplication(ugCon);
+        }
+        else{
+            System.out.println("You are trying to remove, what does not exist");
+            System.out.println("Future holds why your insane mind want to do this");
+        }
     }
 }
