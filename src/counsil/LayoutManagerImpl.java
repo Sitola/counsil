@@ -99,6 +99,10 @@ public class LayoutManagerImpl implements LayoutManager {
             double relativeFieldHeight = 1.0;
             double relativeFieldX = 0.0;
             double relativeFieldY = 0.0;
+            int borderR = 0;
+            int borderL = 0;
+            int borderU = 0; 
+            int borderD = 0;
             int fieldX = 0;
             int fieldY  = 0;
             String role = null;
@@ -108,6 +112,10 @@ public class LayoutManagerImpl implements LayoutManager {
                 field = fields.getJSONObject(i);
                 relativeFieldWidth = field.getDouble("width");
                 relativeFieldHeight = field.getDouble("height");
+                borderR = field.getInt("borderR");
+                borderL = field.getInt("borderL");
+                borderU = field.getInt("borderU");
+                borderD = field.getInt("borderD");
                 relativeFieldX = field.getDouble("x");
                 relativeFieldY = field.getDouble("y");
                 role = field.getString("role");
@@ -123,6 +131,19 @@ public class LayoutManagerImpl implements LayoutManager {
             } catch (WDDManException ex) {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
+            //move and shrink actual field depending on boarders size
+            //could have add more checks, but for now is not necessary 
+            fieldHeight = fieldHeight - borderU - borderD;
+            fieldWidth = fieldWidth - borderL - borderR;
+            fieldX = fieldX + borderL;
+            fieldY = fieldY + borderU;
+            if(fieldHeight < 1){
+                fieldHeight = 1;
+            }
+            if(fieldWidth < 1){
+                fieldWidth = 1;
+            }
+            
             double fieldRatio = (double)fieldWidth / (double)fieldHeight;  //field ratio
             winList = numRoles.get(role);           //list of windows to distribute in this field
             
