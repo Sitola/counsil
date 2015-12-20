@@ -51,7 +51,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * List of layout manager listeners
      */
     
-    private List<LayoutManagerListener> layoutManagerListeners;
+    private List<LayoutManagerListener> layoutManagerListeners = new ArrayList<>();
     
     /**
      * JSON configure file object
@@ -303,38 +303,57 @@ public class LayoutManagerImpl implements LayoutManager {
      * @throws java.io.FileNotFoundException
      */
     public LayoutManagerImpl() throws JSONException, FileNotFoundException, IOException{
-        this.layoutManagerListeners = new ArrayList<>();
+       
         
         windows = new ArrayList<>(); 
         
         String entireFileText = new Scanner(new File("layoutConfig.json")).useDelimiter("\\A").next();
         input = new JSONObject(entireFileText);       
-          EventQueue.invokeLater(new Runnable() {
+        EventQueue.invokeLater(new Runnable() {
             public void run() {
-                try {  
+                try {                      
                     menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());
                     menu.addInteractionMenuListener(new InteractionMenuListener() {
-
+                           
                         @Override
-                        public void raiseHandActionPerformed() {                             
-                            layoutManagerListeners.stream().forEach((listener) -> {
-                            listener.alertActionPerformed();
+                        public void raiseHandActionPerformed() { 
+                            layoutManagerListeners.stream().forEach((listener) -> {                                   
+                                listener.alertActionPerformed();
                             });
                         }
 
                         @Override
                         public void muteActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {
-                            listener.muteActionPerformed();
+                                listener.muteActionPerformed();
                             });
                         }
+
+                        @Override
+                        public void unmuteActionPerformed() {
+                            layoutManagerListeners.stream().forEach((listener) -> {
+                                listener.unmuteActionPerformed();
+                            }); 
+                        }
+
+                        @Override
+                        public void increaseActionPerformed() {
+                            layoutManagerListeners.stream().forEach((listener) -> {
+                                listener.volumeIncreasedActionPerformed();
+                            });                         }
+
+                        @Override
+                        public void decreaseActionPerformed() {
+                            layoutManagerListeners.stream().forEach((listener) -> {
+                                listener.volumeDecreasedActionPerformed();
+                            });}
                     });
                 } catch (JSONException ex) {
                     Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });     
-        
+      
         try {
             wd = new WDDMan();            
         } catch (UnsupportedOperatingSystemException ex) {

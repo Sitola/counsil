@@ -12,7 +12,7 @@ package counsil;
 public interface LayoutManagerListener {
     
     /**
-     * 
+     * what to do when user wants to talk
      */
     void alertActionPerformed();
     
@@ -23,5 +23,24 @@ public interface LayoutManagerListener {
     
     void windowChosenActionPerformed(String title);
 
-    public void muteActionPerformed();
+    /**
+     * what to do when volume is muted
+     */
+    void muteActionPerformed();
+    
+    /**
+     * what to do when volume is increased
+     */
+    void volumeIncreasedActionPerformed();
+   
+    /**
+     * what to do when volume is decreased
+     */
+    void volumeDecreasedActionPerformed();
+    
+    /**
+     * what to do when volume is unmuted
+     */
+    void unmuteActionPerformed();
+
 }

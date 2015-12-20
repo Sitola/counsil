@@ -6,8 +6,8 @@
 package counsil;
 
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,6 @@ import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 
 /**
@@ -52,15 +51,17 @@ public class InteractionMenu extends JFrame {
     /**
      * List of raiseHandButton listeners
      */
-        private final List<InteractionMenuListener> buttonListeners = new ArrayList<>();
+    private final List<InteractionMenuListener> interactionMenuListeners = new ArrayList<>();
+  
             
     /**
      * adds listener of button
      * @param listener
      */
     public void addInteractionMenuListener(InteractionMenuListener listener) {
-        buttonListeners.add(listener);
+        interactionMenuListeners.add(listener);
     }
+       
     
     /**
      * Initializes menu
@@ -237,7 +238,7 @@ public class InteractionMenu extends JFrame {
         }
         raisedHand = !raisedHand;
         
-        buttonListeners.stream().forEach((listener) -> {
+        interactionMenuListeners.stream().forEach((listener) -> {            
             listener.raiseHandActionPerformed();
         });
     }  
@@ -248,24 +249,46 @@ public class InteractionMenu extends JFrame {
      * Mutes/unmutes sound
      * @param button clicked button
      */
-    private void muteButtonActionPerformed(JButton button) {        
+    private void muteButtonActionPerformed(JButton button) {       
         
         if (muted) {
-            button.setText("Mute");            
+            button.setText("Mute");     
+             interactionMenuListeners.stream().forEach((listener) -> {
+                listener.unmuteActionPerformed();
+            });
         } else {
-            button.setText("Unmute");             
-        }
-        
-        buttonListeners.stream().forEach((listener) -> {
-            listener.muteActionPerformed();
-        });
-        
+            button.setText("Unmute");   
+            interactionMenuListeners.stream().forEach((listener) -> {
+                listener.muteActionPerformed();
+            });
+        }        
         muted = !muted;        
     }
     
-    private void volumeButtonActionPerformed() {
-         throw new UnsupportedOperationException("Not supported yet!");
-         //! 
+    private void volumeButtonActionPerformed() {        
+             
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {                
+                final VolumeSlider slider = new VolumeSlider();              
+                slider.addVolumeSliderListener(new VolumeSliderListener() {
+
+                    @Override
+                    public void increaseActionPerformed() {
+                        interactionMenuListeners.stream().forEach((listener) -> {
+                            listener.increaseActionPerformed();
+                        }); 
+                    }
+
+                    @Override
+                    public void decreaseActionPerformed() {
+                        interactionMenuListeners.stream().forEach((listener) -> {
+                            listener.decreaseActionPerformed();
+                        }); 
+                    }
+                });
+            }               
+        });     
     }
     
 }

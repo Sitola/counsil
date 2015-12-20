@@ -75,22 +75,44 @@ public class SessionManagerImpl implements SessionManager {
          throw new IllegalArgumentException("layoutManager is null");
          }*/
         this.layoutManager = layoutManager;
-        //this.layoutManager.addLayoutManagerListener(new LayoutManagerListener() {
-        //  @Override
-        // public void alertActionPerformed() {
-        //   throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        //}
+        this.layoutManager.addLayoutManagerListener(new LayoutManagerListener() {
 
-            //@Override
-        //public void windowChosenActionPerformed(String title) {
-        //  throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        //}
-            //@Override
-        //public void muteActionPerformed() {
-        //  throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        //}
-        //});
+            @Override
+            public void alertActionPerformed() {
+                System.out.println("Ciao agip!");
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void windowChosenActionPerformed(String title) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void muteActionPerformed() {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void volumeIncreasedActionPerformed() {
+                
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void volumeDecreasedActionPerformed() {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void unmuteActionPerformed() {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        });
+        
+        
     }
+                
 
     /**
      *
