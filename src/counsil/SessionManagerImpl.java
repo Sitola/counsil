@@ -149,34 +149,6 @@ public class SessionManagerImpl implements SessionManager {
             }
         });
         
-          
-        counsilListener = new MessageListener() {
-
-            @Override
-            public void onMessageArrived(CoUniverseMessage message) {                
-                if (message.type.equals(ALERT)){
-                    System.out.println("Received new message " + message);
-                    String title = (String) message.content[0];
-                    try {
-                        layoutManager.alert(title);
-                    } catch (WDDManException ex) {
-                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-                else if (message.type.equals(TALK)){
-                    System.out.println("Received new message " + message);
-                    String title = (String) message.content[0];
-                    try {
-                        layoutManager.talk(title);
-                    } catch (WDDManException ex) {
-                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-        };
-        
-        core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);     
-   
     }
                 
 
@@ -235,6 +207,34 @@ public class SessionManagerImpl implements SessionManager {
                 }
             });
         }
+        
+        counsilListener = new MessageListener() {
+
+            @Override
+            public void onMessageArrived(CoUniverseMessage message) {                
+                if (message.type.equals(ALERT)){
+                    System.out.println("Received new message " + message);
+                    String title = (String) message.content[0];
+                    try {
+                        layoutManager.alert(title);
+                    } catch (WDDManException ex) {
+                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                else if (message.type.equals(TALK)){
+                    System.out.println("Received new message " + message);
+                    String title = (String) message.content[0];
+                    try {
+                        layoutManager.talk(title);
+                    } catch (WDDManException ex) {
+                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        };
+        
+        core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);     
+   
     }
 
     /**
