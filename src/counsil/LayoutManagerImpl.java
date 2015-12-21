@@ -325,28 +325,63 @@ public class LayoutManagerImpl implements LayoutManager {
                         @Override
                         public void muteActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {
-                                listener.muteActionPerformed();
+                                try {
+                                    listener.muteActionPerformed(getWindowTitleByRole(input.getJSONObject("menu").get("role").toString()));
+                                } catch (JSONException ex) {
+                                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                             });
                         }
 
                         @Override
                         public void unmuteActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {
-                                listener.unmuteActionPerformed();
+                                try {
+                                    listener.unmuteActionPerformed(getWindowTitleByRole(input.getJSONObject("menu").get("role").toString()));
+                                } catch (JSONException ex) {
+                                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                             }); 
                         }
 
                         @Override
                         public void increaseActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {
-                                listener.volumeIncreasedActionPerformed();
-                            });                         }
+                                try {
+                                    listener.volumeIncreasedActionPerformed(getWindowTitleByRole(input.getJSONObject("menu").get("role").toString()));
+                                } catch (JSONException ex) {
+                                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            });                         
+                        }
 
                         @Override
                         public void decreaseActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {
-                                listener.volumeDecreasedActionPerformed();
+                                try {
+                                    listener.volumeDecreasedActionPerformed(getWindowTitleByRole(input.getJSONObject("menu").get("role").toString()));
+                                } catch (JSONException ex) {
+                                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                             });}
+
+                        private String getWindowTitleByRole(String title) {
+                            if (title.equals("teacher")){
+                                for (DisplayableWindow win : windows){
+                                    if (win.getRole().equals("interpreter")){
+                                        return win.getTitle();
+                                    }
+                                }
+                            }
+                            else if (title.equals("interpreter")){
+                                 for (DisplayableWindow win : windows){
+                                    if (win.getRole().equals("teacher")){
+                                        return win.getTitle();
+                                    }
+                                }
+                            }                                                
+                            return null;
+                        }
                     });
                 } catch (JSONException ex) {
                     Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);

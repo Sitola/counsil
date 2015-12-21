@@ -17,6 +17,7 @@ import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.LayoutStyle;
 
@@ -72,19 +73,18 @@ public class InteractionMenu extends JFrame {
         
         super("CoUnSil");         
         setLayout(new GridBagLayout());
-        setUndecorated(true);
-        getRootPane().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.BLACK));        
-        setBackground(new Color(0, 0, 0, (float) 1)); 
+        setUndecorated(true);         
+        getRootPane().setBorder(BorderFactory.createTitledBorder(role));
         setAlwaysOnTop(true);
         setResizable(false);
-        setSize(150, 200);
+        setSize(150, 500);
         setLocationRelativeTo(null);
         setLocation(position.x, position.y);
-        setVisible(true);
-        
+                
         buttons = new ArrayList<>();
         raisedHand = false;
         muted = false;
+        
         initComponents(getButtonsByRole(role));   
       
         buttons.stream().forEach((button) -> {
@@ -92,7 +92,7 @@ public class InteractionMenu extends JFrame {
         });
      
         JFrame.setDefaultLookAndFeelDecorated(true);
-        
+        setVisible(true);
     }
     
    /**

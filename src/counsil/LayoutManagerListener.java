@@ -18,29 +18,29 @@ public interface LayoutManagerListener {
     
     /**
      *  what to do when window is chosen
-     * @param title of window
+     * @param windowName of window
      */
     
-    void windowChosenActionPerformed(String title);
+    void windowChosenActionPerformed(String windowName);
 
     /**
      * what to do when volume is muted
      */
-    void muteActionPerformed();
+    void muteActionPerformed(String windowName);
     
     /**
      * what to do when volume is increased
      */
-    void volumeIncreasedActionPerformed();
+    void volumeIncreasedActionPerformed(String windowName);
    
     /**
      * what to do when volume is decreased
      */
-    void volumeDecreasedActionPerformed();
+    void volumeDecreasedActionPerformed(String windowName);
     
     /**
      * what to do when volume is unmuted
      */
-    void unmuteActionPerformed();
+    void unmuteActionPerformed(String windowName);
 
 }
