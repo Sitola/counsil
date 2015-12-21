@@ -11,17 +11,27 @@ import couniverse.core.NetworkNode;
 import couniverse.core.NodePropertyParser;
 import couniverse.core.mediaApplications.MediaApplication;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import couniverse.core.controllers.ControllerHandle;
+import couniverse.core.p2p.CoUniverseMessage;
+import couniverse.core.p2p.ConnectorID;
+import couniverse.core.p2p.GroupConnectorID;
+import couniverse.core.p2p.MessageListener;
+import couniverse.core.p2p.MessageType;
 import couniverse.monitoring.NodePresenceListener;
 import couniverse.monitoring.TopologyAggregator;
 import couniverse.monitoring.TopologyUpdate;
 import couniverse.ultragrid.UltraGridConsumerApplication;
+import couniverse.ultragrid.UltraGridControllerHandle;
 import couniverse.ultragrid.UltraGridProducerApplication;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import wddman.WDDManException;
 
 /**
  *
@@ -43,6 +53,7 @@ public class SessionManagerImpl implements SessionManager {
      *
      */
     Map<UltraGridConsumerApplication, String> consumer2name = new HashMap<>();
+    
 
     /**
      * Stored instance of node representing current computer
@@ -63,7 +74,24 @@ public class SessionManagerImpl implements SessionManager {
      */
     LayoutManager layoutManager;
     TopologyAggregator topologyAggregator;
-
+    
+    /**
+     * Listens alert and permission to talk messages
+     */
+    
+    MessageListener counsilListener;
+    
+    /**
+     * Alert message is used for alerting other nodes
+     */
+    public static MessageType ALERT = MessageType.createCustomMessageType("AlertMessage");
+    
+    /**
+     * Alert message is used for alerting other nodes
+     */
+    public static MessageType TALK = MessageType.createCustomMessageType("TalkPermissionMessage");
+    
+    
     /**
      * Constructor to initialize LayoutManager
      *
@@ -75,22 +103,54 @@ public class SessionManagerImpl implements SessionManager {
          throw new IllegalArgumentException("layoutManager is null");
          }*/
         this.layoutManager = layoutManager;
-        //this.layoutManager.addLayoutManagerListener(new LayoutManagerListener() {
-        //  @Override
-        // public void alertActionPerformed() {
-        //   throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        //}
+        this.layoutManager.addLayoutManagerListener(new LayoutManagerListener() {
 
-            //@Override
-        //public void windowChosenActionPerformed(String title) {
-        //  throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        //}
-            //@Override
-        //public void muteActionPerformed() {
-        //  throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        //}
-        //});
+            @Override
+            public void alertActionPerformed() {       
+                //! sem potrebujem pridat meno aktualneho uzlu, je to dobre?
+                CoUniverseMessage alert = CoUniverseMessage.newInstance(ALERT, core.getLocalNode().uuid); 
+                System.out.println("Sending alert...");
+                core.getConnector().sendMessageToGroup(alert, GroupConnectorID.ALL_NODES);                
+            }
+
+            @Override
+            public void windowChosenActionPerformed(String windowName) {
+                //! sem potrebujem pridat meno aktualneho uzlu, je to dobre?
+                CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, windowName); 
+                System.out.println("Sending talk permission...");
+                core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);           
+            }
+
+            @Override
+            public void muteActionPerformed(String windowName) {
+                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
+                UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
+                handle.mute();}
+
+            @Override
+            public void volumeIncreasedActionPerformed(String windowName) {
+                UltraGridConsumerApplication app = getKeyByValue(consumer2name,windowName);
+                UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
+                handle.increaseVolume();
+            }
+
+            @Override
+            public void volumeDecreasedActionPerformed(String windowName) {
+                UltraGridConsumerApplication app = getKeyByValue(consumer2name,windowName);
+                UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
+                handle.decreaseVolume();
+            }
+
+            @Override
+            public void unmuteActionPerformed(String windowName) {
+                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
+                UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
+                handle.unmute();
+            }
+        });
+        
     }
+                
 
     /**
      *
@@ -147,6 +207,34 @@ public class SessionManagerImpl implements SessionManager {
                 }
             });
         }
+        
+        counsilListener = new MessageListener() {
+
+            @Override
+            public void onMessageArrived(CoUniverseMessage message) {                
+                if (message.type.equals(ALERT)){
+                    System.out.println("Received new message " + message);
+                    String title = (String) message.content[0];
+                    try {
+                        layoutManager.alert(title);
+                    } catch (WDDManException ex) {
+                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                else if (message.type.equals(TALK)){
+                    System.out.println("Received new message " + message);
+                    String title = (String) message.content[0];
+                    try {
+                        layoutManager.talk(title);
+                    } catch (WDDManException ex) {
+                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        };
+        
+        core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);     
+   
     }
 
     /**
@@ -258,4 +346,13 @@ public class SessionManagerImpl implements SessionManager {
             System.out.println("Future holds why your insane mind want to do this");
         }
     }
+    
+    public static UltraGridConsumerApplication getKeyByValue(Map<UltraGridConsumerApplication, String> map, String value) {
+    for (Entry<UltraGridConsumerApplication, String> entry : map.entrySet()) {
+        if (Objects.equals(value, entry.getValue())) {
+            return entry.getKey();
+        }
+    }
+    return null;
+}
 }

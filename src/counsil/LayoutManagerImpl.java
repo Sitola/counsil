@@ -421,7 +421,15 @@ public class LayoutManagerImpl implements LayoutManager {
             }
         });     
       
+<<<<<<< HEAD
 
+=======
+        try {
+            wd = new WDDMan();            
+        } catch (UnsupportedOperatingSystemException ex) {
+            Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }  
+>>>>>>> c03428c059c1e9c44415fc9942027f06fcb55295
         
         recalculate();
         applyChanges();

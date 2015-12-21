@@ -77,7 +77,11 @@ public class InteractionMenu extends JFrame {
         getRootPane().setBorder(BorderFactory.createTitledBorder(role));
         setAlwaysOnTop(true);
         setResizable(false);
+<<<<<<< HEAD
         setSize(150, 500);  //when changed, have to change in getMenuPostion() in LayoutManagerImpl.java
+=======
+        setSize(150, 500);
+>>>>>>> c03428c059c1e9c44415fc9942027f06fcb55295
         setLocationRelativeTo(null);
         setLocation(position.x, position.y);
                 
