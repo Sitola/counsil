@@ -51,7 +51,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * List of layout manager listeners
      */
     
-    private List<LayoutManagerListener> layoutManagerListeners;
+    private List<LayoutManagerListener> layoutManagerListeners = new ArrayList<>();
     
     /**
      * JSON configure file object
@@ -99,6 +99,7 @@ public class LayoutManagerImpl implements LayoutManager {
             double relativeFieldHeight = 1.0;
             double relativeFieldX = 0.0;
             double relativeFieldY = 0.0;
+            boolean menuOnLeft = false;
             int borderR = 0;
             int borderL = 0;
             int borderU = 0; 
@@ -112,6 +113,9 @@ public class LayoutManagerImpl implements LayoutManager {
                 field = fields.getJSONObject(i);
                 relativeFieldWidth = field.getDouble("width");
                 relativeFieldHeight = field.getDouble("height");
+                if(field.getString("menuSide").compareTo("left") == 0){
+                    menuOnLeft = true;
+                }
                 borderR = field.getInt("borderR");
                 borderL = field.getInt("borderL");
                 borderU = field.getInt("borderU");
@@ -131,6 +135,28 @@ public class LayoutManagerImpl implements LayoutManager {
             } catch (WDDManException ex) {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
+            //check if menu is not in field, if is make field smaller
+            if(menu != null){
+                if(menuOnLeft){
+                    if(fieldX < menu.getX() + menu.getWidth()){
+                        //check if menu and field are on same height
+                        if((fieldY < menu.getY() + menu.getHeight()) && (fieldY > menu.getY()) || ((menu.getY() < fieldY + fieldHeight) && (menu.getY() > fieldY))){
+                            System.out.println("nuf1");
+                            fieldWidth -= menu.getX() + menu.getWidth() - fieldX; 
+                            fieldX = menu.getX() + menu.getWidth();
+                        }
+                    }
+                }else{
+                    if(fieldX + fieldWidth > menu.getX()){
+                        //check if menu and field are on same height
+                        if((fieldY < menu.getY() + menu.getHeight()) && (fieldY > menu.getY()) || ((menu.getY() < fieldY + fieldHeight) && (menu.getY() > fieldY))){
+                            System.out.println("nuf2");
+                            fieldWidth -= fieldX + fieldWidth - menu.getX();
+                        }
+                    }
+                }
+            }
+            
             //move and shrink actual field depending on boarders size
             //could have add more checks, but for now is not necessary 
             fieldHeight = fieldHeight - borderU - borderD;
@@ -303,30 +329,90 @@ public class LayoutManagerImpl implements LayoutManager {
      * @throws java.io.FileNotFoundException
      */
     public LayoutManagerImpl() throws JSONException, FileNotFoundException, IOException{
-        this.layoutManagerListeners = new ArrayList<>();
+       
         
         windows = new ArrayList<>(); 
+
+        try {
+            wd = new WDDMan();            
+        } catch (UnsupportedOperatingSystemException ex) {
+            Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }  
         
         String entireFileText = new Scanner(new File("layoutConfig.json")).useDelimiter("\\A").next();
         input = new JSONObject(entireFileText);       
-          EventQueue.invokeLater(new Runnable() {
+        EventQueue.invokeLater(new Runnable() {
             public void run() {
-                try {  
+                try {                      
                     menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());
                     menu.addInteractionMenuListener(new InteractionMenuListener() {
-
+                           
                         @Override
-                        public void raiseHandActionPerformed() {                             
-                            layoutManagerListeners.stream().forEach((listener) -> {
-                            listener.alertActionPerformed();
+                        public void raiseHandActionPerformed() { 
+                            layoutManagerListeners.stream().forEach((listener) -> {                                   
+                                listener.alertActionPerformed();
                             });
                         }
 
                         @Override
                         public void muteActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {
-                            listener.muteActionPerformed();
+                                try {
+                                    listener.muteActionPerformed(getWindowTitleByRole(input.getJSONObject("menu").get("role").toString()));
+                                } catch (JSONException ex) {
+                                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                             });
+                        }
+
+                        @Override
+                        public void unmuteActionPerformed() {
+                            layoutManagerListeners.stream().forEach((listener) -> {
+                                try {
+                                    listener.unmuteActionPerformed(getWindowTitleByRole(input.getJSONObject("menu").get("role").toString()));
+                                } catch (JSONException ex) {
+                                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }); 
+                        }
+
+                        @Override
+                        public void increaseActionPerformed() {
+                            layoutManagerListeners.stream().forEach((listener) -> {
+                                try {
+                                    listener.volumeIncreasedActionPerformed(getWindowTitleByRole(input.getJSONObject("menu").get("role").toString()));
+                                } catch (JSONException ex) {
+                                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            });                         
+                        }
+
+                        @Override
+                        public void decreaseActionPerformed() {
+                            layoutManagerListeners.stream().forEach((listener) -> {
+                                try {
+                                    listener.volumeDecreasedActionPerformed(getWindowTitleByRole(input.getJSONObject("menu").get("role").toString()));
+                                } catch (JSONException ex) {
+                                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            });}
+
+                        private String getWindowTitleByRole(String title) {
+                            if (title.equals("teacher")){
+                                for (DisplayableWindow win : windows){
+                                    if (win.getRole().equals("interpreter")){
+                                        return win.getTitle();
+                                    }
+                                }
+                            }
+                            else if (title.equals("interpreter")){
+                                 for (DisplayableWindow win : windows){
+                                    if (win.getRole().equals("teacher")){
+                                        return win.getTitle();
+                                    }
+                                }
+                            }                                                
+                            return null;
                         }
                     });
                 } catch (JSONException ex) {
@@ -334,12 +420,8 @@ public class LayoutManagerImpl implements LayoutManager {
                 }
             }
         });     
-        
-        try {
-            wd = new WDDMan();            
-        } catch (UnsupportedOperatingSystemException ex) {
-            Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }  
+      
+
         
         recalculate();
         applyChanges();
@@ -389,8 +471,24 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     private Position getMenuPostion() throws JSONException {
         Position position = new Position();
-        position.x = (int) input.getJSONObject("menu").get("x");
-        position.y = (int) input.getJSONObject("menu").get("y");
+        if(wd == null){
+            position.x = 0;
+            position.y = 0;
+        }else{
+            try {
+                position.x = (int) (input.getJSONObject("menu").getDouble("x") * wd.getScreenWidth());
+                position.y = (int) (input.getJSONObject("menu").getDouble("y") * wd.getScreenHeight());
+                if(position.x + 150 > wd.getScreenWidth() ){  //150 is set by menu creating in InteractionMenu.java if change have to update here also
+                    position.x = wd.getScreenWidth() - 150;
+                }
+                if(position.y + 500 > wd.getScreenHeight()){  //500 is set by menu creating in InteractionMenu.java if change have to update here also
+                    position.y = wd.getScreenHeight()- 500;
+                }
+            } catch (WDDManException ex) {
+                Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
         return position;
     }
     

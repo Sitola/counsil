@@ -1,12 +1,12 @@
 {
     "fields": [
-        {"x": "0.0", "y": "0.0", "height": "0.5", "width": "0.47","borderL":"1" ,"borderR":"1" ,"borderU":"1" ,"borderD":"1" , "role": "teacher", "windowRatio": 1.33333333},
-        {"x": "0.47", "y": "0.0", "height": "0.5", "width": "0.53","borderL":"1" ,"borderR":"200" ,"borderU":"1" ,"borderD":"1" , "role": "interpreter", "windowRatio": 1.33333333},
-        {"x": "0.0", "y": "0.5", "height": "0.5", "width": "1.0","borderL":"1" ,"borderR":"1" ,"borderU":"1" ,"borderD":"1" , "role": "student", "windowRatio": 1.33333333}
+        {"x": "0.0", "y": "0.0", "height": "0.5", "width": "0.47", "borderL":"1", "borderR":"1", "borderU":"1", "borderD":"1", "menuSide": "right", "role": "teacher", "windowRatio": 1.33333333},
+        {"x": "0.47", "y": "0.0", "height": "0.5", "width": "0.53", "borderL":"1","borderR":"1", "borderU":"1", "borderD":"1", "menuSide": "right", "role": "interpreter", "windowRatio": 1.33333333},
+        {"x": "0.0", "y": "0.5", "height": "0.5", "width": "1.0", "borderL":"1", "borderR":"1", "borderU":"1", "borderD":"1", "menuSide": "right", "role": "student", "windowRatio": 1.33333333}
     ],
     "menu" : {
         "role" : "student",
-        "x" : 1800,
-        "y" : 200
+        "x" : "1",
+        "y" : "0.8"
     }
 }
