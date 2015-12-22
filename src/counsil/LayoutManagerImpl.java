@@ -5,7 +5,12 @@
  */
 package counsil;
 
+import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,6 +23,7 @@ import java.util.Scanner;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JWindow;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -57,6 +63,12 @@ public class LayoutManagerImpl implements LayoutManager {
      * JSON configure file object
      */
     private JSONObject input;
+    
+    /**
+     * Invisible overlay window
+     */
+    
+    private JWindow transparentWindow;
 
     
     /*
@@ -328,11 +340,9 @@ public class LayoutManagerImpl implements LayoutManager {
      * @throws org.json.JSONException
      * @throws java.io.FileNotFoundException
      */
-    public LayoutManagerImpl() throws JSONException, FileNotFoundException, IOException{
-       
+    public LayoutManagerImpl() throws JSONException, FileNotFoundException, IOException, WDDManException{
         
         windows = new ArrayList<>(); 
-
         try {
             wd = new WDDMan();            
         } catch (UnsupportedOperatingSystemException ex) {
@@ -420,17 +430,62 @@ public class LayoutManagerImpl implements LayoutManager {
                 }
             }
         });     
-      
-<<<<<<< HEAD
-
-=======
-        try {
-            wd = new WDDMan();            
-        } catch (UnsupportedOperatingSystemException ex) {
-            Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }  
->>>>>>> c03428c059c1e9c44415fc9942027f06fcb55295
         
+        transparentWindow = new JWindow();
+        transparentWindow.setName("CoUnSil overlay");
+        transparentWindow.setLocationRelativeTo(null);
+        transparentWindow.setSize(wd.getScreenWidth(), wd.getScreenHeight());
+        transparentWindow.setLocation(0, 0);
+        transparentWindow.setAlwaysOnTop(false);    
+        transparentWindow.setBackground(new Color(0, 0, 0, (float) 0.0025));
+        transparentWindow.setVisible(true);    
+        
+         if (getMenuUserRole().equals("teacher") || getMenuUserRole().equals("interpreter")) {
+            transparentWindow.addMouseListener(new MouseListener() {
+
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    layoutManagerListeners.stream().forEach((listener) -> {
+                        Point location = e.getLocationOnScreen();
+                        
+                        //! find window which was clicked on
+                        for (DisplayableWindow window : windows){
+                            if (window.getAlignmentX() <= location.x){
+                                if (window.getAlignmentY() <= location.y){
+                                     if (window.getAlignmentX() + window.getWidth() >= location.x){
+                                        if (window.getAlignmentY() + window.getHeight() >= location.y){
+                                                listener.windowChosenActionPerformed(window.getTitle());
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public void mousePressed(MouseEvent me) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent me) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent me) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+
+                @Override
+                public void mouseExited(MouseEvent me) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+            });
+        }
+
         recalculate();
         applyChanges();
     }  
@@ -452,7 +507,18 @@ public class LayoutManagerImpl implements LayoutManager {
     @Override
     public void alert(String node) throws WDDManException{
         windows.stream().filter((w) -> (w.contains(node))).forEach((w) -> {
+            Graphics g = w.getGraphics();
+            if (!w.getAlerting()){
+                  w.paint(g);
+                g.setColor(Color.red);                  
+                g.drawRect((int) w.getAlignmentX(), (int) w.getAlignmentY(), w.getWidth(),w.getHeight());               
+            }
+            else {
+                w.paint(g);  
+                g.clearRect((int) w.getAlignmentX(), (int) w.getAlignmentY(), w.getWidth(),w.getHeight());                
+            }
             w.alert();
+            
         });
     }
     
@@ -463,15 +529,22 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     @Override
     public void talk(String node)throws WDDManException{
-        windows.stream().filter((w) -> (w.contains(node))).forEach((w) -> {
-            w.talk(); 
+        windows.stream().filter((w) -> (w.contains(node))).forEach((w) -> {          
+            Graphics g = w.getGraphics();
+            if (!w.getTalking()){
+                w.paint(g);  
+                g.setColor(Color.blue);   
+                g.drawRect((int) w.getAlignmentX(), (int) w.getAlignmentY(), w.getWidth(),w.getHeight());                               
+            }
+            else {
+                w.paint(g);
+                g.clearRect((int) w.getAlignmentX(), (int) w.getAlignmentY(), w.getWidth(),w.getHeight()); 
+            }
+            w.talk();
+            
         });
     }
     
-    
-    
-    
-       
     /**
      * Gets menu position from configure file
      * @return menu position
@@ -506,7 +579,22 @@ public class LayoutManagerImpl implements LayoutManager {
     private void applyChanges(){
         windows.stream().forEach((window) -> {
             try {
-                window.adjustWindow(wd); 
+                if (window.getTalking()){
+                    talk(window.title);
+                    window.adjustWindow(wd); 
+                    talk(window.title);
+                }
+                else {
+                    if (window.getAlerting()){
+                        alert(window.title);
+                        window.adjustWindow(wd); 
+                        alert(window.title);
+                    }
+                    else {
+                        window.adjustWindow(wd);
+                    }
+                }                 
+               
             } catch (WDDManException ex) {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -521,25 +609,13 @@ public class LayoutManagerImpl implements LayoutManager {
     @Override
     public void addNode(String title, String role){
         try {
-            DisplayableWindow newWin = new DisplayableWindow(wd, title, role);    
-            newWin.addWindowClickEventListener(new WindowClickEventListener() {
-               
-                @Override
-                public void windowClickActionPerformed() {
-                   layoutManagerListeners.stream().forEach((listener) -> {
-                    listener.windowChosenActionPerformed(newWin.getTitle());
-                   });
-                }
-
-                               
-            });
+            DisplayableWindow newWin = new DisplayableWindow(wd, title, role);                
             windows.add(newWin);
         } catch (WDDManException | UnsupportedOperatingSystemException ex) {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
         recalculate(); 
-        applyChanges();
-        applyChanges();
+        applyChanges();       
 
     }
     
@@ -565,8 +641,7 @@ public class LayoutManagerImpl implements LayoutManager {
                 iter.remove();
                 break;             
             }
-        }
-        
+        }        
           recalculate(); 
           applyChanges();
     }

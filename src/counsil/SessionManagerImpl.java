@@ -84,12 +84,12 @@ public class SessionManagerImpl implements SessionManager {
     /**
      * Alert message is used for alerting other nodes
      */
-    public static MessageType ALERT = MessageType.createCustomMessageType("AlertMessage");
+    public static MessageType ALERT = MessageType.createCustomMessageType("AlertMessage", "Title");
     
     /**
      * Alert message is used for alerting other nodes
      */
-    public static MessageType TALK = MessageType.createCustomMessageType("TalkPermissionMessage");
+    public static MessageType TALK = MessageType.createCustomMessageType("TalkPermissionMessage", "Title");
     
     
     /**

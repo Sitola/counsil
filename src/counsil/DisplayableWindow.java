@@ -5,15 +5,11 @@
  */
 package counsil;
 
-import java.awt.Color;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JWindow;
 import wddman.UnsupportedOperatingSystemException;
@@ -64,19 +60,9 @@ class DisplayableWindow extends JFrame {
     wddman.Window content;
 
     /**
-     * Top transparent window
-     */
-    JWindow transparent;
-
-    /**
      * Window title
      */
     String title;
-
-    /**
-     * list of window on click listeners
-     */
-    private List<WindowClickEventListener> windowListeners;
 
     /**
      * Initializes arguments, creates transparent window to non-transparent
@@ -88,10 +74,8 @@ class DisplayableWindow extends JFrame {
      * @throws UnsupportedOperatingSystemException
      */
     DisplayableWindow(WDDMan wd, String title, String role) throws WDDManException, UnsupportedOperatingSystemException {
-        this.windowListeners = new ArrayList<>();
-
-        while ((content = wd.getWindowByTitle(title)) == null) {
-            System.err.println("My name should be" + title);
+     
+        while ((content = wd.getWindowByTitle(title)) == null) {          
             try {
                 TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException ex) {
@@ -107,52 +91,6 @@ class DisplayableWindow extends JFrame {
         talking = false;
         alerting = false;
 
-        /*transparent = new JWindow();
-        transparent.setName(title + "TW");
-        transparent.setLocationRelativeTo(null);
-        transparent.setSize(width, height);
-        transparent.setLocation(position.x, position.y);
-        transparent.setAlwaysOnTop(true);
-        transparent.setBackground(new Color(0, 0, 0, (float) 0.0025));
-        transparent.setVisible(true);
-
-        if (role.equals("teacher")) {
-            transparent.addMouseListener(new MouseListener() {
-
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    windowListeners.stream().forEach((listener) -> {
-                        listener.windowClickActionPerformed();
-                    });
-                }
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                }
-
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                }
-            });
-        }*/
-
-    }
-
-    /**
-     * adds listener of onclick window event
-     *
-     * @param listener
-     */
-    public void addWindowClickEventListener(WindowClickEventListener listener) {
-        windowListeners.add(listener);
     }
 
     /**
@@ -165,39 +103,21 @@ class DisplayableWindow extends JFrame {
 
         System.out.print("W: " + width + " H: " + height + " X: " + position.x + " Y: " + position.y + " R: " + title + "\n");
 
-        content.move(position.x, position.y);
         content.resize(position.x, position.y, width, height);
-
-        /*transparent.setSize(width, height);
-        transparent.setLocation(position.x, position.y);
-        transparent.setBackground(new Color(0, 0, 0, (float) 0.0025));*/
     }
 
     /**
      * Un/shows blue frame if was user chosen to speak
      */
-    public void talk() {
-        /*if (talking) {
-            transparent.getRootPane().setBorder(BorderFactory.createEmptyBorder());
-        } else {
-            alerting = false;
-            transparent.getRootPane().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.BLUE));
-        }
-        talking = !talking;*/
-
+    public void talk() {       
+        talking = !talking;
     }
 
     /**
      * Un/shows red frame if user wants to speak
      */
-    public void alert() {
-        /*if (alerting) {
-            transparent.getRootPane().setBorder(BorderFactory.createEmptyBorder());
-        } else {
-            transparent.getRootPane().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.RED));
-        }
-        alerting = !alerting;*/
-
+    public void alert() {      
+        alerting = !alerting;
     }
 
     /**
@@ -241,8 +161,12 @@ class DisplayableWindow extends JFrame {
         return content;
     }
 
-    public JWindow getTransparent() {
-        return transparent;
+    public Boolean getTalking(){
+        return talking;
+    }
+    
+    public Boolean getAlerting(){
+        return alerting;
     }
 
     public String getRole() {
