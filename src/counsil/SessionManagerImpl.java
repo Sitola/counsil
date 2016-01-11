@@ -84,12 +84,12 @@ public class SessionManagerImpl implements SessionManager {
     /**
      * Alert message is used for alerting other nodes
      */
-    public static MessageType ALERT = MessageType.createCustomMessageType("AlertMessage", "Title");
+    public static MessageType ALERT = MessageType.createCustomMessageType("AlertMessage", "NetworkNode");
     
     /**
      * Alert message is used for alerting other nodes
      */
-    public static MessageType TALK = MessageType.createCustomMessageType("TalkPermissionMessage", "Title");
+    public static MessageType TALK = MessageType.createCustomMessageType("TalkPermissionMessage", "NetworkNode");
     
     
     /**
@@ -108,7 +108,7 @@ public class SessionManagerImpl implements SessionManager {
             @Override
             public void alertActionPerformed() {       
                 //! sem potrebujem pridat meno aktualneho uzlu, je to dobre?
-                CoUniverseMessage alert = CoUniverseMessage.newInstance(ALERT, core.getLocalNode().uuid); 
+                CoUniverseMessage alert = CoUniverseMessage.newInstance(ALERT, core.getLocalNode()); 
                 System.out.println("Sending alert...");
                 core.getConnector().sendMessageToGroup(alert, GroupConnectorID.ALL_NODES);                
             }
@@ -116,7 +116,7 @@ public class SessionManagerImpl implements SessionManager {
             @Override
             public void windowChosenActionPerformed(String windowName) {
                 //! sem potrebujem pridat meno aktualneho uzlu, je to dobre?
-                CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, windowName); 
+                CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, core.getLocalNode()); 
                 System.out.println("Sending talk permission...");
                 core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);           
             }
@@ -168,7 +168,7 @@ public class SessionManagerImpl implements SessionManager {
         NetworkNode.addPropertyParser("windowName", NodePropertyParser.STRING_PARSER);
         core = Main.startCoUniverse();
 
-        topologyAggregator = TopologyAggregator.newInstance(core);
+        topologyAggregator = TopologyAggregator.getInstance(core);
         local = core.getLocalNode();
         // create produrer for local content
         createProducent((String) local.getProperty("role"));
@@ -214,7 +214,9 @@ public class SessionManagerImpl implements SessionManager {
             public void onMessageArrived(CoUniverseMessage message) {                
                 if (message.type.equals(ALERT)){
                     System.out.println("Received new message " + message);
-                    String title = (String) message.content[0];
+                    String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])));
+                    System.out.println(title + " is alerting!");
+                    
                     try {
                         layoutManager.alert(title);
                     } catch (WDDManException ex) {
@@ -223,7 +225,8 @@ public class SessionManagerImpl implements SessionManager {
                 }
                 else if (message.type.equals(TALK)){
                     System.out.println("Received new message " + message);
-                    String title = (String) message.content[0];
+                    String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])));
+                    System.out.println(title + " is talking!");
                     try {
                         layoutManager.talk(title);
                     } catch (WDDManException ex) {

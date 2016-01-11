@@ -23,6 +23,7 @@ import java.util.Scanner;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JPanel;
 import javax.swing.JWindow;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -69,6 +70,12 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     
     private JWindow transparentWindow;
+    
+    /**
+     * Background window
+     */
+    
+    private JWindow background;
 
     
     /*
@@ -153,7 +160,6 @@ public class LayoutManagerImpl implements LayoutManager {
                     if(fieldX < menu.getX() + menu.getWidth()){
                         //check if menu and field are on same height
                         if((fieldY < menu.getY() + menu.getHeight()) && (fieldY > menu.getY()) || ((menu.getY() < fieldY + fieldHeight) && (menu.getY() > fieldY))){
-                            System.out.println("nuf1");
                             fieldWidth -= menu.getX() + menu.getWidth() - fieldX; 
                             fieldX = menu.getX() + menu.getWidth();
                         }
@@ -162,8 +168,7 @@ public class LayoutManagerImpl implements LayoutManager {
                     if(fieldX + fieldWidth > menu.getX()){
                         //check if menu and field are on same height
                         if((fieldY < menu.getY() + menu.getHeight()) && (fieldY > menu.getY()) || ((menu.getY() < fieldY + fieldHeight) && (menu.getY() > fieldY))){
-                            System.out.println("nuf2");
-                            fieldWidth -= fieldX + fieldWidth - menu.getX();
+                           fieldWidth -= fieldX + fieldWidth - menu.getX();
                         }
                     }
                 }
@@ -431,6 +436,17 @@ public class LayoutManagerImpl implements LayoutManager {
             }
         });     
         
+       
+        background = new JWindow();
+        background.setName("CoUnSil background");
+        background.setLocationRelativeTo(null);
+        background.setSize(wd.getScreenWidth(), wd.getScreenHeight());
+        background.setLocation(0, 0);
+        background.setAlwaysOnTop(false);    
+        background.setBackground(new Color(0, 0, 0, (float) 1));
+        background.toBack();
+        background.setVisible(true); 
+        
         transparentWindow = new JWindow();
         transparentWindow.setName("CoUnSil overlay");
         transparentWindow.setLocationRelativeTo(null);
@@ -439,6 +455,7 @@ public class LayoutManagerImpl implements LayoutManager {
         transparentWindow.setAlwaysOnTop(false);    
         transparentWindow.setBackground(new Color(0, 0, 0, (float) 0.0025));
         transparentWindow.setVisible(true);    
+        
         
          if (getMenuUserRole().equals("teacher") || getMenuUserRole().equals("interpreter")) {
             transparentWindow.addMouseListener(new MouseListener() {
@@ -506,20 +523,24 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     @Override
     public void alert(String node) throws WDDManException{
-        windows.stream().filter((w) -> (w.contains(node))).forEach((w) -> {
-            Graphics g = w.getGraphics();
-            if (!w.getAlerting()){
-                  w.paint(g);
-                g.setColor(Color.red);                  
-                g.drawRect((int) w.getAlignmentX(), (int) w.getAlignmentY(), w.getWidth(),w.getHeight());               
+        for (DisplayableWindow w : windows){      
+            if (w.contains(node)){
+                if (!w.getAlerting()){
+                    Graphics g = background.getGraphics();
+                    background.paint(g);      
+                    g.setColor(Color.red);                  
+                    g.drawRect((int) w.getAlignmentX(), (int) w.getAlignmentY(), w.getWidth(),w.getHeight());
+                    g.drawRect((int) w.getAlignmentX() + 1, (int) w.getAlignmentY() + 1, w.getWidth() - 2,w.getHeight() - 2); 
+                    System.err.print(g);
+                 
+                }
+                else {                
+                    background.repaint();             
+                }
+                w.alert();
+                break;            
             }
-            else {
-                w.paint(g);  
-                g.clearRect((int) w.getAlignmentX(), (int) w.getAlignmentY(), w.getWidth(),w.getHeight());                
-            }
-            w.alert();
-            
-        });
+        }
     }
     
     /**
@@ -529,20 +550,23 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     @Override
     public void talk(String node)throws WDDManException{
-        windows.stream().filter((w) -> (w.contains(node))).forEach((w) -> {          
-            Graphics g = w.getGraphics();
-            if (!w.getTalking()){
-                w.paint(g);  
-                g.setColor(Color.blue);   
-                g.drawRect((int) w.getAlignmentX(), (int) w.getAlignmentY(), w.getWidth(),w.getHeight());                               
+        for (DisplayableWindow w : windows){      
+            if (w.contains(node)){
+                if (!w.getTalking()){
+                    Graphics g = background.getGraphics();
+                    background.paint(g);  
+                    g.setColor(Color.blue);              
+                    g.drawRect((int) w.getAlignmentX(), (int) w.getAlignmentY(), w.getWidth(),w.getHeight());  
+                    g.drawRect((int) w.getAlignmentX() + 1, (int) w.getAlignmentY() + 1, w.getWidth() - 2,w.getHeight() - 2); 
+                    System.err.print(g);
+                }
+                else {
+                    background.repaint();   
+                }
+                w.talk(); 
+                break;            
             }
-            else {
-                w.paint(g);
-                g.clearRect((int) w.getAlignmentX(), (int) w.getAlignmentY(), w.getWidth(),w.getHeight()); 
-            }
-            w.talk();
-            
-        });
+        }
     }
     
     /**
@@ -577,6 +601,7 @@ public class LayoutManagerImpl implements LayoutManager {
     * Applies calculated layout 
     */
     private void applyChanges(){
+        background.toBack();
         windows.stream().forEach((window) -> {
             try {
                 if (window.getTalking()){
@@ -638,6 +663,18 @@ public class LayoutManagerImpl implements LayoutManager {
         for (Iterator<DisplayableWindow> iter = windows.iterator(); iter.hasNext();){
             DisplayableWindow window = iter.next();
             if (window.contains(title)) {
+                try {
+                    if (window.getTalking()){                    
+                        talk(title);                   
+                    }
+                else if (window.getAlerting()){
+                    alert(title);
+                    }
+                }
+                catch (WDDManException ex) {
+                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
                 iter.remove();
                 break;             
             }
