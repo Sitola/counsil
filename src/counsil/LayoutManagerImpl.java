@@ -71,13 +71,7 @@ public class LayoutManagerImpl implements LayoutManager {
     
     private JWindow transparentWindow;
     
-    /**
-     * Background window
-     */
-    
-    private JWindow background;
 
-    
     /*
     * recalculate new layout from JSON layout file and array of nodes or something with specify role 
     * return layout with position nad id|name 
@@ -436,17 +430,6 @@ public class LayoutManagerImpl implements LayoutManager {
             }
         });     
         
-       
-        background = new JWindow();
-        background.setName("CoUnSil background");
-        background.setLocationRelativeTo(null);
-        background.setSize(wd.getScreenWidth(), wd.getScreenHeight());
-        background.setLocation(0, 0);
-        background.setAlwaysOnTop(false);    
-        background.setBackground(new Color(0, 0, 0, (float) 1));
-        background.toBack();
-        background.setVisible(true); 
-        
         transparentWindow = new JWindow();
         transparentWindow.setName("CoUnSil overlay");
         transparentWindow.setLocationRelativeTo(null);
@@ -523,7 +506,7 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     @Override
     public void alert(String node) throws WDDManException{
-        for (DisplayableWindow w : windows){      
+       /* for (DisplayableWindow w : windows){      
             if (w.contains(node)){
                 if (!w.getAlerting()){
                     Graphics g = background.getGraphics();
@@ -540,7 +523,9 @@ public class LayoutManagerImpl implements LayoutManager {
                 w.alert();
                 break;            
             }
-        }
+        }*/
+       
+       throw new UnsupportedOperationException("Alerting not yet supported");
     }
     
     /**
@@ -550,7 +535,7 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     @Override
     public void talk(String node)throws WDDManException{
-        for (DisplayableWindow w : windows){      
+        /*for (DisplayableWindow w : windows){      
             if (w.contains(node)){
                 if (!w.getTalking()){
                     Graphics g = background.getGraphics();
@@ -566,7 +551,9 @@ public class LayoutManagerImpl implements LayoutManager {
                 w.talk(); 
                 break;            
             }
-        }
+        }*/
+        
+        throw new UnsupportedOperationException("Talking not yet supported");
     }
     
     /**
@@ -601,7 +588,7 @@ public class LayoutManagerImpl implements LayoutManager {
     * Applies calculated layout 
     */
     private void applyChanges(){
-        background.toBack();
+      
         windows.stream().forEach((window) -> {
             try {
                 if (window.getTalking()){
@@ -624,6 +611,9 @@ public class LayoutManagerImpl implements LayoutManager {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
+        
+        transparentWindow.setAlwaysOnTop(true);
+        transparentWindow.setAlwaysOnTop(false);
     }
     
      /**
