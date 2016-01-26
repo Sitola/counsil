@@ -188,11 +188,14 @@ public class LayoutManagerImpl implements LayoutManager {
             if(winList.size() == 0){
                 
             }else if(winList.size() == 1){        //# windows = 1
-                //centralize / fill field with window
-                DisplayableWindow win = winList.get(0);
+                //probably in future put option to layout config to witch mode is prefered
+                //fill field with window
+                /*DisplayableWindow win = winList.get(0);
                 win.setPosition(new Position(fieldX, fieldY));
                 win.setWidth(fieldWidth);
-                win.setHeight(fieldHeight);
+                win.setHeight(fieldHeight);*/
+                //centralize window in field
+                distributeWindowsInRow(new Position(fieldX, fieldY), fieldHeight, fieldWidth, winList, fieldRatio, windowRatio);
             }else{  //# windows > 1
                 int rowsLim;        //number of rows that may be used
                // if(fieldRatio/windowRatio >= 1){    // field is better filled with windows horizontly 
