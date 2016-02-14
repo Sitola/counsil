@@ -217,21 +217,13 @@ public class SessionManagerImpl implements SessionManager {
                     String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])));
                     System.out.println(title + " is alerting!");
                     
-                    try {
-                        layoutManager.alert(title);
-                    } catch (WDDManException ex) {
-                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                   
                 }
                 else if (message.type.equals(TALK)){
                     System.out.println("Received new message " + message);
                     String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])));
                     System.out.println(title + " is talking!");
-                    try {
-                        layoutManager.talk(title);
-                    } catch (WDDManException ex) {
-                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                  
                 }
             }
         };
