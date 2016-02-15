@@ -7,3 +7,5 @@ nbactions.xml
 nb-configuration.xml
 .nb-gradle/
 nodeConfig.json
+nbproject/private/private.properties
+nbproject/project.properties
