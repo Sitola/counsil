@@ -7,7 +7,6 @@ package counsil;
 
 import java.awt.Color;
 import java.awt.EventQueue;
-import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -23,7 +22,6 @@ import java.util.Scanner;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JPanel;
 import javax.swing.JWindow;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -69,7 +67,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * Invisible overlay window
      */
     
-    private JWindow transparentWindow;
+    private final JWindow transparentWindow;
     
 
     /*
@@ -593,5 +591,9 @@ public class LayoutManagerImpl implements LayoutManager {
           applyChanges();
     }
  
-   
+    @Override
+    public void refresh(){
+        applyChanges();
+    }
+    
 }

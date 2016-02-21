@@ -8,8 +8,6 @@ package counsil;
 import java.awt.EventQueue;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -217,8 +215,8 @@ public class InteractionMenu extends JFrame {
     * Starts exiting program when "Exit" button is clicked
     */
     private void exitButtonActionPerformed() {                                                 
-        String message = "Do you really want to quit CoUnSil?";
-        String title = "Quit CoUnSil?";
+        String message = "Do you really want to quit CoUnSiL?";
+        String title = "Quit CoUnSiL?";
         int reply = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
         if (reply == JOptionPane.YES_OPTION) {                        
             try {

@@ -55,11 +55,6 @@ class DisplayableWindow extends JFrame {
     private boolean alerting;
 
     /**
-     * Content window
-     */
-    wddman.Window content;
-
-    /**
      * Window title
      */
     String title;
@@ -74,7 +69,8 @@ class DisplayableWindow extends JFrame {
      * @throws UnsupportedOperatingSystemException
      */
     DisplayableWindow(WDDMan wd, String title, String role) throws WDDManException, UnsupportedOperatingSystemException {
-     
+        
+        wddman.Window content;        
         while ((content = wd.getWindowByTitle(title)) == null) {          
             try {
                 TimeUnit.SECONDS.sleep(1);
@@ -99,11 +95,10 @@ class DisplayableWindow extends JFrame {
      * @param wd wddman instance
      * @throws WDDManException
      */
-    public void adjustWindow(WDDMan wd) throws WDDManException {
+    public void adjustWindow (WDDMan wd) throws WDDManException {
 
-        System.out.print("W: " + width + " H: " + height + " X: " + position.x + " Y: " + position.y + " R: " + title + "\n");
-
-        content.resize(position.x, position.y, width, height);
+        System.out.print("[Window information]: " + title + " " + width + "x" + height + " [" + position.x + "," + position.y + "]\n");
+        wd.getWindowByTitle(title).resize(position.x, position.y, width, height);
     }
 
     /**
@@ -157,10 +152,6 @@ class DisplayableWindow extends JFrame {
         this.width = width;
     }
 
-    public wddman.Window getContent() {
-        return content;
-    }
-
     public Boolean getTalking(){
         return talking;
     }
@@ -172,5 +163,4 @@ class DisplayableWindow extends JFrame {
     public String getRole() {
         return role;
     }
-
 }

@@ -31,5 +31,10 @@ public interface LayoutManager {
      * @param listener
      */
     public void addLayoutManagerListener(LayoutManagerListener listener);
+    
+    /**
+     * Refreshes layout
+     */
+    public void refresh();
 
 }
