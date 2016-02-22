@@ -39,6 +39,8 @@ import wddman.WDDManException;
  */
 public class SessionManagerImpl implements SessionManager {
 
+    // TODO 2 different consumers per one node
+    // TODO 
     /**
      * Maps consumers on producers Producers are keys
      */
@@ -53,7 +55,6 @@ public class SessionManagerImpl implements SessionManager {
      *
      */
     Map<UltraGridConsumerApplication, String> consumer2name = new HashMap<>();
-    
 
     /**
      * Stored instance of node representing current computer
@@ -74,69 +75,67 @@ public class SessionManagerImpl implements SessionManager {
      */
     LayoutManager layoutManager;
     TopologyAggregator topologyAggregator;
-    
+
     /**
      * Listens alert and permission to talk messages
      */
-    
     MessageListener counsilListener;
-    
+
     /**
      * Alert message is used for alerting other nodes
      */
     public static MessageType ALERT = MessageType.createCustomMessageType("AlertMessage", "NetworkNode");
-    
+
     /**
      * Alert message is used for alerting other nodes
      */
     public static MessageType TALK = MessageType.createCustomMessageType("TalkPermissionMessage", "NetworkNode");
-    
-    
+
     /**
      * Constructor to initialize LayoutManager
      *
      * @param layoutManager
      */
     public SessionManagerImpl(LayoutManager layoutManager) {
-        // TODO check this and finish listener
-        /*if (layoutManager == null) {
-         throw new IllegalArgumentException("layoutManager is null");
-         }*/
+        if (layoutManager == null) {
+            throw new IllegalArgumentException("layoutManager is null");
+        }
         this.layoutManager = layoutManager;
         this.layoutManager.addLayoutManagerListener(new LayoutManagerListener() {
 
             @Override
-            public void alertActionPerformed() {       
+            public void alertActionPerformed() {
                 //! sem potrebujem pridat meno aktualneho uzlu, je to dobre?
-                CoUniverseMessage alert = CoUniverseMessage.newInstance(ALERT, core.getLocalNode()); 
+                CoUniverseMessage alert = CoUniverseMessage.newInstance(ALERT, core.getLocalNode());
                 System.out.println("Sending alert...");
-                core.getConnector().sendMessageToGroup(alert, GroupConnectorID.ALL_NODES);                
+                core.getConnector().sendMessageToGroup(alert, GroupConnectorID.ALL_NODES);
             }
 
             @Override
             public void windowChosenActionPerformed(String windowName) {
                 //! sem potrebujem pridat meno aktualneho uzlu, je to dobre?
-                CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, core.getLocalNode()); 
+                CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, core.getLocalNode());
                 System.out.println("Sending talk permission...");
-                core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);           
+                core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);
             }
 
             @Override
             public void muteActionPerformed(String windowName) {
                 UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
                 UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                handle.mute();}
+                handle.mute();
+            }
 
             @Override
             public void volumeIncreasedActionPerformed(String windowName) {
-                UltraGridConsumerApplication app = getKeyByValue(consumer2name,windowName);
+                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
                 UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
                 handle.increaseVolume();
             }
 
             @Override
             public void volumeDecreasedActionPerformed(String windowName) {
-                UltraGridConsumerApplication app = getKeyByValue(consumer2name,windowName);
+                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
                 UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
                 handle.decreaseVolume();
             }
@@ -148,9 +147,8 @@ public class SessionManagerImpl implements SessionManager {
                 handle.unmute();
             }
         });
-        
+
     }
-                
 
     /**
      *
@@ -207,23 +205,22 @@ public class SessionManagerImpl implements SessionManager {
                 }
             });
         }
-        
+
         counsilListener = new MessageListener() {
 
             @Override
-            public void onMessageArrived(CoUniverseMessage message) {                
-                if (message.type.equals(ALERT)){
+            public void onMessageArrived(CoUniverseMessage message) {
+                if (message.type.equals(ALERT)) {
                     System.out.println("Received new message " + message);
                     String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])));
                     System.out.println(title + " is alerting!");
-                    
+
                     try {
                         layoutManager.alert(title);
                     } catch (WDDManException ex) {
                         Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                }
-                else if (message.type.equals(TALK)){
+                } else if (message.type.equals(TALK)) {
                     System.out.println("Received new message " + message);
                     String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])));
                     System.out.println(title + " is talking!");
@@ -235,9 +232,8 @@ public class SessionManagerImpl implements SessionManager {
                 }
             }
         };
-        
-        core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);     
-   
+
+        core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);
     }
 
     /**
@@ -287,8 +283,8 @@ public class SessionManagerImpl implements SessionManager {
         String content = app.getProvidedContentDescriptor();
         ObjectNode cons = core.newApplicationTemplate("consumer");
         // Source is content
-        String name = "\"Consumer #" + windowCounter + "\"";
-        System.out.println("I have created : " + content + "\n\n\n\n\n");
+        // Naming : "local node":"source node" 
+        String name = "\"" + local.getName() + ":" + node.getName() + "\"";
         cons.put("arguments", "--window-title " + name);
         name = name.replace("\"", "");
         cons.put("source", content);
@@ -343,19 +339,17 @@ public class SessionManagerImpl implements SessionManager {
         if (removed != null) {
             layoutManager.removeNode(removed);
             core.stopApplication(ugCon);
-        }
-        else{
-            System.out.println("You are trying to remove, what does not exist");
-            System.out.println("Future holds why your insane mind want to do this");
+        } else {
+            System.out.println("You are trying to stop non-registered application");
         }
     }
-    
+
     public static UltraGridConsumerApplication getKeyByValue(Map<UltraGridConsumerApplication, String> map, String value) {
-    for (Entry<UltraGridConsumerApplication, String> entry : map.entrySet()) {
-        if (Objects.equals(value, entry.getValue())) {
-            return entry.getKey();
+        for (Entry<UltraGridConsumerApplication, String> entry : map.entrySet()) {
+            if (Objects.equals(value, entry.getValue())) {
+                return entry.getKey();
+            }
         }
+        return null;
     }
-    return null;
-}
 }
