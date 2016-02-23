@@ -55,19 +55,18 @@ public class SessionManagerImpl implements SessionManager {
      *
      */
     Map<UltraGridConsumerApplication, String> consumer2name = new HashMap<>();
-    
+
     /**
      * Shows if current consumer is alerting
      */
-    
     Map<UltraGridConsumerApplication, Boolean> consumer2alert = new HashMap<>();
-    
+
     /**
      * Listens for ultragrid windows changes
      */
     couniverse.core.controllers.ApplicationEventListener consumerListener;
-    
-	/**
+
+    /**
      * Stored instance of node representing current computer
      */
     NetworkNode local;
@@ -176,7 +175,6 @@ public class SessionManagerImpl implements SessionManager {
         NetworkNode.addPropertyParser("role", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("windowName", NodePropertyParser.STRING_PARSER);
         core = Main.startCoUniverse();
-        
 
         topologyAggregator = TopologyAggregator.getInstance(core);
         local = core.getLocalNode();
@@ -227,29 +225,25 @@ public class SessionManagerImpl implements SessionManager {
                     UltraGridConsumerApplication consumer = producer2consumer.get(node2producer.get((NetworkNode) message.content[0]));
                     String title = consumer2name.get(consumer);
                     System.out.println(title + " is alerting!");
-
-                    try {
-                        layoutManager.alert(title);
-                    } catch (WDDManException ex) {
-                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(consumer);
+                    if (consumer2alert.get(handle)) {
+                        try {
+                            handle.sendCommand("receiver.decoder flush");
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (TimeoutException ex) {
+                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    } else {
+                        try {
+                            handle.sendCommand("receiver decoder border:width=2:color=#ff0000");
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (TimeoutException ex) {
+                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
                 } else if (message.type.equals(TALK)) {
-                    UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(consumer);
-                    try {  
-                        if (consumer2alert.get(handle)){                        
-                            handle.sendCommand("receiver.decoder flush");
-                        }
-                        else {                        
-                            handle.sendCommand("receiver decoder border:width=2:color=#ff0000");                        
-                        }
-                    } catch (InterruptedException ex) { //!TODO  toto by sa malo poriesit, neviem vsak ako zatial na tieto vynimky reagovat
-                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (TimeoutException ex) {
-                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                   
-                }
-                else if (message.type.equals(TALK)){
                     System.out.println("Received new message " + message);
                     String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])));
                     System.out.println(title + " is talking!");
@@ -258,8 +252,8 @@ public class SessionManagerImpl implements SessionManager {
             }
         };
 
-        core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);     
-   
+        core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);
+
         consumerListener = new ApplicationEventListener() {
             @Override
             public void onApplicationEvent(MediaApplication app, ApplicationEvent event) {
