@@ -351,6 +351,8 @@ public class LayoutManagerImpl implements LayoutManager {
         
         String entireFileText = new Scanner(new File("layoutConfig.json")).useDelimiter("\\A").next();
         input = new JSONObject(entireFileText);       
+        
+        // create menu
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {                      
@@ -431,6 +433,7 @@ public class LayoutManagerImpl implements LayoutManager {
             }
         });     
         
+        // setting transparent window properties
         transparentWindow = new JWindow();
         transparentWindow.setName("CoUnSil overlay");
         transparentWindow.setLocationRelativeTo(null);
@@ -440,10 +443,11 @@ public class LayoutManagerImpl implements LayoutManager {
         transparentWindow.setBackground(new Color(0, 0, 0, (float) 0.0025));
         transparentWindow.setVisible(true);    
         
-        
+        // adding listener if role is teacher or interpreter
          if (getMenuUserRole().equals("teacher") || getMenuUserRole().equals("interpreter")) {
             transparentWindow.addMouseListener(new MouseListener() {
 
+                // react to click
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     layoutManagerListeners.stream().forEach((listener) -> {
@@ -465,6 +469,8 @@ public class LayoutManagerImpl implements LayoutManager {
                     });
                 }
 
+                // DONT react to anything else
+                
                 @Override
                 public void mousePressed(MouseEvent me) {
                     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -486,7 +492,9 @@ public class LayoutManagerImpl implements LayoutManager {
                 }
             });
         }
-
+         
+         
+        // move windows
         recalculate();
         applyChanges();
     }  

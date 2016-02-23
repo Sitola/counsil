@@ -23,6 +23,7 @@ import couniverse.monitoring.TopologyUpdate;
 import couniverse.ultragrid.UltraGridConsumerApplication;
 import couniverse.ultragrid.UltraGridControllerHandle;
 import couniverse.ultragrid.UltraGridProducerApplication;
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -114,16 +115,14 @@ public class SessionManagerImpl implements SessionManager {
         this.layoutManager.addLayoutManagerListener(new LayoutManagerListener() {
 
             @Override
-            public void alertActionPerformed() {
-                //! sem potrebujem pridat meno aktualneho uzlu, je to dobre?
+            public void alertActionPerformed() {               
                 CoUniverseMessage alert = CoUniverseMessage.newInstance(ALERT, core.getLocalNode());
                 System.out.println("Sending alert...");
                 core.getConnector().sendMessageToGroup(alert, GroupConnectorID.ALL_NODES);
             }
 
             @Override
-            public void windowChosenActionPerformed(String windowName) {
-                //! sem potrebujem pridat meno aktualneho uzlu, je to dobre?
+            public void windowChosenActionPerformed(String windowName) {              
                 CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, core.getLocalNode());
                 System.out.println("Sending talk permission...");
                 core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);
@@ -218,6 +217,7 @@ public class SessionManagerImpl implements SessionManager {
 
         counsilListener = new MessageListener() {
 
+            // catching alerting messages
             @Override
             public void onMessageArrived(CoUniverseMessage message) {
                 if (message.type.equals(ALERT)) {
@@ -225,7 +225,10 @@ public class SessionManagerImpl implements SessionManager {
                     UltraGridConsumerApplication consumer = producer2consumer.get(node2producer.get((NetworkNode) message.content[0]));
                     String title = consumer2name.get(consumer);
                     System.out.println(title + " is alerting!");
+                    
+                    // get application handle and draw/remove border
                     UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(consumer);
+                   
                     if (consumer2alert.get(handle)) {
                         try {
                             handle.sendCommand("receiver.decoder flush");
@@ -247,13 +250,15 @@ public class SessionManagerImpl implements SessionManager {
                     System.out.println("Received new message " + message);
                     String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])));
                     System.out.println(title + " is talking!");
-                    //! todo
+                    //! todo not yet ready 
                 }
             }
         };
 
+        // define message types
         core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);
 
+        // refreshes layout on consumer restart
         consumerListener = new ApplicationEventListener() {
             @Override
             public void onApplicationEvent(MediaApplication app, ApplicationEvent event) {
@@ -265,6 +270,21 @@ public class SessionManagerImpl implements SessionManager {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
         };
+        
+        //! temporary block which periodicaly refreshes layout
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    while (true) {            
+                        Thread.sleep(30 * 1000);
+                        layoutManager.refresh();
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     /**
@@ -325,6 +345,20 @@ public class SessionManagerImpl implements SessionManager {
         node2producer.put(node, app);
         consumer2name.put(con, name);
         windowCounter++;
+        
+        
+        // inicialize alerting map
+        consumer2alert.put(con, false);
+        
+        // temporary just to test alerting
+        UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(con);
+        try {
+            handle.sendCommand("receiver decoder border:width=2:color=#ff0000");
+        } catch (InterruptedException ex) {
+            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (TimeoutException ex) {
+            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return name;
     }
 
@@ -365,8 +399,11 @@ public class SessionManagerImpl implements SessionManager {
         if (node == null) {
             throw new IllegalArgumentException("node is null");
         }
+        
+        consumer2alert.remove(producer2consumer.get(node2producer.get(node)));
         MediaApplication ugCon = producer2consumer.remove(node2producer.remove(node));
         String removed = consumer2name.get(ugCon);
+        
         if (removed != null) {
             layoutManager.removeNode(removed);
             core.stopApplication(ugCon);
