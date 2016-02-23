@@ -7,7 +7,6 @@ package counsil;
 
 import java.awt.Color;
 import java.awt.EventQueue;
-import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -23,7 +22,6 @@ import java.util.Scanner;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JPanel;
 import javax.swing.JWindow;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -69,7 +67,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * Invisible overlay window
      */
     
-    private JWindow transparentWindow;
+    private final JWindow transparentWindow;
     
 
     /*
@@ -501,64 +499,7 @@ public class LayoutManagerImpl implements LayoutManager {
     private String getMenuUserRole() throws JSONException{
         return input.getJSONObject("menu").get("role").toString();
     }
-    
-    /**
-     * User is alerting
-     * @param node
-     * @throws WDDManException 
-     */
-    @Override
-    public void alert(String node) throws WDDManException{
-       /* for (DisplayableWindow w : windows){      
-            if (w.contains(node)){
-                if (!w.getAlerting()){
-                    Graphics g = background.getGraphics();
-                    background.paint(g);      
-                    g.setColor(Color.red);                  
-                    g.drawRect((int) w.getAlignmentX(), (int) w.getAlignmentY(), w.getWidth(),w.getHeight());
-                    g.drawRect((int) w.getAlignmentX() + 1, (int) w.getAlignmentY() + 1, w.getWidth() - 2,w.getHeight() - 2); 
-                    System.err.print(g);
-                 
-                }
-                else {                
-                    background.repaint();             
-                }
-                w.alert();
-                break;            
-            }
-        }*/
-       
-       throw new UnsupportedOperationException("Alerting not yet supported");
-    }
-    
-    /**
-     * User is talking
-     * @param node
-     * @throws WDDManException 
-     */
-    @Override
-    public void talk(String node)throws WDDManException{
-        /*for (DisplayableWindow w : windows){      
-            if (w.contains(node)){
-                if (!w.getTalking()){
-                    Graphics g = background.getGraphics();
-                    background.paint(g);  
-                    g.setColor(Color.blue);              
-                    g.drawRect((int) w.getAlignmentX(), (int) w.getAlignmentY(), w.getWidth(),w.getHeight());  
-                    g.drawRect((int) w.getAlignmentX() + 1, (int) w.getAlignmentY() + 1, w.getWidth() - 2,w.getHeight() - 2); 
-                    System.err.print(g);
-                }
-                else {
-                    background.repaint();   
-                }
-                w.talk(); 
-                break;            
-            }
-        }*/
-        
-        throw new UnsupportedOperationException("Talking not yet supported");
-    }
-    
+
     /**
      * Gets menu position from configure file
      * @return menu position
@@ -593,26 +534,12 @@ public class LayoutManagerImpl implements LayoutManager {
     private void applyChanges(){
       
         windows.stream().forEach((window) -> {
-            try {
-                if (window.getTalking()){
-                    talk(window.title);
-                    window.adjustWindow(wd); 
-                    talk(window.title);
-                }
-                else {
-                    if (window.getAlerting()){
-                        alert(window.title);
-                        window.adjustWindow(wd); 
-                        alert(window.title);
-                    }
-                    else {
-                        window.adjustWindow(wd);
-                    }
-                }                 
-               
+                       
+            try {                    
+                window.adjustWindow(wd);
             } catch (WDDManException ex) {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            }                          
         });
         
         transparentWindow.setAlwaysOnTop(true);
@@ -655,19 +582,7 @@ public class LayoutManagerImpl implements LayoutManager {
     public void removeNode(String title){ 
         for (Iterator<DisplayableWindow> iter = windows.iterator(); iter.hasNext();){
             DisplayableWindow window = iter.next();
-            if (window.contains(title)) {
-                try {
-                    if (window.getTalking()){                    
-                        talk(title);                   
-                    }
-                else if (window.getAlerting()){
-                    alert(title);
-                    }
-                }
-                catch (WDDManException ex) {
-                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                
+            if (window.contains(title)) {                               
                 iter.remove();
                 break;             
             }
@@ -676,5 +591,9 @@ public class LayoutManagerImpl implements LayoutManager {
           applyChanges();
     }
  
-   
+    @Override
+    public void refresh(){
+        applyChanges();
+    }
+    
 }

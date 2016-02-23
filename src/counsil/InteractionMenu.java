@@ -5,7 +5,6 @@
  */
 package counsil;
 
-import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -17,7 +16,6 @@ import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.LayoutStyle;
 
@@ -31,6 +29,11 @@ public class InteractionMenu extends JFrame {
      * Represents current state of raise hand button
      */
     private boolean raisedHand;
+    
+    /**
+     * Represents current state of volume slider
+     */
+    private boolean volumeSliderShown;
     
     /**
      * Represents buttons in current menu instance
@@ -83,6 +86,7 @@ public class InteractionMenu extends JFrame {
         buttons = new ArrayList<>();
         raisedHand = false;
         muted = false;
+        volumeSliderShown = false;
         
         initComponents(getButtonsByRole(role));   
       
@@ -211,8 +215,8 @@ public class InteractionMenu extends JFrame {
     * Starts exiting program when "Exit" button is clicked
     */
     private void exitButtonActionPerformed() {                                                 
-        String message = "Do you really want to quit CoUnSil?";
-        String title = "Quit CoUnSil?";
+        String message = "Do you really want to quit CoUnSiL?";
+        String title = "Quit CoUnSiL?";
         int reply = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
         if (reply == JOptionPane.YES_OPTION) {                        
             try {
@@ -265,29 +269,32 @@ public class InteractionMenu extends JFrame {
     }
     
     private void volumeButtonActionPerformed() {        
-             
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {                
-                final VolumeSlider slider = new VolumeSlider();              
-                slider.addVolumeSliderListener(new VolumeSliderListener() {
+        if (!volumeSliderShown){
+            volumeSliderShown = true;
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {                
+                    final VolumeSlider slider = new VolumeSlider();                  
+                    slider.setLocation(getLocation().x, getLocation().y + 200);                    
+                    slider.addVolumeSliderListener(new VolumeSliderListener() {
 
-                    @Override
-                    public void increaseActionPerformed() {
-                        interactionMenuListeners.stream().forEach((listener) -> {
-                            listener.increaseActionPerformed();
-                        }); 
-                    }
+                        @Override
+                        public void increaseActionPerformed() {
+                            interactionMenuListeners.stream().forEach((listener) -> {
+                                listener.increaseActionPerformed();
+                            }); 
+                        }
 
-                    @Override
-                    public void decreaseActionPerformed() {
-                        interactionMenuListeners.stream().forEach((listener) -> {
-                            listener.decreaseActionPerformed();
-                        }); 
-                    }
-                });
-            }               
-        });     
+                        @Override
+                        public void decreaseActionPerformed() {
+                            interactionMenuListeners.stream().forEach((listener) -> {
+                                listener.decreaseActionPerformed();
+                            }); 
+                        }                        
+                    });
+                }               
+            });  
+        }
     }
     
 }

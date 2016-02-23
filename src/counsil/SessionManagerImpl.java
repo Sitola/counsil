@@ -11,9 +11,9 @@ import couniverse.core.NetworkNode;
 import couniverse.core.NodePropertyParser;
 import couniverse.core.mediaApplications.MediaApplication;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import couniverse.core.controllers.ControllerHandle;
+import couniverse.core.controllers.ApplicationEvent;
+import couniverse.core.controllers.ApplicationEventListener;
 import couniverse.core.p2p.CoUniverseMessage;
-import couniverse.core.p2p.ConnectorID;
 import couniverse.core.p2p.GroupConnectorID;
 import couniverse.core.p2p.MessageListener;
 import couniverse.core.p2p.MessageType;
@@ -29,9 +29,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import wddman.WDDManException;
 
 /**
  *
@@ -55,8 +55,19 @@ public class SessionManagerImpl implements SessionManager {
      *
      */
     Map<UltraGridConsumerApplication, String> consumer2name = new HashMap<>();
-
+    
     /**
+     * Shows if current consumer is alerting
+     */
+    
+    Map<UltraGridConsumerApplication, Boolean> consumer2alert = new HashMap<>();
+    
+    /**
+     * Listens for ultragrid windows changes
+     */
+    couniverse.core.controllers.ApplicationEventListener consumerListener;
+    
+	/**
      * Stored instance of node representing current computer
      */
     NetworkNode local;
@@ -165,6 +176,7 @@ public class SessionManagerImpl implements SessionManager {
         NetworkNode.addPropertyParser("role", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("windowName", NodePropertyParser.STRING_PARSER);
         core = Main.startCoUniverse();
+        
 
         topologyAggregator = TopologyAggregator.getInstance(core);
         local = core.getLocalNode();
@@ -212,7 +224,8 @@ public class SessionManagerImpl implements SessionManager {
             public void onMessageArrived(CoUniverseMessage message) {
                 if (message.type.equals(ALERT)) {
                     System.out.println("Received new message " + message);
-                    String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])));
+                    UltraGridConsumerApplication consumer = producer2consumer.get(node2producer.get((NetworkNode) message.content[0]));
+                    String title = consumer2name.get(consumer);
                     System.out.println(title + " is alerting!");
 
                     try {
@@ -221,19 +234,43 @@ public class SessionManagerImpl implements SessionManager {
                         Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 } else if (message.type.equals(TALK)) {
+                    UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(consumer);
+                    try {  
+                        if (consumer2alert.get(handle)){                        
+                            handle.sendCommand("receiver.decoder flush");
+                        }
+                        else {                        
+                            handle.sendCommand("receiver decoder border:width=2:color=#ff0000");                        
+                        }
+                    } catch (InterruptedException ex) { //!TODO  toto by sa malo poriesit, neviem vsak ako zatial na tieto vynimky reagovat
+                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (TimeoutException ex) {
+                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                   
+                }
+                else if (message.type.equals(TALK)){
                     System.out.println("Received new message " + message);
                     String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])));
                     System.out.println(title + " is talking!");
-                    try {
-                        layoutManager.talk(title);
-                    } catch (WDDManException ex) {
-                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                    //! todo
                 }
             }
         };
 
-        core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);
+        core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);     
+   
+        consumerListener = new ApplicationEventListener() {
+            @Override
+            public void onApplicationEvent(MediaApplication app, ApplicationEvent event) {
+                layoutManager.refresh();
+            }
+
+            @Override
+            public void onApplicationStop(MediaApplication app, String message) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        };
     }
 
     /**

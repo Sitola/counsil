@@ -25,26 +25,16 @@ public interface LayoutManager {
      * @param title window title
      */
     public void removeNode(String title);
-    
-    /**
-     * User is alerting
-     * @param node    
-     * @throws wddman.WDDManException    
-     */
-    public void alert(String node) throws WDDManException;
-    
-    /**
-     * User is talking
-     * @param node    
-     * @throws wddman.WDDManException    
-     */
-    public void talk(String node) throws WDDManException;
-    
-    
+       
     /**
      * adds listener of layout manager events
      * @param listener
      */
     public void addLayoutManagerListener(LayoutManagerListener listener);
+    
+    /**
+     * Refreshes layout
+     */
+    public void refresh();
 
 }
