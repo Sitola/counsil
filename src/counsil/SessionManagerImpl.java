@@ -223,28 +223,26 @@ public class SessionManagerImpl implements SessionManager {
                 if (message.type.equals(ALERT)) {
                     System.out.println("Received new message " + message);
                     UltraGridConsumerApplication consumer = producer2consumer.get(node2producer.get((NetworkNode) message.content[0]));
-                    String title = consumer2name.get(consumer);
-                    System.out.println(title + " is alerting!");
-                    
-                    // get application handle and draw/remove border
-                    UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(consumer);
-                   
-                    try {
-                        if (consumer2alert.get(handle)) {
-                            handle.sendCommand("postprocess flush");                
-                        } else {                      
-                            handle.sendCommand("postprocess border:width=10:color=#ff0000");
+
+                    if (consumer != null){
+                        // get application handle and draw/remove border
+                        UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
+                        try {
+                            if (consumer2alert.get(consumer)) {
+                                handle.sendCommand("postprocess flush");                
+                            } else {                      
+                                handle.sendCommand("postprocess border:width=5:color=#ff0000");
+                            }
+                        } catch (InterruptedException ex) { //! todo, take care of this! Dont know how yet, but you should
+                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (TimeoutException ex) {
+                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                    } catch (InterruptedException ex) { //! todo, take care of this! Dont know how yet, but you should
-                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (TimeoutException ex) {
-                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     
                 } else if (message.type.equals(TALK)) {
                     System.out.println("Received new message " + message);
                     String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])));
-                    System.out.println(title + " is talking!");
                     layoutManager.swapPosition(title);
                 }
             }
@@ -267,7 +265,7 @@ public class SessionManagerImpl implements SessionManager {
         };
         
         //! temporary block which periodicaly refreshes layout
-        EventQueue.invokeLater(new Runnable() {
+     /*   EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -279,7 +277,7 @@ public class SessionManagerImpl implements SessionManager {
                     e.printStackTrace();
                 }
             }
-        });
+        });*/
     }
 
     /**
@@ -336,15 +334,13 @@ public class SessionManagerImpl implements SessionManager {
         cons.put("source", content);
         cons.put("name", name);
         UltraGridConsumerApplication con = (UltraGridConsumerApplication) core.startApplication(cons, "consumer");
+     
+        consumer2alert.put(con, false);
         producer2consumer.put(app, con);
         node2producer.put(node, app);
         consumer2name.put(con, name);
         windowCounter++;        
-        
-        // inicialize alerting map
-        consumer2alert.put(con, false);
-        
-       
+
         return name;
     }
 

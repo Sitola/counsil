@@ -39,22 +39,12 @@ class DisplayableWindow extends JFrame {
     /**
      * Window role
      */
-    public String role;
-
-    /**
-     * True if window is currently talking, false otherwise
-     */
-    private boolean talking;
-
-    /**
-     * True if window wants to speak, false otherwise
-     */
-    private boolean alerting;
+    private final String role;
 
     /**
      * Window title
      */
-    String title;
+    private final String title;
 
     /**
      * Initializes arguments, creates transparent window to non-transparent
@@ -81,9 +71,6 @@ class DisplayableWindow extends JFrame {
 
         this.title = title;
         this.role = role;
-        talking = false;
-        alerting = false;
-
     }
 
     /**
@@ -96,20 +83,6 @@ class DisplayableWindow extends JFrame {
 
         System.out.print("[Window information]: " + title + " " + width + "x" + height + " [" + position.x + "," + position.y + "]\n");
         wd.getWindowByTitle(title).resize(position.x, position.y, width, height);
-    }
-
-    /**
-     * Un/shows blue frame if was user chosen to speak
-     */
-    public void talk() {       
-        talking = !talking;
-    }
-
-    /**
-     * Un/shows red frame if user wants to speak
-     */
-    public void alert() {      
-        alerting = !alerting;
     }
 
     /**
@@ -147,14 +120,6 @@ class DisplayableWindow extends JFrame {
 
     public void setWidth(int width) {
         this.width = width;
-    }
-
-    public Boolean getTalking(){
-        return talking;
-    }
-    
-    public Boolean getAlerting(){
-        return alerting;
     }
 
     public String getRole() {

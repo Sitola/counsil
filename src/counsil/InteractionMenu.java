@@ -29,12 +29,7 @@ public class InteractionMenu extends JFrame {
      * Represents current state of raise hand button
      */
     private boolean raisedHand;
-    
-    /**
-     * Represents current state of volume slider
-     */
-    private boolean volumeSliderShown;
-    
+        
     /**
      * Represents buttons in current menu instance
      */
@@ -85,8 +80,7 @@ public class InteractionMenu extends JFrame {
                 
         buttons = new ArrayList<>();
         raisedHand = false;
-        muted = false;
-        volumeSliderShown = false;
+        muted = false;      ;
         
         initComponents(getButtonsByRole(role));   
       
@@ -268,33 +262,30 @@ public class InteractionMenu extends JFrame {
         muted = !muted;        
     }
     
-    private void volumeButtonActionPerformed() {        
-        if (!volumeSliderShown){
-            volumeSliderShown = true;
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {                
-                    final VolumeSlider slider = new VolumeSlider();                  
-                    slider.setLocation(getLocation().x, getLocation().y + 200);                    
-                    slider.addVolumeSliderListener(new VolumeSliderListener() {
+    private void volumeButtonActionPerformed() {       
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {                
+                final VolumeSlider slider = new VolumeSlider();                  
+                slider.setLocation(getLocation().x, getLocation().y + 200);                    
+                slider.addVolumeSliderListener(new VolumeSliderListener() {
 
-                        @Override
-                        public void increaseActionPerformed() {
-                            interactionMenuListeners.stream().forEach((listener) -> {
-                                listener.increaseActionPerformed();
-                            }); 
-                        }
+                    @Override
+                    public void increaseActionPerformed() {
+                        interactionMenuListeners.stream().forEach((listener) -> {
+                            listener.increaseActionPerformed();
+                        }); 
+                    }
 
-                        @Override
-                        public void decreaseActionPerformed() {
-                            interactionMenuListeners.stream().forEach((listener) -> {
-                                listener.decreaseActionPerformed();
-                            }); 
-                        }                        
-                    });
-                }               
-            });  
-        }
+                    @Override
+                    public void decreaseActionPerformed() {
+                        interactionMenuListeners.stream().forEach((listener) -> {
+                            listener.decreaseActionPerformed();
+                        }); 
+                    }                        
+                });
+            }               
+        });  
     }
-    
 }
+    

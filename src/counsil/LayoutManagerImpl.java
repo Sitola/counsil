@@ -336,9 +336,10 @@ public class LayoutManagerImpl implements LayoutManager {
     }
     
     /**
-     * Inicializes layout
+     * Initializes layout
      * @throws org.json.JSONException
      * @throws java.io.FileNotFoundException
+     * @throws wddman.WDDManException
      */
     public LayoutManagerImpl() throws JSONException, FileNotFoundException, IOException, WDDManException{
         
@@ -347,6 +348,7 @@ public class LayoutManagerImpl implements LayoutManager {
             wd = new WDDMan();            
         } catch (UnsupportedOperatingSystemException ex) {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+            System.exit(-1);
         }  
         
         String entireFileText = new Scanner(new File("layoutConfig.json")).useDelimiter("\\A").next();
@@ -354,6 +356,7 @@ public class LayoutManagerImpl implements LayoutManager {
         
         // create menu
         EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 try {                      
                     menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());
@@ -368,12 +371,13 @@ public class LayoutManagerImpl implements LayoutManager {
 
                         @Override
                         public void muteActionPerformed() {
-                            layoutManagerListeners.stream().forEach((listener) -> {
+                            layoutManagerListeners.stream().forEach((listener) -> {                             
                                 try {
-                                    listener.muteActionPerformed(getWindowTitleByRole(input.getJSONObject("menu").get("role").toString()));
+                                    listener.muteActionPerformed(getWindowTitleByRole(getMenuUserRole()));
                                 } catch (JSONException ex) {
                                     Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                                 }
+                               
                             });
                         }
 
@@ -381,7 +385,7 @@ public class LayoutManagerImpl implements LayoutManager {
                         public void unmuteActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {
                                 try {
-                                    listener.unmuteActionPerformed(getWindowTitleByRole(input.getJSONObject("menu").get("role").toString()));
+                                    listener.unmuteActionPerformed(getWindowTitleByRole(getWindowTitleByRole(getMenuUserRole())));
                                 } catch (JSONException ex) {
                                     Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                                 }
@@ -392,7 +396,7 @@ public class LayoutManagerImpl implements LayoutManager {
                         public void increaseActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {
                                 try {
-                                    listener.volumeIncreasedActionPerformed(getWindowTitleByRole(input.getJSONObject("menu").get("role").toString()));
+                                    listener.volumeIncreasedActionPerformed(getWindowTitleByRole(getWindowTitleByRole(getMenuUserRole())));
                                 } catch (JSONException ex) {
                                     Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                                 }
@@ -403,27 +407,22 @@ public class LayoutManagerImpl implements LayoutManager {
                         public void decreaseActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {
                                 try {
-                                    listener.volumeDecreasedActionPerformed(getWindowTitleByRole(input.getJSONObject("menu").get("role").toString()));
+                                    listener.volumeDecreasedActionPerformed(getWindowTitleByRole(getWindowTitleByRole(getMenuUserRole())));
                                 } catch (JSONException ex) {
                                     Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                             });}
 
                         private String getWindowTitleByRole(String title) {
-                            if (title.equals("teacher")){
-                                for (DisplayableWindow win : windows){
-                                    if (win.getRole().equals("interpreter")){
-                                        return win.getTitle();
-                                    }
-                                }
+                            if (getFirstDisplayableWindowByRole("teacher") != null){
+                                return getFirstDisplayableWindowByRole("teacher").getTitle();
                             }
-                            else if (title.equals("interpreter")){
-                                 for (DisplayableWindow win : windows){
-                                    if (win.getRole().equals("teacher")){
-                                        return win.getTitle();
-                                    }
-                                }
-                            }                                                
+                            else if (getFirstDisplayableWindowByRole("interpreter") != null){
+                                return getFirstDisplayableWindowByRole("interpreter").getTitle();
+                            }
+                            else if (getFirstDisplayableWindowByRole("student") != null){
+                                return getFirstDisplayableWindowByRole("student").getTitle();
+                            }                                  
                             return null;
                         }
                     });
@@ -441,10 +440,10 @@ public class LayoutManagerImpl implements LayoutManager {
         transparentWindow.setLocation(0, 0);
         transparentWindow.setAlwaysOnTop(false);    
         transparentWindow.setBackground(new Color(0, 0, 0, (float) 0.0025));
-              
+                
         // adding listener if role is interpreter
          if (getMenuUserRole().equals("interpreter")) {
-            transparentWindow.setVisible(true);    
+            transparentWindow.setVisible(true);   
             transparentWindow.addMouseListener(new MouseListener() {
 
                 // react to click
@@ -539,10 +538,8 @@ public class LayoutManagerImpl implements LayoutManager {
    /**
     * Applies calculated layout 
     */
-    private void applyChanges(){
-      
-        windows.stream().forEach((window) -> {
-                       
+    private void applyChanges(){      
+        windows.stream().forEach((window) -> {                       
             try {                    
                 window.adjustWindow(wd);
             } catch (WDDManException ex) {
@@ -619,8 +616,7 @@ public class LayoutManagerImpl implements LayoutManager {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
         recalculate(); 
-        applyChanges();       
-
+        applyChanges();  
     }
     
      /**
@@ -645,9 +641,10 @@ public class LayoutManagerImpl implements LayoutManager {
                 iter.remove();
                 break;             
             }
-        }        
-          recalculate(); 
-          applyChanges();
+        }     
+        
+        recalculate(); 
+        applyChanges();
     }
  
     /**
