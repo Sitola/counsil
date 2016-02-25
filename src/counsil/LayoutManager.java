@@ -5,8 +5,6 @@
  */
 package counsil;
 
-import wddman.WDDManException;
-
 /**
  * Represents structure which manipulates with layout
  * @author xminarik
@@ -36,5 +34,12 @@ public interface LayoutManager {
      * Refreshes layout
      */
     public void refresh();
+    
+    
+    /**
+     * Swaps position of first teacher window and specified window
+     * @param title 
+     */
+    public void swapPosition(String title);
 
 }

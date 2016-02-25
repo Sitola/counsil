@@ -441,10 +441,10 @@ public class LayoutManagerImpl implements LayoutManager {
         transparentWindow.setLocation(0, 0);
         transparentWindow.setAlwaysOnTop(false);    
         transparentWindow.setBackground(new Color(0, 0, 0, (float) 0.0025));
-        transparentWindow.setVisible(true);    
-        
-        // adding listener if role is teacher or interpreter
-         if (getMenuUserRole().equals("teacher") || getMenuUserRole().equals("interpreter")) {
+              
+        // adding listener if role is interpreter
+         if (getMenuUserRole().equals("interpreter")) {
+            transparentWindow.setVisible(true);    
             transparentWindow.addMouseListener(new MouseListener() {
 
                 // react to click
@@ -554,6 +554,57 @@ public class LayoutManagerImpl implements LayoutManager {
         transparentWindow.setAlwaysOnTop(false);
     }
     
+    /**
+     * Gets window by title
+     * @param title
+     * @return 
+     */
+    private DisplayableWindow getDisplayableWindowByTitle(String title){
+        for (DisplayableWindow window : windows){
+            if (window.getTitle().equals(title)){
+                return window;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Gets window by role
+     * @param role
+     * @return 
+     */
+    private DisplayableWindow getFirstDisplayableWindowByRole(String role){
+        for (DisplayableWindow window : windows){
+            if (window.getRole().equals(role)){
+                return window;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Swaps position of first teacher window and specified window
+     * @param title 
+     */
+    @Override
+    public void swapPosition(String title){
+        
+        DisplayableWindow teacher = getFirstDisplayableWindowByRole("teacher");
+        DisplayableWindow student = getDisplayableWindowByTitle(title);
+        
+        Position pos = teacher.getPosition();
+        int width = teacher.getWidth();
+        int height = teacher.getHeight();
+        
+        teacher.setPosition(student.getPosition());
+        teacher.setHeight(student.getHeight());
+        teacher.setWidth(student.getWidth());
+        
+        student.setPosition(pos);
+        student.setHeight(height);
+        student.setWidth(width);
+    }
+    
      /**
      * Adds new node window to layout
      * @param title window title
@@ -599,6 +650,9 @@ public class LayoutManagerImpl implements LayoutManager {
           applyChanges();
     }
  
+    /**
+     * Refreshes layout
+     */
     @Override
     public void refresh(){
         applyChanges();

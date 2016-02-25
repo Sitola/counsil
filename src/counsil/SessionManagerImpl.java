@@ -229,28 +229,23 @@ public class SessionManagerImpl implements SessionManager {
                     // get application handle and draw/remove border
                     UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(consumer);
                    
-                    if (consumer2alert.get(handle)) {
-                        try {
-                            handle.sendCommand("receiver.decoder flush");
-                        } catch (InterruptedException ex) {
-                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                        } catch (TimeoutException ex) {
-                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    try {
+                        if (consumer2alert.get(handle)) {
+                            handle.sendCommand("postprocess flush");                
+                        } else {                      
+                            handle.sendCommand("postprocess border:width=10:color=#ff0000");
                         }
-                    } else {
-                        try {
-                            handle.sendCommand("receiver decoder border:width=2:color=#ff0000");
-                        } catch (InterruptedException ex) {
+                    } catch (InterruptedException ex) { //! todo, take care of this! Dont know how yet, but you should
                             Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                        } catch (TimeoutException ex) {
+                    } catch (TimeoutException ex) {
                             Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                        }
                     }
+                    
                 } else if (message.type.equals(TALK)) {
                     System.out.println("Received new message " + message);
                     String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])));
                     System.out.println(title + " is talking!");
-                    //! todo not yet ready 
+                    layoutManager.swapPosition(title);
                 }
             }
         };
@@ -344,21 +339,12 @@ public class SessionManagerImpl implements SessionManager {
         producer2consumer.put(app, con);
         node2producer.put(node, app);
         consumer2name.put(con, name);
-        windowCounter++;
-        
+        windowCounter++;        
         
         // inicialize alerting map
         consumer2alert.put(con, false);
         
-        // temporary just to test alerting
-        UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(con);
-        try {
-            handle.sendCommand("receiver decoder border:width=2:color=#ff0000");
-        } catch (InterruptedException ex) {
-            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (TimeoutException ex) {
-            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }
+       
         return name;
     }
 
