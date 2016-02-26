@@ -130,30 +130,39 @@ public class SessionManagerImpl implements SessionManager {
 
             @Override
             public void muteActionPerformed(String windowName) {
-                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
-                UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                handle.mute();
+                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);                
+                if (app != null) {                    
+                    UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
+                    if (handle != null) handle.mute();
+                }
             }
 
             @Override
             public void volumeIncreasedActionPerformed(String windowName) {
-                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
-                UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                handle.increaseVolume();
+                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);                
+                if (app != null) {                    
+                    UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
+                    if (handle != null) handle.increaseVolume();
+                }
             }
 
             @Override
             public void volumeDecreasedActionPerformed(String windowName) {
                 UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
-                UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                handle.decreaseVolume();
+                if (app != null) {
+                    UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
+                    if (handle != null) handle.decreaseVolume();
+                }                
+                
             }
 
             @Override
             public void unmuteActionPerformed(String windowName) {
-                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
-                UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                handle.unmute();
+                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);                
+                if (app != null) {                    
+                    UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
+                    if (handle != null)  handle.unmute();
+                }
             }
         });
 
@@ -264,20 +273,23 @@ public class SessionManagerImpl implements SessionManager {
             }
         };
         
-        //! temporary block which periodicaly refreshes layout
-     /*   EventQueue.invokeLater(new Runnable() {
+        
+        Thread thread = new Thread(new Runnable() {
+            
             @Override
             public void run() {
                 try {
                     while (true) {            
                         Thread.sleep(30 * 1000);
-                        layoutManager.refresh();
+                        EventQueue.invokeLater(() -> layoutManager.refresh());
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-        });*/
+        });
+            
+        thread.start();
     }
 
     /**

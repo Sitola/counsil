@@ -7,7 +7,6 @@ package counsil;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.GridBagLayout;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -36,24 +35,43 @@ public class VolumeSlider extends JFrame {
         volumeListeners.add(listener);
     }
     
-    public VolumeSlider() {
+    private static VolumeSlider instance = null;
+    private static final Object lock = new Object();
+    
+    public static VolumeSlider getInstance() {
+        if (instance == null) {
+            synchronized (lock) {
+                if (instance == null) {
+                    instance = new VolumeSlider();
+                    
+                }
+            }                    
+        }
+        return instance;
+    }
+        
+    /**
+     * Creates volume slider with volumeValue selected
+     * @param val 
+     */
+    private VolumeSlider() {
         
         super("Volume");
         setLayout(new BorderLayout());
+        
         setUndecorated(true);
         setBackground(new Color(0, 0, 0, (float) 1)); 
         setAlwaysOnTop(true);
         setResizable(false);
-        setLocationRelativeTo(null);        
+        setLocationRelativeTo(null);    
+        setType(Type.UTILITY);
+        value = 5;
        
         getRootPane().setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));  
                 
         JSlider volume = new JSlider(JSlider.HORIZONTAL,0, 10, 5);   
         volume.setMajorTickSpacing(1);
-        volume.setPaintTicks(true);   
-        
-        value = 5;
-        
+        volume.setPaintTicks(true);       
         volume.addChangeListener(new ChangeListener() {
 
             @Override
@@ -71,17 +89,18 @@ public class VolumeSlider extends JFrame {
                         volumeListeners.stream().forEach((listener) -> {
                             listener.decreaseActionPerformed();
                         }); 
-                    }
-                    
+                    }                    
                 }
             }
         });
         
-        add(volume, BorderLayout.CENTER);
-           
+        add(volume, BorderLayout.CENTER);           
         pack();
-        setVisible(true); 
- 
+        setVisible(true);  
+    }
+
+    public void setValue(int volumeValue) {
+        value = volumeValue;
     }
 
 }

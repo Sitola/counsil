@@ -183,7 +183,7 @@ public class LayoutManagerImpl implements LayoutManager {
             winList = numRoles.get(role);           //list of windows to distribute in this field
             
             //distribution of windows in field
-            if(winList.size() == 0){
+            if(winList.isEmpty()){
                 
             }else if(winList.size() == 1){        //# windows = 1
                 //probably in future put option to layout config to witch mode is prefered

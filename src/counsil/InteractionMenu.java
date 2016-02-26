@@ -19,6 +19,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.LayoutStyle;
 
+
 /**
  *
  * @author desanka
@@ -46,6 +47,12 @@ public class InteractionMenu extends JFrame {
      * Represents current state of sound
      */
     private boolean muted;
+    
+    /**
+     * volume value
+     */
+    
+    public static int volumeValue;
     
     /**
      * List of raiseHandButton listeners
@@ -80,7 +87,8 @@ public class InteractionMenu extends JFrame {
                 
         buttons = new ArrayList<>();
         raisedHand = false;
-        muted = false;      ;
+        muted = false;
+        volumeValue = 5;
         
         initComponents(getButtonsByRole(role));   
       
@@ -266,19 +274,23 @@ public class InteractionMenu extends JFrame {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {                
-                final VolumeSlider slider = new VolumeSlider();                  
+                final VolumeSlider slider = VolumeSlider.getInstance();   
+                slider.setValue(volumeValue);
+                slider.setVisible(true);
                 slider.setLocation(getLocation().x, getLocation().y + 200);                    
                 slider.addVolumeSliderListener(new VolumeSliderListener() {
 
                     @Override
                     public void increaseActionPerformed() {
                         interactionMenuListeners.stream().forEach((listener) -> {
+                            volumeValue++;
                             listener.increaseActionPerformed();
                         }); 
                     }
 
                     @Override
                     public void decreaseActionPerformed() {
+                        volumeValue--;
                         interactionMenuListeners.stream().forEach((listener) -> {
                             listener.decreaseActionPerformed();
                         }); 
