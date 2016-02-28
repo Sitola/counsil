@@ -1,12 +1,8 @@
 logs/
-nbproject/private/
+nbproject/
 build/
-nbbuild/
 dist/
-nbdist/
-nbactions.xml
-nb-configuration.xml
-.nb-gradle/
+layoutConfig.json
 nodeConfig.json
 nbproject/private/private.properties
 nbproject/project.properties

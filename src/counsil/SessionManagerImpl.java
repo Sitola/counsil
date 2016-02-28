@@ -126,19 +126,23 @@ public class SessionManagerImpl implements SessionManager {
 
             @Override
             public void muteActionPerformed(String windowName) {
-                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);                
-                if (app != null) {                    
+                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
+                if (app != null) {
                     UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                    if (handle != null) handle.mute();
+                    if (handle != null) {
+                        handle.mute();
+                    }
                 }
             }
 
             @Override
             public void volumeIncreasedActionPerformed(String windowName) {
-                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);                
-                if (app != null) {                    
+                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
+                if (app != null) {
                     UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                    if (handle != null) handle.increaseVolume();
+                    if (handle != null) {
+                        handle.increaseVolume();
+                    }
                 }
             }
 
@@ -147,17 +151,21 @@ public class SessionManagerImpl implements SessionManager {
                 UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
                 if (app != null) {
                     UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                    if (handle != null) handle.decreaseVolume();
-                }                
-                
+                    if (handle != null) {
+                        handle.decreaseVolume();
+                    }
+                }
+
             }
 
             @Override
             public void unmuteActionPerformed(String windowName) {
-                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);                
-                if (app != null) {                    
+                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
+                if (app != null) {
                     UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                    if (handle != null)  handle.unmute();
+                    if (handle != null) {
+                        handle.unmute();
+                    }
                 }
             }
         });
@@ -177,7 +185,12 @@ public class SessionManagerImpl implements SessionManager {
         // This parse additional attributes from configration file
         NetworkNode.addPropertyParser("agc", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("role", NodePropertyParser.STRING_PARSER);
-        NetworkNode.addPropertyParser("windowName", NodePropertyParser.STRING_PARSER);
+        NetworkNode.addPropertyParser("videoProducer", NodePropertyParser.STRING_PARSER);
+        NetworkNode.addPropertyParser("audioProducer", NodePropertyParser.STRING_PARSER);
+        NetworkNode.addPropertyParser("audioConsumer", NodePropertyParser.STRING_PARSER);
+        NetworkNode.addPropertyParser("presentationProducer", NodePropertyParser.STRING_PARSER);
+        NetworkNode.addPropertyParser("videoConsumer", NodePropertyParser.STRING_PARSER);
+
         core = Main.startCoUniverse();
 
         topologyAggregator = TopologyAggregator.getInstance(core);
@@ -192,7 +205,7 @@ public class SessionManagerImpl implements SessionManager {
                 @Override
                 public void init(Set<NetworkNode> nodes) {
                     for (NetworkNode node : nodes) {
-                        onNodeChanged(node, TopologyUpdate.EMPTY_UPDATE);
+                        onNodeChanged(node);
                     }
                 }
 
@@ -269,11 +282,11 @@ public class SessionManagerImpl implements SessionManager {
             }
         };
 
-        Thread thread = new Thread(new Runnable() {            
+        Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    while (true) {            
+                    while (true) {
                         Thread.sleep(30 * 1000);
                         EventQueue.invokeLater(() -> layoutManager.refresh());
                     }
@@ -282,7 +295,7 @@ public class SessionManagerImpl implements SessionManager {
                 }
             }
         });
-            
+
         thread.start();
 
     }
@@ -303,7 +316,11 @@ public class SessionManagerImpl implements SessionManager {
      * @throws IOException if there is problem during starting Producer
      */
     private void createProducent(String role) throws IOException {
-        createProducer(TypeOfContent.VIDEO, "", role);
+        String producer = (String) local.getProperty("videoProducer");
+        if (producer == null) {
+            throw new IllegalArgumentException("Specify video producer in config");
+        }
+        createProducer(TypeOfContent.VIDEO, producer, role);
 
         // create audio producer
         // this require 1 teacher and 1 intepreter because of distributor 
@@ -314,9 +331,8 @@ public class SessionManagerImpl implements SessionManager {
             }
             createProducer(TypeOfContent.SOUND, audio, role);
         }
-
         if (role.equals("teacher")) {
-            String pres = (String) local.getProperty("presSettings");
+            String pres = (String) local.getProperty("presentationProducer");
             if (pres == null) {
                 throw new IllegalArgumentException("Specify presentation in config");
             }
@@ -327,16 +343,17 @@ public class SessionManagerImpl implements SessionManager {
     private void createProducer(TypeOfContent type, String settings, String role) throws IOException {
         String PRODUCER = "producer";
         ObjectNode prodConfig = core.newApplicationTemplate(PRODUCER);
-        String identification = PRODUCER + "-" + local.getUuid().toString() + "-" + type.toString() + "-" + role;
+        String identification = local.getName().toString() + "-" + type.toString() + "-" + role;
         prodConfig.put("content", identification);
         switch (type) {
             case SOUND:
-                prodConfig.put("video", "");
                 prodConfig.put("audio", settings);
                 break;
             case PRESENTATION:
                 prodConfig.put("video", settings);
                 break;
+            case VIDEO:
+                prodConfig.put("video",  settings);
             default:
                 break;
         }
@@ -362,42 +379,57 @@ public class SessionManagerImpl implements SessionManager {
         }
 
         UltraGridProducerApplication[] apps = node2producer.get(node);
-        if (app == null) {
+        if (apps == null) {
             apps = new UltraGridProducerApplication[3];
         }
-
+        
         // get content destriptor from producer
         String content = app.getProvidedContentDescriptor();
-        ObjectNode cons = core.newApplicationTemplate("consumer");
-        String name = "\"" + local.getName() + "-" + node.getName() + "\"";
-        if (content.contains("SOUND") && isInterpreterOrTeacher((String) node.getProperty("role"))) {
-            apps[2] = app;
+        if(content.contains("SOUND") && ((String) local.getProperty("role")).equals("student")){
+            return content;
+        }
+        UltraGridConsumerApplication con = null;
+        String name = local.getName() + "-" + content;
+ 
+        if (content.contains("SOUND") && isInterpreterOrTeacher((String) local.getProperty("role"))) {
             String audio = (String) local.getProperty("audioConsumer");
             if (audio == null) {
                 throw new IllegalArgumentException("Specify audio in config");
             }
-            cons.put("audio", audio);
-            cons.put("video", "dummy");
-
+            con = createConsumer(content, audio, "dummy");
+            apps[2] = app;
         } else if (content.contains("PRESENTATION")) {
-            cons.put("arguments", "--window-title \"" + name + "\"");
+            con = createConsumer(content, null, (String) local.getProperty("videoConsumer"));
             apps[1] = app;
         } else {
-            cons.put("arguments", "--window-title \"" + name + "\"");
+            con = createConsumer(content, null, (String) local.getProperty("videoConsumer"));
             apps[0] = app;
         }
-        // Source is content
-        name = name.replace("\"", "");
-        cons.put("source", content);
-        cons.put("name", content);
-        UltraGridConsumerApplication con = (UltraGridConsumerApplication) core.startApplication(cons, "consumer");
-
+        
         consumer2alert.put(con, false);
         producer2consumer.put(app, con);
         node2producer.put(node, apps);
         consumer2name.put(con, name);
-
         return name;
+    }
+    
+    private UltraGridConsumerApplication createConsumer(String content, String audio, String video) throws IOException{
+        ObjectNode cons = core.newApplicationTemplate("consumer");
+        if(audio != null) {
+            cons.put("audio", audio);
+        }
+        if(video != null) {
+            cons.put("video", video);
+        }
+        cons.put("source", content);
+        String name = local.getName() + "-" + content;
+        cons.put("name", name);
+        cons.put("arguments", "--window-title \"" + name + "\"");
+        System.out.println(cons.get("source"));
+        System.out.println(cons.get("video"));
+        System.out.println(video);
+        System.out.println(cons.get("audio"));
+        return (UltraGridConsumerApplication) core.startApplication(cons, "consumer");
     }
 
     /**
@@ -418,7 +450,11 @@ public class SessionManagerImpl implements SessionManager {
                 UltraGridProducerApplication producer = (UltraGridProducerApplication) app;
                 try {
                     if (producer2consumer.containsKey(producer) == false) {
-                        layoutManager.addNode(createConsumer(producer, node), (String) node.getProperty("role"));
+                        String consumerName = createConsumer(producer, node);
+                        System.out.println(consumerName);
+                        if(!consumerName.contains("SOUND")){
+                            layoutManager.addNode(consumerName, (String) node.getProperty("role"));
+                        }
                     }
                 } catch (IOException ex) {
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
