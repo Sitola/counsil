@@ -119,7 +119,8 @@ public class SessionManagerImpl implements SessionManager {
 
             @Override
             public void windowChosenActionPerformed(String windowName) {
-                CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, core.getLocalNode());
+                
+                CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, getNetworkNodeByProducer(getProducerByConsumer(getConsumerByTitle(windowName))));
                 System.out.println("Sending talk permission...");
                 core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);
             }
@@ -171,6 +172,50 @@ public class SessionManagerImpl implements SessionManager {
         });
 
     }
+    
+    /**
+     * gets producer from consumer (in producer2consumer) map
+     * @param consumer
+     * @return 
+     */
+    private UltraGridProducerApplication getProducerByConsumer(UltraGridConsumerApplication consumer){
+        for (Entry<UltraGridProducerApplication, UltraGridConsumerApplication> entrySet : producer2consumer.entrySet()) {                
+            if (entrySet.getValue().equals(consumer)){
+                return entrySet.getKey();
+            }                
+        }           
+        return null;
+    }
+    
+    /**
+     * gets network node from producer (in node2producer) map
+     * @param producer
+     * @return 
+     */
+    private NetworkNode getNetworkNodeByProducer(UltraGridProducerApplication producer){
+        for (Entry<NetworkNode, UltraGridProducerApplication[]> entrySet : node2producer.entrySet()) {                
+            if (entrySet.getValue().equals(producer)){
+                return entrySet.getKey();
+            }                
+        }           
+        return null;
+    }
+    
+    
+    /**
+     * gets consumer from title (in consumer2name) map
+     * @param title
+     * @return 
+     */
+    private UltraGridConsumerApplication getConsumerByTitle(String title){
+        for (Entry<UltraGridConsumerApplication, String> entrySet : consumer2name.entrySet()) {                
+            if (entrySet.getValue().equals(title)){
+                return entrySet.getKey();
+            }                
+        }           
+        return null;
+    }
+    
 
     /**
      *
@@ -245,11 +290,13 @@ public class SessionManagerImpl implements SessionManager {
                     if (consumer != null) {
                         // get application handle and draw/remove border
                         UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
-                        try {
+                        try {                           
                             if (consumer2alert.get(consumer)) {
                                 handle.sendCommand("postprocess flush");
+                                consumer2alert.replace(consumer, false);
                             } else {
                                 handle.sendCommand("postprocess border:width=5:color=#ff0000");
+                                consumer2alert.replace(consumer, true);
                             }
                         } catch (InterruptedException ex) { //! todo, take care of this! Dont know how yet, but you should
                             Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -426,9 +473,6 @@ public class SessionManagerImpl implements SessionManager {
         cons.put("name", name);
         cons.put("arguments", "--window-title \"" + name + "\"");
         System.out.println(cons.get("source"));
-        System.out.println(cons.get("video"));
-        System.out.println(video);
-        System.out.println(cons.get("audio"));
         return (UltraGridConsumerApplication) core.startApplication(cons, "consumer");
     }
 
@@ -451,7 +495,6 @@ public class SessionManagerImpl implements SessionManager {
                 try {
                     if (producer2consumer.containsKey(producer) == false) {
                         String consumerName = createConsumer(producer, node);
-                        System.out.println(consumerName);
                         if(!consumerName.contains("SOUND")){
                             layoutManager.addNode(consumerName, (String) node.getProperty("role"));
                         }
