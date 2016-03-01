@@ -121,7 +121,7 @@ public class SessionManagerImpl implements SessionManager {
             public void windowChosenActionPerformed(String windowName) {
                 
                 CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, getNetworkNodeByProducer(getProducerByConsumer(getConsumerByTitle(windowName))));
-                System.out.println("Sending talk permission...");
+                System.out.println("Sending talk permission for node " + windowName + "...");
                 core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);
             }
 
@@ -194,9 +194,11 @@ public class SessionManagerImpl implements SessionManager {
      */
     private NetworkNode getNetworkNodeByProducer(UltraGridProducerApplication producer){
         for (Entry<NetworkNode, UltraGridProducerApplication[]> entrySet : node2producer.entrySet()) {                
-            if (entrySet.getValue().equals(producer)){
-                return entrySet.getKey();
-            }                
+            for (UltraGridProducerApplication ug : entrySet.getValue()){
+                if (ug.equals(producer)){
+                    return entrySet.getKey();
+                }  
+            }
         }           
         return null;
     }

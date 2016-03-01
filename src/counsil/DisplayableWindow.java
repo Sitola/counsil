@@ -125,4 +125,9 @@ class DisplayableWindow extends JFrame {
     public String getRole() {
         return role;
     }
+    
+    @Override
+    public String getTitle(){
+        return title;
+    }
 }

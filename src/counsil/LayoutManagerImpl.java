@@ -450,15 +450,16 @@ public class LayoutManagerImpl implements LayoutManager {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     layoutManagerListeners.stream().forEach((listener) -> {
-                        Point location = e.getLocationOnScreen();
+                        Point location = e.getLocationOnScreen();               
                         
                         //! find window which was clicked on
                         for (DisplayableWindow window : windows){
-                            if (window.getAlignmentX() <= location.x){
-                                if (window.getAlignmentY() <= location.y){
-                                     if (window.getAlignmentX() + window.getWidth() >= location.x){
-                                        if (window.getAlignmentY() + window.getHeight() >= location.y){
+                            if (window.getPosition().x <= location.x){
+                                if (window.getPosition().y <= location.y){
+                                     if (window.getPosition().x + window.getWidth() >= location.x){
+                                        if (window.getPosition().y + window.getHeight() >= location.y){
                                                 listener.windowChosenActionPerformed(window.getTitle());
+                                                System.err.println(window.getTitle() + " was CLICKED!");
                                                 break;
                                         }
                                     }
