@@ -449,24 +449,25 @@ public class LayoutManagerImpl implements LayoutManager {
                 // react to click
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    layoutManagerListeners.stream().forEach((listener) -> {
-                        Point location = e.getLocationOnScreen();               
+                    
+                    Point location = e.getLocationOnScreen();               
                         
-                        //! find window which was clicked on
-                        for (DisplayableWindow window : windows){
-                            if (window.getPosition().x <= location.x){
-                                if (window.getPosition().y <= location.y){
-                                     if (window.getPosition().x + window.getWidth() >= location.x){
-                                        if (window.getPosition().y + window.getHeight() >= location.y){
-                                                listener.windowChosenActionPerformed(window.getTitle());
-                                                System.err.println(window.getTitle() + " was CLICKED!");
-                                                break;
-                                        }
+                    //! find window which was clicked on
+                    for (DisplayableWindow window : windows){
+                        if (window.getPosition().x <= location.x){
+                            if (window.getPosition().y <= location.y){
+                                if (window.getPosition().x + window.getWidth() >= location.x){
+                                    if (window.getPosition().y + window.getHeight() >= location.y){
+                                        System.err.println(window.getTitle() + " was CLICKED!");
+                                        layoutManagerListeners.stream().forEach((listener) -> {
+                                            listener.windowChosenActionPerformed(window.getTitle());
+                                        });
+                                        break;
                                     }
                                 }
                             }
                         }
-                    });
+                    }
                 }
 
                 // DONT react to anything else
@@ -580,6 +581,21 @@ public class LayoutManagerImpl implements LayoutManager {
         return null;
     }
     
+    private DisplayableWindow getDisplayableWindowByParameters(String[] parameters){
+        for (DisplayableWindow window : windows){
+            Boolean match = true;
+            for (String parameter : parameters){
+                if (!window.getTitle().toUpperCase().contains(parameter.toUpperCase())) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match = true) return window;
+        }
+        return null;
+    }
+           
+    
     /**
      * Swaps position of first teacher window and specified window
      * @param title 
@@ -587,7 +603,9 @@ public class LayoutManagerImpl implements LayoutManager {
     @Override
     public void swapPosition(String title){
         
-        DisplayableWindow teacher = getFirstDisplayableWindowByRole("teacher");
+        String[] paramArray = {"teacher", "video"};
+        
+        DisplayableWindow teacher = getDisplayableWindowByParameters(paramArray);
         DisplayableWindow student = getDisplayableWindowByTitle(title);
         
         Position pos = teacher.getPosition();

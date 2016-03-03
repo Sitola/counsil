@@ -5,6 +5,7 @@
  */
 package counsil;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -81,7 +82,7 @@ class DisplayableWindow extends JFrame {
      */
     public void adjustWindow (WDDMan wd) throws WDDManException {
 
-        System.out.print("[Window information]: " + title + " " + width + "x" + height + " [" + position.x + "," + position.y + "]\n");
+        // System.out.print("[Window information]: " + title + " " + width + "x" + height + " [" + position.x + "," + position.y + "]\n");
         wd.getWindowByTitle(title).resize(position.x, position.y, width, height);
     }
 
@@ -130,4 +131,29 @@ class DisplayableWindow extends JFrame {
     public String getTitle(){
         return title;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 53 * hash + Objects.hashCode(this.role);
+        hash = 53 * hash + Objects.hashCode(this.title);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DisplayableWindow other = (DisplayableWindow) obj;
+        if (!Objects.equals(this.role, other.role)) {
+            return false;
+        }
+        return Objects.equals(this.title, other.title);
+    }
+    
+    
 }
