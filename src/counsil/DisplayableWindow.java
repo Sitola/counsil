@@ -9,18 +9,15 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFrame;
 import wddman.UnsupportedOperatingSystemException;
 import wddman.WDDMan;
 import wddman.WDDManException;
 
 /**
- * Represents displayable window - pair of transparent and non-transparent
- * windows
- *
+ * Represents window attributes * 
  * @author desanka
  */
-class DisplayableWindow extends JFrame {
+class DisplayableWindow{
 
     /**
      * Height of window
@@ -33,7 +30,7 @@ class DisplayableWindow extends JFrame {
     private int width;
 
     /**
-     * Position of winodw
+     * Position of winodow
      */
     private Position position;
 
@@ -48,8 +45,7 @@ class DisplayableWindow extends JFrame {
     private final String title;
 
     /**
-     * Initializes arguments, creates transparent window to non-transparent
-     * window
+     * Initializes arguments    
      *
      * @param title title of new window
      * @param role role of window
@@ -61,7 +57,7 @@ class DisplayableWindow extends JFrame {
         wddman.Window content;        
         while ((content = wd.getWindowByTitle(title)) == null) {          
             try {
-                TimeUnit.SECONDS.sleep(1);
+                TimeUnit.MILLISECONDS.sleep(5);
             } catch (InterruptedException ex) {
                 Logger.getLogger(DisplayableWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -105,7 +101,6 @@ class DisplayableWindow extends JFrame {
         this.position = position;
     }
 
-    @Override
     public int getHeight() {
         return height;
     }
@@ -114,7 +109,6 @@ class DisplayableWindow extends JFrame {
         this.height = height;
     }
 
-    @Override
     public int getWidth() {
         return width;
     }
@@ -125,9 +119,8 @@ class DisplayableWindow extends JFrame {
 
     public String getRole() {
         return role;
-    }
-    
-    @Override
+    }    
+  
     public String getTitle(){
         return title;
     }

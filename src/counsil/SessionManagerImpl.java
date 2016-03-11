@@ -19,13 +19,11 @@ import couniverse.core.p2p.MessageListener;
 import couniverse.core.p2p.MessageType;
 import couniverse.monitoring.NodePresenceListener;
 import couniverse.monitoring.TopologyAggregator;
-import couniverse.monitoring.TopologyUpdate;
 import couniverse.ultragrid.UltraGridConsumerApplication;
 import couniverse.ultragrid.UltraGridControllerHandle;
 import couniverse.ultragrid.UltraGridProducerApplication;
 import java.awt.EventQueue;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -126,9 +124,11 @@ public class SessionManagerImpl implements SessionManager {
             @Override
             public void windowChosenActionPerformed(String windowName) {
                 
-                CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, getNetworkNodeByProducer(getProducerByConsumer(getConsumerByTitle(windowName))));
-                System.out.println("Sending talk permission for node " + windowName + "...");
-                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Posielam spravu TALK");
+                NetworkNode choosenNode = getNetworkNodeByProducer(getProducerByConsumer(getConsumerByTitle(windowName)));
+                
+                CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, choosenNode);                
+                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission for node {0}...", windowName);
+               
                 core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);
             }
 

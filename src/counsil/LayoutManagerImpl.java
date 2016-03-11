@@ -5,11 +5,8 @@
  */
 package counsil;
 
-import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,7 +19,10 @@ import java.util.Scanner;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JWindow;
+import org.jnativehook.GlobalScreen;
+import org.jnativehook.NativeHookException;
+import org.jnativehook.mouse.NativeMouseEvent;
+import org.jnativehook.mouse.NativeMouseInputListener;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,6 +36,11 @@ import wddman.WDDManException;
  */
 
 public class LayoutManagerImpl implements LayoutManager {
+    
+    /**
+     * Lock for gui and other stuff
+     */
+    final private Object eventLock = new Object();
     
     /**
      * List of current active windows
@@ -54,21 +59,13 @@ public class LayoutManagerImpl implements LayoutManager {
 
     /**
      * List of layout manager listeners
-     */
-    
+     */    
     private List<LayoutManagerListener> layoutManagerListeners = new ArrayList<>();
     
     /**
      * JSON configure file object
      */
     private JSONObject input;
-    
-    /**
-     * Invisible overlay window
-     */
-    
-    private final JWindow transparentWindow;
-    
 
     /*
     * recalculate new layout from JSON layout file and array of nodes or something with specify role 
@@ -329,7 +326,7 @@ public class LayoutManagerImpl implements LayoutManager {
     */
     private int upperRowLimit(double R, double r, int n){
         int k = 1;  //# of rows
-        while((k * Math.floor((R*k)/r)) < n){     //  k * ⌈(R*k)/r⌉ == n limit  
+        while((k * Math.floor((R*k)/r)) < n){     //  k * ?(R*k)/r == n limit  
             k++;
         }
         return k;
@@ -341,7 +338,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * @throws java.io.FileNotFoundException
      * @throws wddman.WDDManException
      */
-    public LayoutManagerImpl() throws JSONException, FileNotFoundException, IOException, WDDManException{
+    public LayoutManagerImpl() throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException{
         
         windows = new ArrayList<>(); 
         try {
@@ -432,37 +429,26 @@ public class LayoutManagerImpl implements LayoutManager {
             }
         });     
         
-        // setting transparent window properties
-        transparentWindow = new JWindow();
-        transparentWindow.setName("CoUnSil overlay");
-        transparentWindow.setLocationRelativeTo(null);
-        transparentWindow.setSize(wd.getScreenWidth(), wd.getScreenHeight());
-        transparentWindow.setLocation(0, 0);
-        transparentWindow.setAlwaysOnTop(false);    
-        transparentWindow.setBackground(new Color(0, 0, 0, (float) 0.0025));
-                
         // adding listener if role is interpreter
-         if (getMenuUserRole().equals("interpreter")) {
-            transparentWindow.setVisible(true);   
-            transparentWindow.addMouseListener(new MouseListener() {
-
-                // react to click
+        if (getMenuUserRole().equals("interpreter")) {  
+                NativeMouseInputListener mouseListener =  new NativeMouseInputListener() {
                 @Override
-                public void mouseClicked(MouseEvent e) {
+                public void nativeMouseClicked(NativeMouseEvent nme) {
+                    Point location = nme.getPoint();                        
                     
-                    Point location = e.getLocationOnScreen();               
-                        
-                    //! find window which was clicked on
-                    for (DisplayableWindow window : windows){
-                        if (window.getPosition().x <= location.x){
-                            if (window.getPosition().y <= location.y){
-                                if (window.getPosition().x + window.getWidth() >= location.x){
-                                    if (window.getPosition().y + window.getHeight() >= location.y){
-                                        System.err.println(window.getTitle() + " was CLICKED!");
-                                        layoutManagerListeners.stream().forEach((listener) -> {
-                                            listener.windowChosenActionPerformed(window.getTitle());
-                                        });
-                                        break;
+                    synchronized(eventLock){  
+                        //! find window which was clicked on
+                        for (DisplayableWindow window : windows){
+                            if (window.getPosition().x <= location.x){
+                                if (window.getPosition().y <= location.y){
+                                    if (window.getPosition().x + window.getWidth() >= location.x){
+                                        if (window.getPosition().y + window.getHeight() >= location.y){
+                                            System.err.println(window.getTitle() + " was CLICKED!");
+                                            layoutManagerListeners.stream().forEach((listener) -> {
+                                                listener.windowChosenActionPerformed(window.getTitle());
+                                            });
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -470,34 +456,41 @@ public class LayoutManagerImpl implements LayoutManager {
                     }
                 }
 
-                // DONT react to anything else
-                
                 @Override
-                public void mousePressed(MouseEvent me) {
-                  //  throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                public void nativeMousePressed(NativeMouseEvent nme) {                   
+                    // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                 }
 
                 @Override
-                public void mouseReleased(MouseEvent me) {
-                 //   throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                public void nativeMouseReleased(NativeMouseEvent nme) {
+                    // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                 }
 
                 @Override
-                public void mouseEntered(MouseEvent me) {
-                   // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                public void nativeMouseMoved(NativeMouseEvent nme) {
+                    // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                 }
 
                 @Override
-                public void mouseExited(MouseEvent me) {
-                 //   throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                public void nativeMouseDragged(NativeMouseEvent nme) {
+                    // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                 }
-            });
+            };
+            
+            // register listener to screen, turn off loggers
+            GlobalScreen.registerNativeHook();
+            Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
+            logger.setLevel(Level.OFF);
+            GlobalScreen.addNativeMouseListener(mouseListener);
+            logger.setUseParentHandlers(false);
         }
-         
-         
+                  
         // move windows
-        recalculate();
-        applyChanges();
+        synchronized(eventLock){  
+            recalculate();
+            applyChanges();
+        }
+        
     }  
     
     /**
@@ -548,9 +541,7 @@ public class LayoutManagerImpl implements LayoutManager {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             }                          
         });
-        
-        transparentWindow.setAlwaysOnTop(true);
-        transparentWindow.setAlwaysOnTop(false);
+       
     }
     
     /**
@@ -634,8 +625,11 @@ public class LayoutManagerImpl implements LayoutManager {
         } catch (WDDManException | UnsupportedOperatingSystemException ex) {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
-        recalculate(); 
-        applyChanges();  
+        
+        synchronized(eventLock){  
+            recalculate();
+            applyChanges();
+        } 
     }
     
      /**
@@ -662,8 +656,10 @@ public class LayoutManagerImpl implements LayoutManager {
             }
         }     
         
-        recalculate(); 
-        applyChanges();
+        synchronized(eventLock){  
+            recalculate();
+            applyChanges();
+        }
     }
  
     /**
@@ -671,7 +667,9 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     @Override
     public void refresh(){
-        applyChanges();
+        synchronized(eventLock){     
+            applyChanges();
+         }
     }
     
 }

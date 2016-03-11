@@ -5,8 +5,9 @@
  */
 package counsil;
 
-import couniverse.core.Core;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import org.jnativehook.NativeHookException;
 import org.json.JSONException;
 import wddman.WDDManException;
 
@@ -21,8 +22,9 @@ public class CoUnSil {
      * @throws java.io.IOException
      * @throws java.lang.InterruptedException
      * @throws org.json.JSONException
+     * @throws wddman.WDDManException
      */
-    public static void main(String[] args) throws IOException, InterruptedException, JSONException, WDDManException {
+    public static void main(String[] args) throws IOException, InterruptedException, JSONException, WDDManException, FileNotFoundException, NativeHookException {
         LayoutManagerImpl lm = new LayoutManagerImpl();
         SessionManager sm = new SessionManagerImpl(lm);
         sm.initCounsil();
