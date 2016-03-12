@@ -38,8 +38,14 @@ public interface LayoutManager {
     
     /**
      * Swaps position of first teacher window and specified window
-     * @param title 
+     * @param newTalking
+     * @param oldTalking 
      */
     public void swapPosition(String title);
+
+    /**
+     * Refreshes layout to default positions
+     */
+    public void refreshToDefaultLayout();
 
 }

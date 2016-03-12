@@ -244,7 +244,7 @@ public class InteractionMenu extends JFrame {
         raisedHand = !raisedHand;
         
         interactionMenuListeners.stream().forEach((listener) -> {            
-            listener.raiseHandActionPerformed();
+            listener.raiseHandActionPerformed(raisedHand);
         });
     }  
     

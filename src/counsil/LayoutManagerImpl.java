@@ -92,8 +92,8 @@ public class LayoutManagerImpl implements LayoutManager {
         
         //for each role in input put windows to distribute in them
         for (DisplayableWindow win : windows) {
-            if(numRoles.containsKey(win.getRole())){
-                List<DisplayableWindow> intIncrem = numRoles.get(win.getRole());
+            if(numRoles.containsKey(win.geCurrentRole())){
+                List<DisplayableWindow> intIncrem = numRoles.get(win.geCurrentRole());
                 intIncrem.add(win);
                 //numRoles.replace(win.getRole(), intIncrem); //not shure if needed
             }
@@ -357,23 +357,23 @@ public class LayoutManagerImpl implements LayoutManager {
             public void run() {
                 try {                      
                     menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());
+                    
+                    
+                    String[] parameters = {"video", getMenuUserRole()};
+                    
                     menu.addInteractionMenuListener(new InteractionMenuListener() {
                            
                         @Override
-                        public void raiseHandActionPerformed() { 
+                        public void raiseHandActionPerformed(Boolean wasRaised) { 
                             layoutManagerListeners.stream().forEach((listener) -> {                                   
-                                listener.alertActionPerformed();
+                                listener.alertActionPerformed(wasRaised);
                             });
                         }
 
                         @Override
                         public void muteActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {                             
-                                try {
-                                    listener.muteActionPerformed(getWindowTitleByRole(getMenuUserRole()));
-                                } catch (JSONException ex) {
-                                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                }
+                                listener.muteActionPerformed(getDisplayableWindowByParameters(parameters).getTitle());
                                
                             });
                         }
@@ -381,47 +381,23 @@ public class LayoutManagerImpl implements LayoutManager {
                         @Override
                         public void unmuteActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {
-                                try {
-                                    listener.unmuteActionPerformed(getWindowTitleByRole(getWindowTitleByRole(getMenuUserRole())));
-                                } catch (JSONException ex) {
-                                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                }
+                                listener.unmuteActionPerformed(getDisplayableWindowByParameters(parameters).getTitle());
                             }); 
                         }
 
                         @Override
                         public void increaseActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {
-                                try {
-                                    listener.volumeIncreasedActionPerformed(getWindowTitleByRole(getWindowTitleByRole(getMenuUserRole())));
-                                } catch (JSONException ex) {
-                                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                }
+                                listener.volumeIncreasedActionPerformed(getDisplayableWindowByParameters(parameters).getTitle());
                             });                         
                         }
 
                         @Override
                         public void decreaseActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {
-                                try {
-                                    listener.volumeDecreasedActionPerformed(getWindowTitleByRole(getWindowTitleByRole(getMenuUserRole())));
-                                } catch (JSONException ex) {
-                                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                }
+                                listener.volumeDecreasedActionPerformed(getDisplayableWindowByParameters(parameters).getTitle());
                             });}
-
-                        private String getWindowTitleByRole(String title) {
-                            if (getFirstDisplayableWindowByRole("teacher") != null){
-                                return getFirstDisplayableWindowByRole("teacher").getTitle();
-                            }
-                            else if (getFirstDisplayableWindowByRole("interpreter") != null){
-                                return getFirstDisplayableWindowByRole("interpreter").getTitle();
-                            }
-                            else if (getFirstDisplayableWindowByRole("student") != null){
-                                return getFirstDisplayableWindowByRole("student").getTitle();
-                            }                                  
-                            return null;
-                        }
+                        
                     });
                 } catch (JSONException ex) {
                     Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -485,12 +461,7 @@ public class LayoutManagerImpl implements LayoutManager {
             logger.setUseParentHandlers(false);
         }
                   
-        // move windows
-        synchronized(eventLock){  
-            recalculate();
-            applyChanges();
-        }
-        
+        recalculateAndApply();        
     }  
     
     /**
@@ -558,20 +529,7 @@ public class LayoutManagerImpl implements LayoutManager {
         return null;
     }
     
-    /**
-     * Gets window by role
-     * @param role
-     * @return 
-     */
-    private DisplayableWindow getFirstDisplayableWindowByRole(String role){
-        for (DisplayableWindow window : windows){
-            if (window.getRole().equals(role)){
-                return window;
-            }
-        }
-        return null;
-    }
-    
+  
     private DisplayableWindow getDisplayableWindowByParameters(String[] parameters){
         for (DisplayableWindow window : windows){
             Boolean match = true;
@@ -581,11 +539,10 @@ public class LayoutManagerImpl implements LayoutManager {
                     break;
                 }
             }
-            if (match = true) return window;
+            if (match) return window;
         }
         return null;
-    }
-           
+    }        
     
     /**
      * Swaps position of first teacher window and specified window
@@ -595,21 +552,15 @@ public class LayoutManagerImpl implements LayoutManager {
     public void swapPosition(String title){
         
         String[] paramArray = {"teacher", "video"};
-        
+                
         DisplayableWindow teacher = getDisplayableWindowByParameters(paramArray);
         DisplayableWindow student = getDisplayableWindowByTitle(title);
         
-        Position pos = teacher.getPosition();
-        int width = teacher.getWidth();
-        int height = teacher.getHeight();
+        teacher.setCurrentRole("student");
+        student.setCurrentRole("teacher");
         
-        teacher.setPosition(student.getPosition());
-        teacher.setHeight(student.getHeight());
-        teacher.setWidth(student.getWidth());
+        recalculateAndApply();
         
-        student.setPosition(pos);
-        student.setHeight(height);
-        student.setWidth(width);
     }
     
      /**
@@ -626,10 +577,7 @@ public class LayoutManagerImpl implements LayoutManager {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        synchronized(eventLock){  
-            recalculate();
-            applyChanges();
-        } 
+        recalculateAndApply();
     }
     
      /**
@@ -654,12 +602,9 @@ public class LayoutManagerImpl implements LayoutManager {
                 iter.remove();
                 break;             
             }
-        }     
+        }    
         
-        synchronized(eventLock){  
-            recalculate();
-            applyChanges();
-        }
+        recalculateAndApply();
     }
  
     /**
@@ -670,6 +615,29 @@ public class LayoutManagerImpl implements LayoutManager {
         synchronized(eventLock){     
             applyChanges();
          }
+    }
+
+    /**
+     * recalculates layout and applies changes
+     */
+    private void recalculateAndApply() {
+        synchronized(eventLock){  
+            recalculate();
+            applyChanges();
+        }
+    }
+
+    /**
+     * refreshes layout to default position
+     */
+    @Override
+    public void refreshToDefaultLayout() {
+        
+        for (DisplayableWindow window : windows){
+            window.setCurrentRole(window.getDefaultRole());
+        }
+        
+        recalculateAndApply();
     }
     
 }
