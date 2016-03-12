@@ -420,9 +420,11 @@ public class LayoutManagerImpl implements LayoutManager {
                                     if (window.getPosition().x + window.getWidth() >= location.x){
                                         if (window.getPosition().y + window.getHeight() >= location.y){
                                             System.err.println(window.getTitle() + " was CLICKED!");
-                                            layoutManagerListeners.stream().forEach((listener) -> {
-                                                listener.windowChosenActionPerformed(window.getTitle());
-                                            });
+                                            if ((window.getDefaultRole() != ("interpreter")) && (!window.getTitle().contains("presentation"))) {                                            
+                                                layoutManagerListeners.stream().forEach((listener) -> {
+                                                    listener.windowChosenActionPerformed(window.getTitle());
+                                                });
+                                            }
                                             break;
                                         }
                                     }
@@ -507,7 +509,7 @@ public class LayoutManagerImpl implements LayoutManager {
     private void applyChanges(){      
         windows.stream().forEach((window) -> {                       
             try {                    
-                window.adjustWindow(wd);
+                if (window != null) window.adjustWindow(wd);
             } catch (WDDManException ex) {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             }                          

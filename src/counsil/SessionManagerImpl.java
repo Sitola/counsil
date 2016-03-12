@@ -157,11 +157,13 @@ public class SessionManagerImpl implements SessionManager {
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission granted for node {0}...", windowName);
                     core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);
                     talkingNode = choosenNode;
+                    isTalking = true;
                 } else {                    
                     CoUniverseMessage stoptalk = CoUniverseMessage.newInstance(STOPTALK, choosenNode);
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission removed for node {0}...", windowName);
                     core.getConnector().sendMessageToGroup(stoptalk, GroupConnectorID.ALL_NODES);
                     talkingNode = null;
+                    isTalking = false;
                 }
 
             }
@@ -326,6 +328,9 @@ public class SessionManagerImpl implements SessionManager {
                         if (node.getName().contains("teacher") || (node.getName().equals(talkingNode.getName()))) {
                             layoutManager.refreshToDefaultLayout();
                         }
+                        else {
+                            layoutManager.refresh();
+                        }
 
                         stopConsumer(node);
                     }
@@ -383,7 +388,7 @@ public class SessionManagerImpl implements SessionManager {
                             layoutManager.swapPosition(title);
                         }
                         isTalking = true;
-                        talkingNode = local;
+                        talkingNode = (NetworkNode) message.content[0];
                     } else if (message.type.equals(STOPTALK)) {
                         synchronized (eventLock) {
                             layoutManager.refreshToDefaultLayout();
