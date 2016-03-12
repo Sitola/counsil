@@ -253,7 +253,8 @@ public class SessionManagerImpl implements SessionManager {
             // create produrer for local content
             createProducent((String) local.getProperty("role"));
             
-            synchronized (eventLock) {
+            Object listenerLock = new Object();
+            synchronized (listenerLock) {
                 topologyAggregator.addListener(new NodePresenceListener() {
 
                     @Override
@@ -293,62 +294,66 @@ public class SessionManagerImpl implements SessionManager {
                 });
             }
 
-            counsilListener = new MessageListener() {
+            synchronized (listenerLock) {
+                counsilListener = new MessageListener() {
 
-                // catching alerting messages
-                @Override
-                public void onMessageArrived(CoUniverseMessage message) {
-                    if (message.type.equals(ALERT)) {
-                        System.out.println("Received new message " + message);
-                        UltraGridConsumerApplication consumer = producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]);
+                    // catching alerting messages
+                    @Override
+                    public void onMessageArrived(CoUniverseMessage message) {
+                        if (message.type.equals(ALERT)) {
+                            System.out.println("Received new message " + message);
+                            UltraGridConsumerApplication consumer = producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]);
 
-                        if (consumer != null) {
-                            // get application handle and draw/remove border
-                            UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
-                            try {                           
-                                if (consumer2alert.get(consumer)) {
-                                    handle.sendCommand("postprocess flush");
-                                    consumer2alert.replace(consumer, false);
-                                } else {
-                                    handle.sendCommand("postprocess border:width=5:color=#ff0000");
-                                    consumer2alert.replace(consumer, true);
+                            if (consumer != null) {
+                                // get application handle and draw/remove border
+                                UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
+                                try {                           
+                                    if (consumer2alert.get(consumer)) {
+                                        handle.sendCommand("postprocess flush");
+                                        consumer2alert.replace(consumer, false);
+                                    } else {
+                                        handle.sendCommand("postprocess border:width=5:color=#ff0000");
+                                        consumer2alert.replace(consumer, true);
+                                    }
+                                } catch (InterruptedException ex) { //! todo, take care of this! Dont know how yet, but you should
+                                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                } catch (TimeoutException ex) {
+                                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                                 }
-                            } catch (InterruptedException ex) { //! todo, take care of this! Dont know how yet, but you should
-                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                            } catch (TimeoutException ex) {
-                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+
+                        } else if (message.type.equals(TALK)) {
+                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Dosla sprava TALK");
+                            System.out.println("Received new message " + message);
+                            String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]));
+                            synchronized(eventLock){ 
+                                layoutManager.swapPosition(title);
                             }
                         }
+                    }
+                };
 
-                    } else if (message.type.equals(TALK)) {
-                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Dosla sprava TALK");
-                        System.out.println("Received new message " + message);
-                        String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]));
+                // define message types
+                core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);
+            }
+            
+            synchronized (listenerLock) {
+                // refreshes layout on consumer restart
+                consumerListener = new ApplicationEventListener() {
+                    @Override
+                    public void onApplicationEvent(MediaApplication app, ApplicationEvent event) {
                         synchronized(eventLock){ 
-                            layoutManager.swapPosition(title);
+                            layoutManager.refresh();
                         }
                     }
-                }
-            };
 
-            // define message types
-            core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);
-
-            // refreshes layout on consumer restart
-            consumerListener = new ApplicationEventListener() {
-                @Override
-                public void onApplicationEvent(MediaApplication app, ApplicationEvent event) {
-                    synchronized(eventLock){ 
-                        layoutManager.refresh();
+                    @Override
+                    public void onApplicationStop(MediaApplication app, String message) {
+                        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                     }
-                }
-
-                @Override
-                public void onApplicationStop(MediaApplication app, String message) {
-                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                }
-            };
-
+              };
+            }
+            
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -459,16 +464,21 @@ public class SessionManagerImpl implements SessionManager {
         String name = local.getName() + "-" + content;
  
         if (content.contains("SOUND") && isInterpreterOrTeacher((String) local.getProperty("role"))) {
+            System.out.println(local.getName() +":" + node.getName());
+            if (node.getName().equals(local.getName())) return content;
+            System.out.println("I should not be here");
             String audio = (String) local.getProperty("audioConsumer");
             if (audio == null) {
                 throw new IllegalArgumentException("Specify audio in config");
             }
             con = createConsumer(content, audio, "dummy");
             apps[2] = app;
-        } else if (content.contains("PRESENTATION")) {
+        } 
+        if (content.contains("PRESENTATION")) {
             con = createConsumer(content, null, (String) local.getProperty("videoConsumer"));
             apps[1] = app;
-        } else {
+        }
+        if (content.contains("VIDEO")){
             con = createConsumer(content, null, (String) local.getProperty("videoConsumer"));
             apps[0] = app;
         }
