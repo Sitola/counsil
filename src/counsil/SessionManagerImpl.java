@@ -158,11 +158,13 @@ public class SessionManagerImpl implements SessionManager {
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission granted for node {0}...", windowName);
                     core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);
                     talkingNode = choosenNode;
+                    isTalking = true;
                 } else {
                     CoUniverseMessage stoptalk = CoUniverseMessage.newInstance(STOPTALK, choosenNode);
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission removed for node {0}...", windowName);
                     core.getConnector().sendMessageToGroup(stoptalk, GroupConnectorID.ALL_NODES);
                     talkingNode = null;
+                    isTalking = false;
                 }
 
             }
@@ -224,11 +226,8 @@ public class SessionManagerImpl implements SessionManager {
      * @return
      */
     private UltraGridProducerApplication getProducerByConsumer(UltraGridConsumerApplication consumer) {
-         if (consumer == null){
-            return null;
-        }
         for (Entry<UltraGridProducerApplication, UltraGridConsumerApplication> entrySet : producer2consumer.entrySet()) {
-            if (consumer.getName().equals(entrySet.getValue().getName())) {
+            if (consumer.equals(entrySet.getValue())) {
                 return entrySet.getKey();
             }
         }
@@ -241,13 +240,10 @@ public class SessionManagerImpl implements SessionManager {
      * @param producer
      * @return
      */
-    private NetworkNode getNetworkNodeByProducer(UltraGridProducerApplication producer) {        
-        if (producer == null){
-            return null;
-        }        
+    private NetworkNode getNetworkNodeByProducer(UltraGridProducerApplication producer) {
         for (Entry<NetworkNode, UltraGridProducerApplication[]> entrySet : node2producer.entrySet()) {
             for (UltraGridProducerApplication ug : entrySet.getValue()) {
-                if (producer.getName().equals(ug.getName())) {
+                if (producer.equals(ug)) {
                     return entrySet.getKey();
                 }
             }
@@ -261,10 +257,7 @@ public class SessionManagerImpl implements SessionManager {
      * @param title
      * @return
      */
-    private UltraGridConsumerApplication getConsumerByTitle(String title) {        
-        if (title == null){
-            return null;
-        }        
+    private UltraGridConsumerApplication getConsumerByTitle(String title) {
         for (Entry<UltraGridConsumerApplication, String> entrySet : consumer2name.entrySet()) {
             if (title.equals(entrySet.getValue())) {
                 return entrySet.getKey();
@@ -305,8 +298,8 @@ public class SessionManagerImpl implements SessionManager {
 
                 @Override
                 public void init(Set<NetworkNode> nodes) {
-                    synchronized (eventLock) {
-                        for (NetworkNode node : nodes) {                        
+                    for (NetworkNode node : nodes) {
+                        synchronized (eventLock) {
                             onNodeChanged(node);
                         }
                     }
@@ -326,17 +319,16 @@ public class SessionManagerImpl implements SessionManager {
                 }
 
                 @Override
-                public void onNodeLeft(NetworkNode node) {                   
-                    // tell clints to refresh if it was currently used node
-                    System.err.println("Someone left!" + node.getName());
-                        
-                    synchronized (eventLock){
-                        if (consumer2name.get(producer2consumer.get(node2producer.get(node))).toUpperCase().contains("TEACHER") 
-                            || (node.getName().equals(talkingNode.getName()))) {
+                public void onNodeLeft(NetworkNode node) {
+                    synchronized (eventLock) {
+                        // tell clints to refresh if it was currently used node
+                        if (node.getName().toUpperCase().contains("teacher".toUpperCase()) || (node.getName().equals(talkingNode.getName()))) {
                             layoutManager.refreshToDefaultLayout();
+                            isTalking = false;
+                            talkingNode = null;
                         }
+                        stopConsumer(node);
                     }
-                    stopConsumer(node);                  
                 }
             });
         }
@@ -367,9 +359,7 @@ public class SessionManagerImpl implements SessionManager {
                         }
 
                     } else if (message.type.equals(STOPALERT)) {
-
                         UltraGridConsumerApplication consumer = producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]);
-
                         if (consumer != null) {
                             // get application handle and draw/remove border
                             UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
