@@ -422,7 +422,7 @@ public class LayoutManagerImpl implements LayoutManager {
                                             System.err.println(window.getTitle() + " was CLICKED!");
                                             if (!window.getDefaultRole().equals("interpreter") && !window.getTitle().contains("teacher")){
                                                 layoutManagerListeners.stream().forEach((listener) -> {
-                                                    listener.windowChosenActionPerformed(window.getTitle());
+                                                    listener.windowChoosenActionPerformed(window.getTitle());
                                                 });                                            
                                             }
                                             break;
@@ -553,16 +553,25 @@ public class LayoutManagerImpl implements LayoutManager {
     @Override
     public void swapPosition(String title){
         
-        String[] paramArray = {"teacher", "video"};
-                
+        String[] paramArray = {"teacher", "video"};                
         DisplayableWindow teacher = getDisplayableWindowByParameters(paramArray);
         DisplayableWindow student = getDisplayableWindowByTitle(title);
-        
-        teacher.setCurrentRole("student");
+
+        teacher.setCurrentRole("student");   
         student.setCurrentRole("teacher");
         
-        recalculateAndApply();
+        Position temporaryPosition = teacher.getPosition();
+        teacher.setPosition(student.getPosition());
+        student.setPosition(temporaryPosition);
         
+        int temporarySize = teacher.getWidth();
+        teacher.setWidth(student.getWidth());        
+        student.setWidth(temporarySize);
+        temporarySize = teacher.getHeight();
+        teacher.setHeight(student.getHeight());
+        student.setHeight(temporarySize);
+
+        refresh();
     }
     
      /**
@@ -573,12 +582,13 @@ public class LayoutManagerImpl implements LayoutManager {
     @Override
     public void addNode(String title, String role){
         try {
-            DisplayableWindow newWin = new DisplayableWindow(wd, title, role);                
-            windows.add(newWin);
+            synchronized(eventLock){  
+                DisplayableWindow newWin = new DisplayableWindow(wd, title, role);
+                windows.add(newWin);
+            }
         } catch (WDDManException | UnsupportedOperatingSystemException ex) {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
+        }        
         recalculateAndApply();
     }
     
@@ -591,21 +601,21 @@ public class LayoutManagerImpl implements LayoutManager {
         layoutManagerListeners.add(listener);
     }
     
-    
     /**
      * Removes window from layout
      * @param title window title
      */
     @Override
     public void removeNode(String title){ 
-        for (Iterator<DisplayableWindow> iter = windows.iterator(); iter.hasNext();){
-            DisplayableWindow window = iter.next();
-            if (window.contains(title)) {                               
-                iter.remove();
-                break;             
-            }
-        }    
-        
+        synchronized(eventLock){  
+            for (Iterator<DisplayableWindow> iter = windows.iterator(); iter.hasNext();){
+                DisplayableWindow window = iter.next();
+                if (window.contains(title)) {                               
+                    iter.remove();
+                    break;             
+                }
+            }  
+        }        
         recalculateAndApply();
     }
  
@@ -633,12 +643,10 @@ public class LayoutManagerImpl implements LayoutManager {
      * refreshes layout to default position
      */
     @Override
-    public void refreshToDefaultLayout() {
-        
+    public void refreshToDefaultLayout() {        
         for (DisplayableWindow window : windows){
             window.setCurrentRole(window.getDefaultRole());
-        }
-        
+        }        
         recalculateAndApply();
     }
     

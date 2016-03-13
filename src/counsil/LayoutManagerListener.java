@@ -22,7 +22,7 @@ public interface LayoutManagerListener {
      * @param windowName of window
      */
     
-    void windowChosenActionPerformed(String windowName);
+    void windowChoosenActionPerformed(String windowName);
 
     /**
      * what to do when volume is muted

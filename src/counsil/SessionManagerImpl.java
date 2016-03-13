@@ -149,7 +149,7 @@ public class SessionManagerImpl implements SessionManager {
             }
 
             @Override
-            public void windowChosenActionPerformed(String windowName) {
+            public void windowChoosenActionPerformed(String windowName) {
 
                 NetworkNode choosenNode = getNetworkNodeByProducer(getProducerByConsumer(getConsumerByTitle(windowName)));
 
@@ -224,8 +224,11 @@ public class SessionManagerImpl implements SessionManager {
      * @return
      */
     private UltraGridProducerApplication getProducerByConsumer(UltraGridConsumerApplication consumer) {
+         if (consumer == null){
+            return null;
+        }
         for (Entry<UltraGridProducerApplication, UltraGridConsumerApplication> entrySet : producer2consumer.entrySet()) {
-            if (consumer.equals(entrySet.getValue())) {
+            if (consumer.getName().equals(entrySet.getValue().getName())) {
                 return entrySet.getKey();
             }
         }
@@ -238,10 +241,13 @@ public class SessionManagerImpl implements SessionManager {
      * @param producer
      * @return
      */
-    private NetworkNode getNetworkNodeByProducer(UltraGridProducerApplication producer) {
+    private NetworkNode getNetworkNodeByProducer(UltraGridProducerApplication producer) {        
+        if (producer == null){
+            return null;
+        }        
         for (Entry<NetworkNode, UltraGridProducerApplication[]> entrySet : node2producer.entrySet()) {
             for (UltraGridProducerApplication ug : entrySet.getValue()) {
-                if (producer.equals(ug)) {
+                if (producer.getName().equals(ug.getName())) {
                     return entrySet.getKey();
                 }
             }
@@ -255,7 +261,10 @@ public class SessionManagerImpl implements SessionManager {
      * @param title
      * @return
      */
-    private UltraGridConsumerApplication getConsumerByTitle(String title) {
+    private UltraGridConsumerApplication getConsumerByTitle(String title) {        
+        if (title == null){
+            return null;
+        }        
         for (Entry<UltraGridConsumerApplication, String> entrySet : consumer2name.entrySet()) {
             if (title.equals(entrySet.getValue())) {
                 return entrySet.getKey();
@@ -318,14 +327,14 @@ public class SessionManagerImpl implements SessionManager {
 
                 @Override
                 public void onNodeLeft(NetworkNode node) {
-                    synchronized (eventLock) {
+                   // synchronized (eventLock) {
                         // tell clints to refresh if it was currently used node
-                        if (node.getName().contains("teacher") || (node.getName().equals(talkingNode.getName()))) {
+                        if (node.getName().toUpperCase().contains("TEACHER") || (node.getName().equals(talkingNode.getName()))) {
                             layoutManager.refreshToDefaultLayout();
-                            
+                            System.err.println("Teacher left!");
                         }
                         stopConsumer(node);
-                    }
+                    //}
                 }
             });
         }
