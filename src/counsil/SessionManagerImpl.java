@@ -17,6 +17,7 @@ import couniverse.core.p2p.CoUniverseMessage;
 import couniverse.core.p2p.GroupConnectorID;
 import couniverse.core.p2p.MessageListener;
 import couniverse.core.p2p.MessageType;
+import couniverse.gui.display.NodeGraphics;
 import couniverse.monitoring.NodePresenceListener;
 import couniverse.monitoring.TopologyAggregator;
 import couniverse.ultragrid.UltraGridConsumerApplication;
@@ -310,11 +311,7 @@ public class SessionManagerImpl implements SessionManager {
                 }
 
                 @Override
-                public void onNodeChanged(NetworkNode node) {
-                    // check name                        
-                    if (node.equals(local) && ((String) local.getProperty("role")).equals("teacher")) {
-                        return;
-                    }
+                public void onNodeChanged(NetworkNode node) {          
                     // Check if there is new media application
                     checkProducent(node);
                 }
@@ -323,10 +320,9 @@ public class SessionManagerImpl implements SessionManager {
                 public void onNodeLeft(NetworkNode node) {
                     synchronized (eventLock) {
                         // tell clints to refresh if it was currently used node
-                        if (node.getName().contains("teacher") || (node.equals(talkingNode))) {
+                        if (node.getName().contains("teacher") || (node.getName().equals(talkingNode.getName()))) {
                             layoutManager.refreshToDefaultLayout();
                         }
-
                         stopConsumer(node);
                     }
                 }
@@ -383,7 +379,7 @@ public class SessionManagerImpl implements SessionManager {
                             layoutManager.swapPosition(title);
                         }
                         isTalking = true;
-                        talkingNode = local;
+                        talkingNode = (NetworkNode) message.content[0];
                     } else if (message.type.equals(STOPTALK)) {
                         synchronized (eventLock) {
                             layoutManager.refreshToDefaultLayout();
