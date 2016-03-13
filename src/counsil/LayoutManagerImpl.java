@@ -412,7 +412,7 @@ public class LayoutManagerImpl implements LayoutManager {
                 public void nativeMouseClicked(NativeMouseEvent nme) {
                     Point location = nme.getPoint();                        
                     
-                    synchronized(eventLock){  
+                   // synchronized(eventLock){  
                         //! find window which was clicked on
                         for (DisplayableWindow window : windows){
                             if (window.getPosition().x <= location.x){
@@ -432,7 +432,7 @@ public class LayoutManagerImpl implements LayoutManager {
                             }
                         }
                     }
-                }
+                //}
 
                 @Override
                 public void nativeMousePressed(NativeMouseEvent nme) {                   
