@@ -356,8 +356,7 @@ public class LayoutManagerImpl implements LayoutManager {
             @Override
             public void run() {
                 try {                      
-                    menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());
-                    
+                    menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());                    
                     
                     String[] parameters = {"video", getMenuUserRole()};
                     
@@ -406,6 +405,7 @@ public class LayoutManagerImpl implements LayoutManager {
         });     
         
         // adding listener if role is interpreter
+        
         if (getMenuUserRole().equals("interpreter")) {  
                 NativeMouseInputListener mouseListener =  new NativeMouseInputListener() {
                 @Override
@@ -420,11 +420,9 @@ public class LayoutManagerImpl implements LayoutManager {
                                     if (window.getPosition().x + window.getWidth() >= location.x){
                                         if (window.getPosition().y + window.getHeight() >= location.y){
                                             System.err.println(window.getTitle() + " was CLICKED!");
-                                            if ((window.getDefaultRole() != ("interpreter")) && (!window.getTitle().contains("presentation"))) {                                            
-                                                layoutManagerListeners.stream().forEach((listener) -> {
-                                                    listener.windowChosenActionPerformed(window.getTitle());
-                                                });
-                                            }
+                                            layoutManagerListeners.stream().forEach((listener) -> {
+                                                listener.windowChosenActionPerformed(window.getTitle());
+                                            });
                                             break;
                                         }
                                     }
@@ -457,9 +455,9 @@ public class LayoutManagerImpl implements LayoutManager {
             
             // register listener to screen, turn off loggers
             GlobalScreen.registerNativeHook();
-            Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
-            logger.setLevel(Level.OFF);
             GlobalScreen.addNativeMouseListener(mouseListener);
+            Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
+            logger.setLevel(Level.OFF);            
             logger.setUseParentHandlers(false);
         }
                   
@@ -509,7 +507,7 @@ public class LayoutManagerImpl implements LayoutManager {
     private void applyChanges(){      
         windows.stream().forEach((window) -> {                       
             try {                    
-                if (window != null) window.adjustWindow(wd);
+                window.adjustWindow(wd);
             } catch (WDDManException ex) {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             }                          

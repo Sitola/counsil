@@ -157,13 +157,11 @@ public class SessionManagerImpl implements SessionManager {
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission granted for node {0}...", windowName);
                     core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);
                     talkingNode = choosenNode;
-                    isTalking = true;
-                } else {                    
+                } else {
                     CoUniverseMessage stoptalk = CoUniverseMessage.newInstance(STOPTALK, choosenNode);
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission removed for node {0}...", windowName);
                     core.getConnector().sendMessageToGroup(stoptalk, GroupConnectorID.ALL_NODES);
                     talkingNode = null;
-                    isTalking = false;
                 }
 
             }
@@ -314,9 +312,9 @@ public class SessionManagerImpl implements SessionManager {
                 @Override
                 public void onNodeChanged(NetworkNode node) {
                     // check name                        
-                    //if (node.equals(local) && ((String) local.getProperty("role")).equals("teacher")) {
-                    //    return;
-                    //}
+                    if (node.equals(local) && ((String) local.getProperty("role")).equals("teacher")) {
+                        return;
+                    }
                     // Check if there is new media application
                     checkProducent(node);
                 }
@@ -325,11 +323,8 @@ public class SessionManagerImpl implements SessionManager {
                 public void onNodeLeft(NetworkNode node) {
                     synchronized (eventLock) {
                         // tell clints to refresh if it was currently used node
-                        if (node.getName().contains("teacher") || (node.getName().equals(talkingNode.getName()))) {
+                        if (node.getName().contains("teacher") || (node.equals(talkingNode))) {
                             layoutManager.refreshToDefaultLayout();
-                        }
-                        else {
-                            layoutManager.refresh();
                         }
 
                         stopConsumer(node);
@@ -388,7 +383,7 @@ public class SessionManagerImpl implements SessionManager {
                             layoutManager.swapPosition(title);
                         }
                         isTalking = true;
-                        talkingNode = (NetworkNode) message.content[0];
+                        talkingNode = local;
                     } else if (message.type.equals(STOPTALK)) {
                         synchronized (eventLock) {
                             layoutManager.refreshToDefaultLayout();
