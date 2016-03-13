@@ -319,16 +319,19 @@ public class SessionManagerImpl implements SessionManager {
                 @Override
                 public void onNodeLeft(NetworkNode node) {
                    // synchronized (eventLock) {
-                        // tell clints to refresh if it was currently used node                        
-                        String nodeName = node.getName();    
-                        System.err.println("Node " + nodeName + " left!!!!!!!!!!!");
+                        // tell clints to refresh if it was currently used node                       
+                        System.err.println("Node " + node.getName() + " left!!!!!!!!!!!");   
+                        if (isTalking){
+                            String nodeName = consumer2name.get(producer2consumer.get(node2producer.get(node)));                          
+                            if (nodeName != null && (((talkingNode != null) && (node.getName().equals(talkingNode.getName())))||(nodeName.toUpperCase().contains("TEACHER")))){ 
+                                System.err.println("I am leaving!");
+                                layoutManager.refreshToDefaultLayout();
+                                isTalking = false;
+                                talkingNode = null;
+                            }   
+                        }        
                         stopConsumer(node);
-                        if (nodeName.equals(talkingNode.getName()) || nodeName.toUpperCase().contains("TEACHER")) {
-                            layoutManager.refreshToDefaultLayout();
-                            isTalking = false;
-                            talkingNode = null;
-                        }                        
-                   // }
+                    
                 }
             });
         }
