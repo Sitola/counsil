@@ -420,9 +420,11 @@ public class LayoutManagerImpl implements LayoutManager {
                                     if (window.getPosition().x + window.getWidth() >= location.x){
                                         if (window.getPosition().y + window.getHeight() >= location.y){
                                             System.err.println(window.getTitle() + " was CLICKED!");
-                                            layoutManagerListeners.stream().forEach((listener) -> {
-                                                listener.windowChosenActionPerformed(window.getTitle());
-                                            });
+                                            if (!window.getDefaultRole().equals("interpreter") && !window.getTitle().contains("teacher")){
+                                                layoutManagerListeners.stream().forEach((listener) -> {
+                                                    listener.windowChosenActionPerformed(window.getTitle());
+                                                });                                            
+                                            }
                                             break;
                                         }
                                     }

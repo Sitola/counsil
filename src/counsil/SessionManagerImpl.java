@@ -296,8 +296,8 @@ public class SessionManagerImpl implements SessionManager {
 
                 @Override
                 public void init(Set<NetworkNode> nodes) {
-                    for (NetworkNode node : nodes) {
-                        synchronized (eventLock) {
+                    synchronized (eventLock) {
+                        for (NetworkNode node : nodes) {                        
                             onNodeChanged(node);
                         }
                     }
@@ -322,6 +322,7 @@ public class SessionManagerImpl implements SessionManager {
                         // tell clints to refresh if it was currently used node
                         if (node.getName().contains("teacher") || (node.getName().equals(talkingNode.getName()))) {
                             layoutManager.refreshToDefaultLayout();
+                            
                         }
                         stopConsumer(node);
                     }
