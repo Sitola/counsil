@@ -174,9 +174,9 @@ public class LayoutManagerImpl implements LayoutManager {
                     menu.addInteractionMenuListener(new InteractionMenuListener() {
                            
                         @Override
-                        public void raiseHandActionPerformed(Boolean wasRaised) { 
+                        public void raiseHandActionPerformed() { 
                             layoutManagerListeners.stream().forEach((listener) -> {                                   
-                                listener.alertActionPerformed(wasRaised);
+                                listener.alertActionPerformed();
                             });
                         }
 

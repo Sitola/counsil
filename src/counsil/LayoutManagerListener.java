@@ -13,9 +13,8 @@ public interface LayoutManagerListener {
     
     /**
      * what to do when user wants to talk
-     * @param wasRaised
      */
-    void alertActionPerformed(Boolean wasRaised);
+    void alertActionPerformed();
     
     /**
      *  what to do when window is chosen

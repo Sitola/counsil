@@ -25,11 +25,6 @@ import javax.swing.LayoutStyle;
  * @author desanka
  */
 public class InteractionMenu extends JFrame {
-    
-    /**
-     * Represents current state of raise hand button
-     */
-    private boolean raisedHand;
         
     /**
      * Represents buttons in current menu instance
@@ -85,8 +80,7 @@ public class InteractionMenu extends JFrame {
         setLocationRelativeTo(null);
         setLocation(position.x, position.y);
                 
-        buttons = new ArrayList<>();
-        raisedHand = false;
+        buttons = new ArrayList<>();       
         muted = false;
         volumeValue = 5;
         
@@ -235,16 +229,9 @@ public class InteractionMenu extends JFrame {
      * Starts raise/lower hand interaction when button is clicked
      * @param button clicked button 
      */
-    private void attentionButtonActionPerformed(JButton button) {                                                 
-        if (raisedHand) {
-            button.setText("Raise hand");            
-        } else {
-            button.setText("Lower hand");             
-        }
-        raisedHand = !raisedHand;
-        
+    private void attentionButtonActionPerformed(JButton button) {                                                
         interactionMenuListeners.stream().forEach((listener) -> {            
-            listener.raiseHandActionPerformed(raisedHand);
+            listener.raiseHandActionPerformed();
         });
     }  
     
