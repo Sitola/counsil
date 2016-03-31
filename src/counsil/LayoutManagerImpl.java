@@ -217,7 +217,7 @@ public class LayoutManagerImpl implements LayoutManager {
         
         // adding listener if role is interpreter
         
-        if (getMenuUserRole().equals("interpreter")) {  
+        if (getMenuUserRole().equals("interpreter") || getMenuUserRole().equals("teacher")) {  
                 NativeMouseInputListener mouseListener =  new NativeMouseInputListener() {
                 @Override
                 public void nativeMouseClicked(NativeMouseEvent nme) {
