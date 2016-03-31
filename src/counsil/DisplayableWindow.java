@@ -34,15 +34,12 @@ class DisplayableWindow{
      */
     private Position position;
 
-    /**
-     * Window default role
-     */
-    private final String defaultRole;
+
     
     /**
      * Window temporary role in layout
      */
-    private String currentRole;
+    private String role;
 
     /**
      * Window title
@@ -71,9 +68,8 @@ class DisplayableWindow{
         width = content.getWidth();
         height = content.getHeight();
 
-        this.title = title;
-        this.defaultRole = role;
-        this.currentRole = role;
+        this.title = title;    
+        this.role = role;
     }
 
     /**
@@ -122,27 +118,23 @@ class DisplayableWindow{
     public void setWidth(int width) {
         this.width = width;
     }
-
-    public String getDefaultRole() {
-        return defaultRole;
-    }    
+  
     
-    public  String geCurrentRole (){
-        return currentRole;
+    public  String getRole (){
+        return role;
     }
   
     public String getTitle(){
         return title;
     }
     
-    public void setCurrentRole (String role){
-        currentRole = role;
+    public void setRole (String role){
+        this.role = role;
     }
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 53 * hash + Objects.hashCode(this.defaultRole);
+        int hash = 5;      
         hash = 53 * hash + Objects.hashCode(this.title);
         return hash;
     }
@@ -155,12 +147,9 @@ class DisplayableWindow{
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final DisplayableWindow other = (DisplayableWindow) obj;
-        if (!Objects.equals(this.defaultRole, other.defaultRole)) {
-            return false;
-        }
+        final DisplayableWindow other = (DisplayableWindow) obj;  
         return Objects.equals(this.title, other.title);
     }
-    
+
     
 }

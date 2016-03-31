@@ -37,14 +37,17 @@ public interface LayoutManager {
     
     
     /**
-     * Swaps position of first teacher window and specified window
-     * @param title 
+     * Swaps position of new and old window and specified window 
+     * @param newWindowName
+     * @param oldWindowName
      */
-    public void swapPosition(String title);
+     public void swapPosition(String newWindowName, String oldWindowName);
 
     /**
      * Refreshes layout to default positions
      */
     public void refreshToDefaultLayout();
+
+   
 
 }

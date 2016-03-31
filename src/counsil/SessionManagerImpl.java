@@ -95,11 +95,6 @@ public class SessionManagerImpl implements SessionManager {
     MessageListener counsilListener;
 
     /**
-     * Checks if someone is talking in this moment
-     */
-    private static Boolean isTalking;
-
-    /**
      * Currently talking node
      */
     private static NetworkNode talkingNode;
@@ -114,20 +109,10 @@ public class SessionManagerImpl implements SessionManager {
      */
     public static MessageType ALERT = MessageType.createCustomMessageType("AlertMessage", "NetworkNode");
 
-    /**
-     * StopAlert message is used for stopping alerting other nodes
-     */
-    public static MessageType STOPALERT = MessageType.createCustomMessageType("StopAlertMessage", "NetworkNode");
-
-    /**
+      /**
      * Talk message is used for granting talk permission
      */
     public static MessageType TALK = MessageType.createCustomMessageType("TalkPermissionGrantedMessage", "NetworkNode");
-
-    /**
-     * StopTalk message is used for removing talk right other nodes
-     */
-    public static MessageType STOPTALK = MessageType.createCustomMessageType("TalkPermissionRemovedMessage", "NetworkNode");
 
     /**
      * Constructor to initialize LayoutManager
@@ -152,21 +137,10 @@ public class SessionManagerImpl implements SessionManager {
 
             @Override
             public void windowChoosenActionPerformed(String windowName) {
-                NetworkNode choosenNode = getNetworkNodeByProducer(getProducerByConsumer(getConsumerByTitle(windowName)));
-                if (!isTalking) {
+                NetworkNode choosenNode = getNetworkNodeByProducer(getProducerByConsumer(getConsumerByTitle(windowName)));           
                     CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, choosenNode);
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission granted for node {0}...", windowName);
-                    core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);
-                    talkingNode = choosenNode;
-                    isTalking = true;
-                } else {
-                    CoUniverseMessage stoptalk = CoUniverseMessage.newInstance(STOPTALK, choosenNode);
-                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission removed for node {0}...", windowName);
-                    core.getConnector().sendMessageToGroup(stoptalk, GroupConnectorID.ALL_NODES);
-                    talkingNode = null;
-                    isTalking = false;
-                }
-
+                    core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);                                        
             }
 
             @Override
@@ -214,9 +188,8 @@ public class SessionManagerImpl implements SessionManager {
                 }
             }
         });
-
-        isTalking = false;
-
+        
+        talkingNode = null;
     }
 
     /**
@@ -318,10 +291,8 @@ public class SessionManagerImpl implements SessionManager {
                 public void onNodeLeft(NetworkNode node) {
                     String nodeName = consumer2name.get(producer2consumer.get(node2producer.get(node)));
                     if (nodeName != null) {
-                        if (((talkingNode != null) && (node.getName().equals(talkingNode.getName())))
-                                || (nodeName.toUpperCase().contains("TEACHER"))) {
-                            layoutManager.refreshToDefaultLayout();
-                            isTalking = false;
+                        if ((talkingNode != null) && (node.getName().equals(talkingNode.getName()))) {
+                            layoutManager.refreshToDefaultLayout();                            
                             talkingNode = null;
                         }
                     }
@@ -372,23 +343,14 @@ public class SessionManagerImpl implements SessionManager {
 
                 } else if (message.type.equals(TALK)) {
                     String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]));
-
-                    layoutManager.swapPosition(title);
-
-                    isTalking = true;
+                    layoutManager.swapPosition(title, talkingNode.getName());
                     talkingNode = (NetworkNode) message.content[0];
-                } else if (message.type.equals(STOPTALK)) {
-
-                    layoutManager.refreshToDefaultLayout();
-
-                    isTalking = false;
-                    talkingNode = null;
-                }
+                } 
             }
         };
 
         // define message types
-        core.getConnector().attachMessageListener(counsilListener, ALERT, TALK, STOPALERT, STOPTALK);
+        core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);
         
         /*  
             // refreshes layout on consumer restart

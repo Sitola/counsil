@@ -100,8 +100,8 @@ public class LayoutManagerImpl implements LayoutManager {
         
         //for each role in input put windows to distribute in them
         for (DisplayableWindow win : windows) {
-            if(numRoles.containsKey(win.geCurrentRole())){
-                List<DisplayableWindow> intIncrem = numRoles.get(win.geCurrentRole());
+            if(numRoles.containsKey(win.getRole())){
+                List<DisplayableWindow> intIncrem = numRoles.get(win.getRole());
                 intIncrem.add(win);
             }
         }
@@ -219,22 +219,21 @@ public class LayoutManagerImpl implements LayoutManager {
         
         if (getMenuUserRole().equals("interpreter") || getMenuUserRole().equals("teacher")) {  
                 NativeMouseInputListener mouseListener =  new NativeMouseInputListener() {
-                @Override
-                public void nativeMouseClicked(NativeMouseEvent nme) {
-                    Point location = nme.getPoint();                        
-                    
-                   // synchronized(eventLock){  
+                    @Override
+                    public void nativeMouseClicked(NativeMouseEvent nme) {
+                        Point location = nme.getPoint();
+
                         //! find window which was clicked on
-                        for (DisplayableWindow window : windows){
-                            if (window.getPosition().x <= location.x){
-                                if (window.getPosition().y <= location.y){
-                                    if (window.getPosition().x + window.getWidth() >= location.x){
-                                        if (window.getPosition().y + window.getHeight() >= location.y){
+                        for (DisplayableWindow window : windows) {
+                            if (window.getPosition().x <= location.x) {
+                                if (window.getPosition().y <= location.y) {
+                                    if (window.getPosition().x + window.getWidth() >= location.x) {
+                                        if (window.getPosition().y + window.getHeight() >= location.y) {
                                             System.err.println(window.getTitle() + " was CLICKED!");
-                                            if (!window.getDefaultRole().equals("interpreter") && !window.getTitle().contains("teacher")){
+                                            if (!window.getRole().equals("interpreter") && !window.getTitle().contains("teacher")) {
                                                 layoutManagerListeners.stream().forEach((listener) -> {
                                                     listener.windowChoosenActionPerformed(window.getTitle());
-                                                });                                            
+                                                });
                                             }
                                             break;
                                         }
@@ -243,14 +242,13 @@ public class LayoutManagerImpl implements LayoutManager {
                             }
                         }
                     }
-                //}
 
-                @Override
-                public void nativeMousePressed(NativeMouseEvent nme) {                   
-                    // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                }
+                    @Override
+                    public void nativeMousePressed(NativeMouseEvent nme) {
+                        // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                    }
 
-                @Override
+                    @Override
                 public void nativeMouseReleased(NativeMouseEvent nme) {
                     // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                 }
@@ -348,29 +346,30 @@ public class LayoutManagerImpl implements LayoutManager {
     }        
     
     /**
-     * Swaps position of first teacher window and specified window
-     * @param title 
+     * Swaps position of new and old window and specified window 
+     * @param newWindowName
+     * @param oldWindowName
      */
     @Override
-    public void swapPosition(String title){
+    public void swapPosition(String newWindowName, String oldWindowName){        
+                    
+        DisplayableWindow newWindow = getDisplayableWindowByTitle(newWindowName);
+        DisplayableWindow oldWindow = getDisplayableWindowByTitle(oldWindowName);
         
-        String[] paramArray = {"teacher", "video"};                
-        DisplayableWindow teacher = getDisplayableWindowByParameters(paramArray);
-        DisplayableWindow student = getDisplayableWindowByTitle(title);
-
-        teacher.setCurrentRole("student");   
-        student.setCurrentRole("teacher");
+        String tempRole= newWindow.getRole();
+        newWindow.setRole(oldWindow.getRole());         
+        oldWindow.setRole(tempRole);
         
-        Position temporaryPosition = teacher.getPosition();
-        teacher.setPosition(student.getPosition());
-        student.setPosition(temporaryPosition);
+        Position temporaryPosition = newWindow.getPosition();
+        newWindow.setPosition(oldWindow.getPosition());
+        oldWindow.setPosition(temporaryPosition);
         
-        int temporarySize = teacher.getWidth();
-        teacher.setWidth(student.getWidth());        
-        student.setWidth(temporarySize);
-        temporarySize = teacher.getHeight();
-        teacher.setHeight(student.getHeight());
-        student.setHeight(temporarySize);
+        int temporarySize = newWindow.getWidth();
+        newWindow.setWidth(oldWindow.getWidth());        
+        oldWindow.setWidth(temporarySize);
+        temporarySize = newWindow.getHeight();
+        newWindow.setHeight(oldWindow.getHeight());
+        oldWindow.setHeight(temporarySize);
 
         refresh();
     }
@@ -444,10 +443,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * refreshes layout to default position
      */
     @Override
-    public void refreshToDefaultLayout() {        
-        for (DisplayableWindow window : windows){
-            window.setCurrentRole(window.getDefaultRole());
-        }        
+    public void refreshToDefaultLayout() {      
         recalculateAndApply();
     }
     
