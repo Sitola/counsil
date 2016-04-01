@@ -551,14 +551,17 @@ public class SessionManagerImpl implements SessionManager {
         }
         for (UltraGridProducerApplication app : node2producer.get(node)) {
             UltraGridConsumerApplication ugCon = producer2consumer.remove(app);
-            timers.remove(ugCon.name);
-            String removed = consumer2name.remove(ugCon);
+            if (ugCon != null) {
+                timers.remove(ugCon.name);
 
-            if (removed != null) {
-                layoutManager.removeNode(removed);
-                core.stopApplication(ugCon);
-            } else {
-                System.out.println("You are trying to stop non-registered application");
+                String removed = consumer2name.remove(ugCon);
+
+                if (removed != null) {
+                    layoutManager.removeNode(removed);
+                    core.stopApplication(ugCon);
+                } else {
+                    System.out.println("You are trying to stop non-registered application");
+                }
             }
         }
         node2producer.remove(node);
