@@ -25,6 +25,7 @@ import couniverse.ultragrid.UltraGridControllerHandle;
 import couniverse.ultragrid.UltraGridProducerApplication;
 import java.awt.EventQueue;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,11 +61,6 @@ public class SessionManagerImpl implements SessionManager {
     Map<UltraGridConsumerApplication, String> consumer2name = new HashMap<>();
 
     /**
-     * Shows if current consumer is alerting
-     */
-    Map<UltraGridConsumerApplication, Boolean> consumer2alert = new HashMap<>();
-
-    /**
      * Listens for ultragrid windows changes
      */
     couniverse.core.controllers.ApplicationEventListener consumerListener;
@@ -84,12 +80,7 @@ public class SessionManagerImpl implements SessionManager {
     LayoutManager layoutManager;
     TopologyAggregator topologyAggregator;
 
-    /**
-     * Lock for gui and other stuff
-     */
-    final private Object eventLock = new Object();
-
-    /**
+      /**
      * Listens alert and permission to talk messages
      */
     MessageListener counsilListener;
@@ -100,9 +91,9 @@ public class SessionManagerImpl implements SessionManager {
     private static NetworkNode talkingNode;
     
     /**
-     * Timer for alerting
+     * Timers for alerting certain windows
      */
-    private static final Timer timer = new Timer();
+    private static HashMap<String, Timer> timers = new HashMap<>();
 
     /**
      * Alert message is used for alerting other nodes
@@ -316,12 +307,13 @@ public class SessionManagerImpl implements SessionManager {
                             try {
                                 handle.sendCommand("postprocess border:width=5:color=#ff0000");
                                 
-                                timer.schedule(new TimerTask() {
+                                Timer currentTimer = timers.get(consumer.name);                                
+                                currentTimer.schedule(new TimerTask() {
                                     @Override
                                     public void run() {
                                         try {
                                             handle.sendCommand("postprocess flush");
-                                            timer.purge();
+                                            currentTimer.purge();
                                         } catch (InterruptedException ex) {
                                             Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                                         } catch (TimeoutException ex) {
@@ -329,10 +321,6 @@ public class SessionManagerImpl implements SessionManager {
                                         }
                                     }
                                 }, 30000); 
-                                
-                                
-                                //! todo ;
-                                consumer2alert.replace(consumer, true);
                             } catch (InterruptedException ex) {
                                 Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                             } catch (TimeoutException ex) {
@@ -498,7 +486,7 @@ public class SessionManagerImpl implements SessionManager {
             apps[0] = app;
         }
 
-        consumer2alert.put(con, false);
+        timers.put(name, new Timer());
         producer2consumer.put(app, con);
         node2producer.put(node, apps);
         consumer2name.put(con, name);
@@ -563,7 +551,7 @@ public class SessionManagerImpl implements SessionManager {
         }
         for (UltraGridProducerApplication app : node2producer.get(node)) {
             UltraGridConsumerApplication ugCon = producer2consumer.remove(app);
-            consumer2alert.remove(ugCon);
+            timers.remove(ugCon.name);
             String removed = consumer2name.remove(ugCon);
 
             if (removed != null) {
