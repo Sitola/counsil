@@ -32,26 +32,26 @@ import wddman.WDDManException;
 
 /**
  * Represents structure which manipulates with layout
+ *
  * @author desanka, xminarik
  */
-
 public class LayoutManagerImpl implements LayoutManager {
-    
+
     /**
      * Lock for gui and other stuff
      */
     final private Object eventLock = new Object();
-    
+
     /**
      * List of current active windows
      */
     private List<DisplayableWindow> windows;
-    
+
     /**
      * Instance of wddman
      */
     private WDDMan wd;
-    
+
     /**
      * Instance of CoUnSIl menu
      */
@@ -59,23 +59,23 @@ public class LayoutManagerImpl implements LayoutManager {
 
     /**
      * List of layout manager listeners
-     */    
+     */
     private List<LayoutManagerListener> layoutManagerListeners = new ArrayList<>();
-    
+
     /**
      * JSON configure file object
      */
     private JSONObject input;
-    
+
     /*
     * recalculate new layout from JSON layout file and array of nodes or something with specify role 
     * return layout with position nad id|name 
     *
     * it work with fields with ratio < 1, but result may not be as expected, because it 
     * prefer spliting to rows not columbs, if needed can be change in future
-    */
-    private void recalculate(){
-        if(input == null){
+     */
+    private void recalculate() {
+        if (input == null) {
             return;
         }
         Map<String, List<DisplayableWindow>> numRoles;
@@ -87,32 +87,32 @@ public class LayoutManagerImpl implements LayoutManager {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
-        
+
         Vector<String> roles = new Vector<>();
         roles.add("presentation");
         roles.add("interpreter");
         roles.add("teacher");
         roles.add("student");
-        
-        for(int i=0;i<roles.size();i++){
+
+        for (int i = 0; i < roles.size(); i++) {
             numRoles.put(roles.get(i), new ArrayList<>());
         }
-        
+
         //for each role in input put windows to distribute in them
         for (DisplayableWindow win : windows) {
-            if(numRoles.containsKey(win.getRole())){
+            if (numRoles.containsKey(win.getRole())) {
                 List<DisplayableWindow> intIncrem = numRoles.get(win.getRole());
                 intIncrem.add(win);
             }
         }
-        
+
         //distribute windows in their field
-        for(int i=0; i < roles.size(); i++){
+        for (int i = 0; i < roles.size(); i++) {
             JSONArray roleWindowsConfig;
             int windowWidth = 1;
             int windowHeight = 1;
             int windowX = 0;
-            int windowY  = 0;
+            int windowY = 0;
             List<DisplayableWindow> winList;
             try {
                 roleWindowsConfig = fields.getJSONArray(roles.get(i));
@@ -120,18 +120,18 @@ public class LayoutManagerImpl implements LayoutManager {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                 return;
             }
-            
+
             winList = numRoles.get(roles.get(i));
-            for (int j=0; j<winList.size();j++) {
+            for (int j = 0; j < winList.size(); j++) {
                 DisplayableWindow win = winList.get(j);
-                if(j < roleWindowsConfig.length()){
+                if (j < roleWindowsConfig.length()) {
                     JSONObject windowConfig;
                     try {
                         windowConfig = roleWindowsConfig.getJSONObject(j);
                         windowWidth = windowConfig.getInt("width");
                         windowHeight = windowConfig.getInt("height");
                         windowX = windowConfig.getInt("x");
-                        windowY  = windowConfig.getInt("y");
+                        windowY = windowConfig.getInt("y");
                     } catch (JSONException ex) {
                         Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -142,49 +142,50 @@ public class LayoutManagerImpl implements LayoutManager {
             }
         }
     }
-    
+
     /**
      * Initializes layout
+     *
      * @throws org.json.JSONException
      * @throws java.io.FileNotFoundException
      * @throws wddman.WDDManException
      */
-    public LayoutManagerImpl() throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException{
-        
-        windows = new ArrayList<>(); 
+    public LayoutManagerImpl() throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
+
+        windows = new ArrayList<>();
         try {
-            wd = new WDDMan();            
+            wd = new WDDMan();
         } catch (UnsupportedOperatingSystemException ex) {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             System.exit(-1);
-        }  
-        
+        }
+
         String entireFileText = new Scanner(new File("layoutConfigStatic.json")).useDelimiter("\\A").next();
-        input = new JSONObject(entireFileText);       
-        
+        input = new JSONObject(entireFileText);
+
         // create menu
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                try {                      
-                    menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());                    
-                    
+                try {
+                    menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());
+
                     String[] parameters = {"video", getMenuUserRole()};
-                    
+
                     menu.addInteractionMenuListener(new InteractionMenuListener() {
-                           
+
                         @Override
-                        public void raiseHandActionPerformed() { 
-                            layoutManagerListeners.stream().forEach((listener) -> {                                   
+                        public void raiseHandActionPerformed() {
+                            layoutManagerListeners.stream().forEach((listener) -> {
                                 listener.alertActionPerformed();
                             });
                         }
 
                         @Override
                         public void muteActionPerformed() {
-                            layoutManagerListeners.stream().forEach((listener) -> {                             
+                            layoutManagerListeners.stream().forEach((listener) -> {
                                 listener.muteActionPerformed(getDisplayableWindowByParameters(parameters).getTitle());
-                               
+
                             });
                         }
 
@@ -192,180 +193,192 @@ public class LayoutManagerImpl implements LayoutManager {
                         public void unmuteActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {
                                 listener.unmuteActionPerformed(getDisplayableWindowByParameters(parameters).getTitle());
-                            }); 
+                            });
                         }
 
                         @Override
                         public void increaseActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {
                                 listener.volumeIncreasedActionPerformed(getDisplayableWindowByParameters(parameters).getTitle());
-                            });                         
+                            });
                         }
 
                         @Override
                         public void decreaseActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {
                                 listener.volumeDecreasedActionPerformed(getDisplayableWindowByParameters(parameters).getTitle());
-                            });}
-                        
+                            });
+                        }
+
                     });
                 } catch (JSONException ex) {
                     Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-        });     
-        
-        // adding listener if role is interpreter
-        
-        if (getMenuUserRole().equals("interpreter") || getMenuUserRole().equals("teacher")) {  
-                NativeMouseInputListener mouseListener =  new NativeMouseInputListener() {
-                    @Override
-                    public void nativeMouseClicked(NativeMouseEvent nme) {
-                        Point location = nme.getPoint();
+        });
 
-                        //! find window which was clicked on
-                        for (DisplayableWindow window : windows) {
-                            if (window.getPosition().x <= location.x) {
-                                if (window.getPosition().y <= location.y) {
-                                    if (window.getPosition().x + window.getWidth() >= location.x) {
-                                        if (window.getPosition().y + window.getHeight() >= location.y) {
-                                            System.err.println(window.getTitle() + " was CLICKED!");
-                                            if (!window.getRole().equals("interpreter") && !window.getTitle().contains("teacher")) {
-                                                layoutManagerListeners.stream().forEach((listener) -> {
+        // adding listener if role is interpreter
+        NativeMouseInputListener mouseListener = new NativeMouseInputListener() {
+            @Override
+            public void nativeMouseClicked(NativeMouseEvent nme) {
+                Point location = nme.getPoint();
+                int button = nme.getButton();
+
+                //! find window which was clicked on
+                for (DisplayableWindow window : windows) {
+                    if (window.getPosition().x <= location.x) {
+                        if (window.getPosition().y <= location.y) {
+                            if (window.getPosition().x + window.getWidth() >= location.x) {
+                                if (window.getPosition().y + window.getHeight() >= location.y) {
+                                    System.err.println(window.getTitle() + " was CLICKED!");
+                                    if (!window.getRole().equals("interpreter") && !window.getTitle().contains("teacher")) {
+                                        layoutManagerListeners.stream().forEach((listener) -> {
+                                            try {
+                                                if ((button == 1) && (getMenuUserRole().equals("interpreter") || getMenuUserRole().equals("teacher"))) {
                                                     listener.windowChoosenActionPerformed(window.getTitle());
-                                                });
+                                                } else if (button == 2) {
+                                                    listener.windowRestartActionPerformed(window.getTitle());
+                                                }
+                                            } catch (JSONException ex) {
+                                                Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                                             }
-                                            break;
-                                        }
+                                        });
                                     }
+                                    break;
                                 }
                             }
                         }
                     }
-
-                    @Override
-                    public void nativeMousePressed(NativeMouseEvent nme) {
-                        // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                    }
-
-                    @Override
-                public void nativeMouseReleased(NativeMouseEvent nme) {
-                    // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                 }
+            }
 
-                @Override
-                public void nativeMouseMoved(NativeMouseEvent nme) {
-                    // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                }
+            @Override
+            public void nativeMousePressed(NativeMouseEvent nme) {
+                // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
 
-                @Override
-                public void nativeMouseDragged(NativeMouseEvent nme) {
-                    // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                }
-            };
-            
-            // register listener to screen, turn off loggers
-            GlobalScreen.registerNativeHook();
-            GlobalScreen.addNativeMouseListener(mouseListener);
-            Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
-            logger.setLevel(Level.OFF);            
-            logger.setUseParentHandlers(false);
-        }
-                  
-        recalculateAndApply();        
-    }  
-    
+            @Override
+            public void nativeMouseReleased(NativeMouseEvent nme) {
+                // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void nativeMouseMoved(NativeMouseEvent nme) {
+                // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void nativeMouseDragged(NativeMouseEvent nme) {
+                // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        };
+
+        // register listener to screen, turn off loggers
+        GlobalScreen.registerNativeHook();
+        GlobalScreen.addNativeMouseListener(mouseListener);
+        Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
+        logger.setLevel(Level.OFF);
+        logger.setUseParentHandlers(false);
+
+        recalculateAndApply();
+    }
+
     /**
      * gets role from configure file
+     *
      * @return role of current user
-     * @throws JSONException 
+     * @throws JSONException
      */
-    private String getMenuUserRole() throws JSONException{
+    private String getMenuUserRole() throws JSONException {
         return input.getJSONObject("menu").get("role").toString();
     }
 
     /**
      * Gets menu position from configure file
+     *
      * @return menu position
-     * @throws JSONException 
+     * @throws JSONException
      */
     private Position getMenuPostion() throws JSONException {
         Position position = new Position();
-        if(wd == null){
+        if (wd == null) {
             position.x = 0;
             position.y = 0;
-        }else{
+        } else {
             position.x = input.getJSONObject("menu").getInt("x");
             position.y = input.getJSONObject("menu").getInt("y");
         }
-        
+
         return position;
     }
-    
-   /**
-    * Applies calculated layout 
-    */
-    private void applyChanges(){      
-        windows.stream().forEach((window) -> {                       
-            try {                    
+
+    /**
+     * Applies calculated layout
+     */
+    private void applyChanges() {
+        windows.stream().forEach((window) -> {
+            try {
                 window.adjustWindow(wd);
             } catch (WDDManException ex) {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-            }                          
+            }
         });
-       
+
     }
-    
+
     /**
      * Gets window by title
+     *
      * @param title
-     * @return 
+     * @return
      */
-    private DisplayableWindow getDisplayableWindowByTitle(String title){
-        for (DisplayableWindow window : windows){
-            if (window.getTitle().equals(title)){
+    private DisplayableWindow getDisplayableWindowByTitle(String title) {
+        for (DisplayableWindow window : windows) {
+            if (window.getTitle().equals(title)) {
                 return window;
             }
         }
         return null;
     }
-    
-  
-    private DisplayableWindow getDisplayableWindowByParameters(String[] parameters){
-        for (DisplayableWindow window : windows){
+
+    private DisplayableWindow getDisplayableWindowByParameters(String[] parameters) {
+        for (DisplayableWindow window : windows) {
             Boolean match = true;
-            for (String parameter : parameters){
+            for (String parameter : parameters) {
                 if (!window.getTitle().toUpperCase().contains(parameter.toUpperCase())) {
                     match = false;
                     break;
                 }
             }
-            if (match) return window;
+            if (match) {
+                return window;
+            }
         }
         return null;
-    }        
-    
+    }
+
     /**
-     * Swaps position of new and old window and specified window 
+     * Swaps position of new and old window and specified window
+     *
      * @param newWindowName
      * @param oldWindowName
      */
     @Override
-    public void swapPosition(String newWindowName, String oldWindowName){        
-                    
+    public void swapPosition(String newWindowName, String oldWindowName) {
+
         DisplayableWindow newWindow = getDisplayableWindowByTitle(newWindowName);
         DisplayableWindow oldWindow = getDisplayableWindowByTitle(oldWindowName);
-        
-        String tempRole= newWindow.getRole();
-        newWindow.setRole(oldWindow.getRole());         
+
+        String tempRole = newWindow.getRole();
+        newWindow.setRole(oldWindow.getRole());
         oldWindow.setRole(tempRole);
-        
+
         Position temporaryPosition = newWindow.getPosition();
         newWindow.setPosition(oldWindow.getPosition());
         oldWindow.setPosition(temporaryPosition);
-        
+
         int temporarySize = newWindow.getWidth();
-        newWindow.setWidth(oldWindow.getWidth());        
+        newWindow.setWidth(oldWindow.getWidth());
         oldWindow.setWidth(temporarySize);
         temporarySize = newWindow.getHeight();
         newWindow.setHeight(oldWindow.getHeight());
@@ -373,67 +386,70 @@ public class LayoutManagerImpl implements LayoutManager {
 
         refresh();
     }
-    
-     /**
+
+    /**
      * Adds new node window to layout
+     *
      * @param title window title
      * @param role tole of window user
      */
     @Override
-    public void addNode(String title, String role){
+    public void addNode(String title, String role) {
         try {
-            synchronized(eventLock){  
+            synchronized (eventLock) {
                 DisplayableWindow newWin = new DisplayableWindow(wd, title, role);
                 windows.add(newWin);
             }
         } catch (WDDManException | UnsupportedOperatingSystemException ex) {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }        
+        }
         recalculateAndApply();
     }
-    
-     /**
+
+    /**
      * adds listener of layout manager events
+     *
      * @param listener
      */
     @Override
     public void addLayoutManagerListener(LayoutManagerListener listener) {
         layoutManagerListeners.add(listener);
     }
-    
+
     /**
      * Removes window from layout
+     *
      * @param title window title
      */
     @Override
-    public void removeNode(String title){ 
-        synchronized(eventLock){  
-            for (Iterator<DisplayableWindow> iter = windows.iterator(); iter.hasNext();){
+    public void removeNode(String title) {
+        synchronized (eventLock) {
+            for (Iterator<DisplayableWindow> iter = windows.iterator(); iter.hasNext();) {
                 DisplayableWindow window = iter.next();
-                if (window.contains(title)) {                               
+                if (window.contains(title)) {
                     iter.remove();
-                    break;             
+                    break;
                 }
-            }  
-        }        
+            }
+        }
         recalculateAndApply();
     }
- 
+
     /**
      * Refreshes layout
      */
     @Override
-    public void refresh(){
-        synchronized(eventLock){     
+    public void refresh() {
+        synchronized (eventLock) {
             applyChanges();
-         }
+        }
     }
 
     /**
      * recalculates layout and applies changes
      */
     private void recalculateAndApply() {
-        synchronized(eventLock){  
+        synchronized (eventLock) {
             recalculate();
             applyChanges();
         }
@@ -443,8 +459,8 @@ public class LayoutManagerImpl implements LayoutManager {
      * refreshes layout to default position
      */
     @Override
-    public void refreshToDefaultLayout() {      
+    public void refreshToDefaultLayout() {
         recalculateAndApply();
     }
-    
+
 }

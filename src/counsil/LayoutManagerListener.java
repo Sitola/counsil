@@ -46,4 +46,10 @@ public interface LayoutManagerListener {
      * @param windowName
      */
     void unmuteActionPerformed(String windowName);
+
+    /**
+     * restart consumer application by title
+     * @param title 
+     */
+    public void windowRestartActionPerformed(String title);
 }

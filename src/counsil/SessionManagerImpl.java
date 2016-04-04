@@ -178,6 +178,15 @@ public class SessionManagerImpl implements SessionManager {
                     }
                 }
             }
+
+            @Override
+            public void windowRestartActionPerformed(String title) {
+                UltraGridConsumerApplication consumer = getConsumerByTitle(title);
+                if (consumer != null){
+                    System.out.println("Restarting consumer: " + title);
+                    core.stopApplication(consumer);
+                }
+            }
         });
         
         talkingNode = null;
