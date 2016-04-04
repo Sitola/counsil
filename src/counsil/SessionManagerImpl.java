@@ -182,17 +182,28 @@ public class SessionManagerImpl implements SessionManager {
             @Override
             public void windowRestartActionPerformed(String title) {
                 UltraGridConsumerApplication consumer = getConsumerByTitle(title);
-                if (consumer != null){
+                if (consumer != null) {
                     System.out.println("Restarting consumer: " + title);
                     try {
-                        Runtime.getRuntime().exec("taskkill /F /IM " + consumer.getName());
+                        Runtime.getRuntime().exec("taskkill /F /FI \"Windowtitle eq " + title + "\" /T");
                     } catch (IOException ex) {
                         Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
+
+                Timer currentTimer = timers.get(consumer.name);
+                currentTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        layoutManager.refresh();
+                        System.err.println("tu som");
+                        currentTimer.purge();
+                    }
+                }, 5000);
+
             }
         });
-        
+
         talkingNode = null;
     }
 
