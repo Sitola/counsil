@@ -340,8 +340,11 @@ public class SessionManagerImpl implements SessionManager {
 
                 } else if (message.type.equals(TALK)) {
                     String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]));
-                    layoutManager.swapPosition(title, talkingNode.getName());
-                    talkingNode = (NetworkNode) message.content[0];
+                    if (title != null){                        
+                        layoutManager.swapPosition(title, talkingNode.getName());
+                        talkingNode = (NetworkNode) message.content[0];
+                    }
+                    
                 } 
             }
         };
