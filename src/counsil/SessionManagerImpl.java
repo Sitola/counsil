@@ -184,7 +184,11 @@ public class SessionManagerImpl implements SessionManager {
                 UltraGridConsumerApplication consumer = getConsumerByTitle(title);
                 if (consumer != null){
                     System.out.println("Restarting consumer: " + title);
-                    core.stopApplication(consumer);
+                    try {
+                        Runtime.getRuntime().exec("taskkill /F /IM " + consumer.getName());
+                    } catch (IOException ex) {
+                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         });
