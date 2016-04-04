@@ -42,4 +42,9 @@ public interface LayoutManager {
      */
     public void swapPosition(String title);
 
+    /**
+     * Refreshes layout to default positions
+     */
+    public void refreshToDefaultLayout();
+
 }
