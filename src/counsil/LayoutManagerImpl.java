@@ -223,7 +223,7 @@ public class LayoutManagerImpl implements LayoutManager {
                             if (window.getPosition().x + window.getWidth() >= location.x) {
                                 if (window.getPosition().y + window.getHeight() >= location.y) {
                                     System.err.println(window.getTitle() + " was CLICKED!");
-                                    if (!window.getRole().equals("interpreter") && !window.getTitle().contains("teacher")) {
+                                    if (!window.getRole().equals("interpreter") && !window.getTitle().contains("PRESENTATION")) {
                                         layoutManagerListeners.stream().forEach((listener) -> {
                                             try {
                                                 if ((button == 1) && (getMenuUserRole().equals("interpreter") || getMenuUserRole().equals("teacher"))) {
@@ -359,15 +359,21 @@ public class LayoutManagerImpl implements LayoutManager {
     public void swapPosition(String newWindowName, String oldWindowName) {
 
         DisplayableWindow newWindow = getDisplayableWindowByTitle(newWindowName);
-        if (oldWindowName != null){
-            DisplayableWindow oldWindow = getDisplayableWindowByTitle(oldWindowName);
+        DisplayableWindow oldWindow = getDisplayableWindowByTitle(oldWindowName);
+        
+         System.out.print("Talking node:" + oldWindowName);
+        if (oldWindow != null){            
 
             String tempRole = newWindow.getRole();
             newWindow.setRole(oldWindow.getRole());
             oldWindow.setRole(tempRole);
 
             Position temporaryPosition = newWindow.getPosition();
+            System.out.print("Temp position after init " + temporaryPosition.x + " " + temporaryPosition.y);
             newWindow.setPosition(oldWindow.getPosition());
+            System.out.print("Temp position after newWinset " + temporaryPosition.x + " " + temporaryPosition.y);
+            System.out.print("New position after init " + newWindow.getPosition().x + " " + newWindow.getPosition().y);
+
             oldWindow.setPosition(temporaryPosition);
 
             int temporarySize = newWindow.getWidth();
@@ -458,6 +464,10 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     @Override
     public void refreshToDefaultLayout() {
+        
+        for (DisplayableWindow win : windows){
+            win.setRole(win.getDefaultRole());
+        }
         recalculateAndApply();
     }
 

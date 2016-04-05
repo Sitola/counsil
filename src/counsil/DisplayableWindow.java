@@ -40,6 +40,9 @@ class DisplayableWindow{
      * Window temporary role in layout
      */
     private String role;
+    
+    
+    private final String defaultRole;
 
     /**
      * Window title
@@ -70,6 +73,7 @@ class DisplayableWindow{
 
         this.title = title;    
         this.role = role;
+        defaultRole = role;
     }
 
     /**
@@ -149,6 +153,10 @@ class DisplayableWindow{
         }
         final DisplayableWindow other = (DisplayableWindow) obj;  
         return Objects.equals(this.title, other.title);
+    }
+    
+    String getDefaultRole(){
+        return defaultRole;
     }
 
     

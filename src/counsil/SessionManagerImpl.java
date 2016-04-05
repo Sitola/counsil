@@ -11,13 +11,10 @@ import couniverse.core.NetworkNode;
 import couniverse.core.NodePropertyParser;
 import couniverse.core.mediaApplications.MediaApplication;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import couniverse.core.controllers.ApplicationEvent;
-import couniverse.core.controllers.ApplicationEventListener;
 import couniverse.core.p2p.CoUniverseMessage;
 import couniverse.core.p2p.GroupConnectorID;
 import couniverse.core.p2p.MessageListener;
 import couniverse.core.p2p.MessageType;
-import couniverse.gui.display.NodeGraphics;
 import couniverse.monitoring.NodePresenceListener;
 import couniverse.monitoring.TopologyAggregator;
 import couniverse.ultragrid.UltraGridConsumerApplication;
@@ -25,7 +22,6 @@ import couniverse.ultragrid.UltraGridControllerHandle;
 import couniverse.ultragrid.UltraGridProducerApplication;
 import java.awt.EventQueue;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -73,6 +69,12 @@ public class SessionManagerImpl implements SessionManager {
      * Instance of couniverse Core
      */
     Core core;
+    
+    /**
+     * Shows if teacher consumer was already created
+     */
+    
+    Boolean teacherWasCreated;
 
     /**
      * Instance of LayoutManager to notify Layout about changes
@@ -88,7 +90,7 @@ public class SessionManagerImpl implements SessionManager {
     /**
      * Currently talking node
      */
-    private static NetworkNode talkingNode;
+    private volatile NetworkNode talkingNode;
     
     /**
      * Timers for alerting certain windows
@@ -111,6 +113,10 @@ public class SessionManagerImpl implements SessionManager {
      * @param layoutManager
      */
     public SessionManagerImpl(LayoutManager layoutManager) {
+        
+        teacherWasCreated = false;
+        talkingNode = null;
+        
         if (layoutManager == null) {
             throw new IllegalArgumentException("layoutManager is null");
         }
@@ -196,15 +202,12 @@ public class SessionManagerImpl implements SessionManager {
                     @Override
                     public void run() {
                         layoutManager.refresh();
-                        System.err.println("tu som");
                         currentTimer.purge();
                     }
                 }, 5000);
 
             }
         });
-
-        talkingNode = null;
     }
 
     /**
@@ -310,6 +313,9 @@ public class SessionManagerImpl implements SessionManager {
                             layoutManager.refreshToDefaultLayout();                            
                             talkingNode = null;
                         }
+                        else if (consumer2name.get(producer2consumer.get(node2producer.get(node))).contains("teacher")){
+                            teacherWasCreated = false;
+                        }
                     }
                     stopConsumer(node);
                 }
@@ -354,15 +360,12 @@ public class SessionManagerImpl implements SessionManager {
                     }
 
                 } else if (message.type.equals(TALK)) {
+                                     
                     String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]));
-                    if (title != null){
-                        if (talkingNode != null){
-                            layoutManager.swapPosition(title, talkingNode.getName());
-                        }
-                        else {
-                            layoutManager.swapPosition(title, null);
-                        }                                                                  
-                        
+                    if (title != null){                          
+                        System.err.println("NAME::::::::::::::::" + talkingNode.getName());                        
+                        System.err.print(consumer2name.get(producer2consumer.get(node2producer.get(talkingNode)[0])));
+                        layoutManager.swapPosition(title, consumer2name.get(producer2consumer.get(node2producer.get(talkingNode)[0])));
                         talkingNode = (NetworkNode) message.content[0];
                     }
                     
@@ -497,7 +500,17 @@ public class SessionManagerImpl implements SessionManager {
         UltraGridConsumerApplication con = null;
         String name = local.getName() + "-" + content;
 
-        if (content.contains("SOUND") && isInterpreterOrTeacher((String) local.getProperty("role"))) {
+        if ((name.contains("teacher")) && (name.contains("VIDEO"))) {
+             talkingNode = node;
+            if (!teacherWasCreated) {               
+                teacherWasCreated = true;
+            } else {               
+                layoutManager.refreshToDefaultLayout();
+            }           
+        }
+        
+        if (content.contains("SOUND") && isInterpreterOrTeacher((String) local.getProperty("role"))) {                        
+          
             System.out.println(local.getName() + ":" + node.getName());
             if (node.getName().equals(local.getName())) {
                 return content;
