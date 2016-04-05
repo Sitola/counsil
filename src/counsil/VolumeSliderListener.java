@@ -12,7 +12,7 @@ package counsil;
 public interface VolumeSliderListener {
     
     /**
-     * 
+     * Sends new changed value to the listeners
      * @param newValue 
      */
 

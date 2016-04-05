@@ -359,24 +359,30 @@ public class LayoutManagerImpl implements LayoutManager {
     public void swapPosition(String newWindowName, String oldWindowName) {
 
         DisplayableWindow newWindow = getDisplayableWindowByTitle(newWindowName);
-        DisplayableWindow oldWindow = getDisplayableWindowByTitle(oldWindowName);
+        if (oldWindowName != null){
+            DisplayableWindow oldWindow = getDisplayableWindowByTitle(oldWindowName);
 
-        String tempRole = newWindow.getRole();
-        newWindow.setRole(oldWindow.getRole());
-        oldWindow.setRole(tempRole);
+            String tempRole = newWindow.getRole();
+            newWindow.setRole(oldWindow.getRole());
+            oldWindow.setRole(tempRole);
 
-        Position temporaryPosition = newWindow.getPosition();
-        newWindow.setPosition(oldWindow.getPosition());
-        oldWindow.setPosition(temporaryPosition);
+            Position temporaryPosition = newWindow.getPosition();
+            newWindow.setPosition(oldWindow.getPosition());
+            oldWindow.setPosition(temporaryPosition);
 
-        int temporarySize = newWindow.getWidth();
-        newWindow.setWidth(oldWindow.getWidth());
-        oldWindow.setWidth(temporarySize);
-        temporarySize = newWindow.getHeight();
-        newWindow.setHeight(oldWindow.getHeight());
-        oldWindow.setHeight(temporarySize);
+            int temporarySize = newWindow.getWidth();
+            newWindow.setWidth(oldWindow.getWidth());
+            oldWindow.setWidth(temporarySize);
+            temporarySize = newWindow.getHeight();
+            newWindow.setHeight(oldWindow.getHeight());
+            oldWindow.setHeight(temporarySize);
 
-        refresh();
+            refresh();
+        }
+        else {
+            newWindow.setRole("teacher");
+            recalculateAndApply();
+        }
     }
 
     /**
