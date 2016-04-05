@@ -25,15 +25,11 @@ public interface InteractionMenuListener {
      * what to do when unmute button is pushed
      */
     void unmuteActionPerformed();
-    
-     /**
-     * what to do when volume is increased
+ 
+    /**
+     * volume was changed
+     * @param newValue 
      */
-    void increaseActionPerformed();
-    
-     /**
-     * what to do when volume is decreased
-     */
-    void decreaseActionPerformed();
+    void volumeChangeActionPerformed(int newValue);
     
 }

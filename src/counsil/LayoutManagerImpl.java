@@ -194,20 +194,12 @@ public class LayoutManagerImpl implements LayoutManager {
                             layoutManagerListeners.stream().forEach((listener) -> {
                                 listener.unmuteActionPerformed(getDisplayableWindowByParameters(parameters).getTitle());
                             });
-                        }
+                        }                  
 
                         @Override
-                        public void increaseActionPerformed() {
-                            layoutManagerListeners.stream().forEach((listener) -> {
-                                listener.volumeIncreasedActionPerformed(getDisplayableWindowByParameters(parameters).getTitle());
-                            });
-                        }
-
-                        @Override
-                        public void decreaseActionPerformed() {
-                            layoutManagerListeners.stream().forEach((listener) -> {
-                                listener.volumeDecreasedActionPerformed(getDisplayableWindowByParameters(parameters).getTitle());
-                            });
+                        public void volumeChangeActionPerformed(int newValue) {
+                            // TODO
+                            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                         }
 
                     });

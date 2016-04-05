@@ -71,32 +71,21 @@ public class VolumeSlider extends JFrame {
                 
         JSlider volume = new JSlider(JSlider.HORIZONTAL,0, 10, 5);   
         volume.setMajorTickSpacing(1);
-        volume.setPaintTicks(true);       
+        volume.setPaintTicks(true);
         volume.addChangeListener(new ChangeListener() {
 
             @Override
             public void stateChanged(ChangeEvent ce) {
                 int newValue = volume.getValue();
-                while (value != newValue){
-                    if (newValue > value){
-                        value++;
-                        volumeListeners.stream().forEach((listener) -> {
-                            listener.increaseActionPerformed();
-                        }); 
-                    }
-                    else if (newValue < value){
-                        value--;
-                        volumeListeners.stream().forEach((listener) -> {
-                            listener.decreaseActionPerformed();
-                        }); 
-                    }                    
-                }
+                volumeListeners.stream().forEach((listener) -> {
+                    listener.volumeChangeActionPerformed(newValue);
+                });
             }
         });
-        
-        add(volume, BorderLayout.CENTER);           
+
+        add(volume, BorderLayout.CENTER);
         pack();
-        setVisible(true);  
+        setVisible(true);
     }
 
     public void setValue(int volumeValue) {

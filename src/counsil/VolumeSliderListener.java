@@ -12,12 +12,9 @@ package counsil;
 public interface VolumeSliderListener {
     
     /**
-     * what to do when volume is increased
-     */    
-    void increaseActionPerformed();
-    
-    /**
-     * what to do when volume is decreased
-     */ 
-    void decreaseActionPerformed();
+     * 
+     * @param newValue 
+     */
+
+    public void volumeChangeActionPerformed(int newValue);
 }

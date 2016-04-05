@@ -257,34 +257,24 @@ public class InteractionMenu extends JFrame {
         muted = !muted;        
     }
     
-    private void volumeButtonActionPerformed() {       
+    private void volumeButtonActionPerformed() {
         EventQueue.invokeLater(new Runnable() {
             @Override
-            public void run() {                
-                final VolumeSlider slider = VolumeSlider.getInstance();   
+            public void run() {
+                final VolumeSlider slider = VolumeSlider.getInstance();
                 slider.setValue(volumeValue);
                 slider.setVisible(true);
-                slider.setLocation(getLocation().x, getLocation().y + 200);                    
+                slider.setLocation(getLocation().x, getLocation().y + 200);
                 slider.addVolumeSliderListener(new VolumeSliderListener() {
 
                     @Override
-                    public void increaseActionPerformed() {
+                    public void volumeChangeActionPerformed(int newValue) {
                         interactionMenuListeners.stream().forEach((listener) -> {
-                            volumeValue++;
-                            listener.increaseActionPerformed();
-                        }); 
+                            listener.volumeChangeActionPerformed(newValue);
+                        });
                     }
-
-                    @Override
-                    public void decreaseActionPerformed() {
-                        volumeValue--;
-                        interactionMenuListeners.stream().forEach((listener) -> {
-                            listener.decreaseActionPerformed();
-                        }); 
-                    }                        
                 });
-            }               
-        });  
+            }
+        });
     }
 }
-    
