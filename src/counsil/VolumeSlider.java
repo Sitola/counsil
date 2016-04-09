@@ -7,8 +7,11 @@ package counsil;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JSlider;
@@ -76,10 +79,15 @@ public class VolumeSlider extends JFrame {
 
             @Override
             public void stateChanged(ChangeEvent ce) {
-                int newValue = volume.getValue();
-                volumeListeners.stream().forEach((listener) -> {
-                    listener.volumeChangeActionPerformed(newValue);
-                });
+                int ratio = 65535 * (volume.getValue() / 10);                             
+                
+                try {
+                    Process process = new ProcessBuilder("C:\\UltraGrid\\UltraGrid\\nircmd-x64\\nircmdc.exe",
+                            "changesysvolume " + ratio).start();
+                    
+                } catch (IOException ex) {
+                    Logger.getLogger(VolumeSlider.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
 

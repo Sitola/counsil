@@ -8,6 +8,7 @@ package counsil;
 import java.awt.EventQueue;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -245,14 +246,28 @@ public class InteractionMenu extends JFrame {
         
         if (muted) {
             button.setText("Mute");     
-             interactionMenuListeners.stream().forEach((listener) -> {
-                listener.unmuteActionPerformed();
-            });
+              try {
+                    Process process = new ProcessBuilder("C:\\UltraGrid\\UltraGrid\\nircmd-x64\\nircmdc.exe",
+                            "changesysvolume 0").start();
+                    
+                    /*  volumeListeners.stream().forEach((listener) -> {
+                    listener.volumeChangeActionPerformed(newValue);
+                    });*/
+                } catch (IOException ex) {
+                    Logger.getLogger(VolumeSlider.class.getName()).log(Level.SEVERE, null, ex);
+                }
         } else {
             button.setText("Unmute");   
-            interactionMenuListeners.stream().forEach((listener) -> {
-                listener.muteActionPerformed();
-            });
+             try {
+                    Process process = new ProcessBuilder("C:\\UltraGrid\\UltraGrid\\nircmd-x64\\nircmdc.exe",
+                            "changesysvolume 30000").start();
+                    
+                    /*  volumeListeners.stream().forEach((listener) -> {
+                    listener.volumeChangeActionPerformed(newValue);
+                    });*/
+                } catch (IOException ex) {
+                    Logger.getLogger(VolumeSlider.class.getName()).log(Level.SEVERE, null, ex);
+                }
         }        
         muted = !muted;        
     }
