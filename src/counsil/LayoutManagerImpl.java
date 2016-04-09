@@ -7,25 +7,18 @@ package counsil;
 
 import java.awt.EventQueue;
 import java.awt.Point;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 import org.jnativehook.mouse.NativeMouseEvent;
 import org.jnativehook.mouse.NativeMouseInputListener;
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import wddman.UnsupportedOperatingSystemException;
 import wddman.WDDMan;
 import wddman.WDDManException;
@@ -45,7 +38,7 @@ public class LayoutManagerImpl implements LayoutManager {
     /**
      * List of current active windows
      */
-    private List<DisplayableWindow> windows;
+    private List<DisplayableWindow> windows = new ArrayList<>();;
 
     /**
      * Instance of wddman
@@ -62,86 +55,7 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     private List<LayoutManagerListener> layoutManagerListeners = new ArrayList<>();
 
-    /**
-     * JSON configure file object
-     */
-    private JSONObject input;
-
-    /*
-    * recalculate new layout from JSON layout file and array of nodes or something with specify role 
-    * return layout with position nad id|name 
-    *
-    * it work with fields with ratio < 1, but result may not be as expected, because it 
-    * prefer spliting to rows not columbs, if needed can be change in future
-     */
-    private void recalculate() {
-        if (input == null) {
-            return;
-        }
-        Map<String, List<DisplayableWindow>> numRoles;
-        numRoles = new HashMap();
-        JSONObject fields = null;
-        try {//try set all roles from input to be filled in
-            fields = input.getJSONObject("windows");
-        } catch (JSONException ex) {
-            Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-            return;
-        }
-
-        Vector<String> roles = new Vector<>();
-        roles.add("presentation");
-        roles.add("interpreter");
-        roles.add("teacher");
-        roles.add("student");
-
-        for (int i = 0; i < roles.size(); i++) {
-            numRoles.put(roles.get(i), new ArrayList<>());
-        }
-
-        //for each role in input put windows to distribute in them
-        for (DisplayableWindow win : windows) {
-            if (numRoles.containsKey(win.getRole())) {
-                List<DisplayableWindow> intIncrem = numRoles.get(win.getRole());
-                intIncrem.add(win);
-            }
-        }
-
-        //distribute windows in their field
-        for (int i = 0; i < roles.size(); i++) {
-            JSONArray roleWindowsConfig;
-            int windowWidth = 1;
-            int windowHeight = 1;
-            int windowX = 0;
-            int windowY = 0;
-            List<DisplayableWindow> winList;
-            try {
-                roleWindowsConfig = fields.getJSONArray(roles.get(i));
-            } catch (JSONException ex) {
-                Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                return;
-            }
-
-            winList = numRoles.get(roles.get(i));
-            for (int j = 0; j < winList.size(); j++) {
-                DisplayableWindow win = winList.get(j);
-                if (j < roleWindowsConfig.length()) {
-                    JSONObject windowConfig;
-                    try {
-                        windowConfig = roleWindowsConfig.getJSONObject(j);
-                        windowWidth = windowConfig.getInt("width");
-                        windowHeight = windowConfig.getInt("height");
-                        windowX = windowConfig.getInt("x");
-                        windowY = windowConfig.getInt("y");
-                    } catch (JSONException ex) {
-                        Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    win.setHeight(windowHeight);
-                    win.setWidth(windowWidth);
-                    win.setPosition(new Position(windowX, windowY));
-                }
-            }
-        }
-    }
+    private LayoutCalculator calculator;
 
     /**
      * Initializes layout
@@ -149,10 +63,12 @@ public class LayoutManagerImpl implements LayoutManager {
      * @throws org.json.JSONException
      * @throws java.io.FileNotFoundException
      * @throws wddman.WDDManException
+     * @throws org.jnativehook.NativeHookException
      */
     public LayoutManagerImpl() throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
 
-        windows = new ArrayList<>();
+        calculator = new LayoutCalculator();
+        
         try {
             wd = new WDDMan();
         } catch (UnsupportedOperatingSystemException ex) {
@@ -160,18 +76,13 @@ public class LayoutManagerImpl implements LayoutManager {
             System.exit(-1);
         }
 
-        String entireFileText = new Scanner(new File("layoutConfigStatic.json")).useDelimiter("\\A").next();
-        input = new JSONObject(entireFileText);
-
         // create menu
         EventQueue.invokeLater(new Runnable() {
+          
             @Override
             public void run() {
                 try {
-                    menu = new InteractionMenu(getMenuUserRole(), getMenuPostion());
-
-                    String[] parameters = {"video", getMenuUserRole()};
-
+                    menu = new InteractionMenu(calculator.getMenuRole(), calculator.getMenuPostion());                  
                     menu.addInteractionMenuListener(new InteractionMenuListener() {
 
                         @Override
@@ -180,28 +91,6 @@ public class LayoutManagerImpl implements LayoutManager {
                                 listener.alertActionPerformed();
                             });
                         }
-
-                        @Override
-                        public void muteActionPerformed() {
-                            layoutManagerListeners.stream().forEach((listener) -> {
-                                listener.muteActionPerformed(getDisplayableWindowByParameters(parameters).getTitle());
-
-                            });
-                        }
-
-                        @Override
-                        public void unmuteActionPerformed() {
-                            layoutManagerListeners.stream().forEach((listener) -> {
-                                listener.unmuteActionPerformed(getDisplayableWindowByParameters(parameters).getTitle());
-                            });
-                        }                  
-
-                        @Override
-                        public void volumeChangeActionPerformed(int newValue) {
-                            // TODO
-                            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                        }
-
                     });
                 } catch (JSONException ex) {
                     Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -218,29 +107,29 @@ public class LayoutManagerImpl implements LayoutManager {
 
                 //! find window which was clicked on
                 for (DisplayableWindow window : windows) {
-                    if (window.getPosition().x <= location.x) {
-                        if (window.getPosition().y <= location.y) {
-                            if (window.getPosition().x + window.getWidth() >= location.x) {
-                                if (window.getPosition().y + window.getHeight() >= location.y) {
-                                    System.err.println(window.getTitle() + " was CLICKED!");
-                                    if (!window.getRole().equals("interpreter") && !window.getTitle().contains("PRESENTATION")) {
-                                        layoutManagerListeners.stream().forEach((listener) -> {
-                                            try {
-                                                if ((button == 1) && (getMenuUserRole().equals("interpreter") || getMenuUserRole().equals("teacher"))) {
-                                                    listener.windowChoosenActionPerformed(window.getTitle());
-                                                } else if (button == 2) {
-                                                    listener.windowRestartActionPerformed(window.getTitle());
-                                                }
-                                            } catch (JSONException ex) {
-                                                Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                            }
-                                        });
-                                    }
-                                    break;
-                                }
+                    if ((window.getPosition().x <= location.x)
+                            && (window.getPosition().y <= location.y)
+                            && (window.getPosition().x + window.getWidth() >= location.x)
+                            && (window.getPosition().y + window.getHeight() >= location.y)){
+
+                        System.err.println(window.getTitle() + " was CLICKED!");                     
+                        layoutManagerListeners.stream().forEach((listener) -> {
+                            try {
+                                if ((button == 1) 
+                                    && (calculator.getMenuRole().equals("interpreter") || calculator.getMenuRole().equals("teacher"))
+                                    && (!window.getRole().equals("interpreter")) 
+                                    && (!window.getTitle().contains("PRESENTATION"))) {
+                                    
+                                    listener.windowChoosenActionPerformed(window.getTitle());
+                                } else if (button == 2) {
+                                    listener.windowRestartActionPerformed(window.getTitle());
+                                }                                    
+                            } catch (JSONException ex) {
+                                Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                             }
-                        }
-                    }
+                        });
+                        break;
+                    }                         
                 }
             }
 
@@ -276,35 +165,6 @@ public class LayoutManagerImpl implements LayoutManager {
     }
 
     /**
-     * gets role from configure file
-     *
-     * @return role of current user
-     * @throws JSONException
-     */
-    private String getMenuUserRole() throws JSONException {
-        return input.getJSONObject("menu").get("role").toString();
-    }
-
-    /**
-     * Gets menu position from configure file
-     *
-     * @return menu position
-     * @throws JSONException
-     */
-    private Position getMenuPostion() throws JSONException {
-        Position position = new Position();
-        if (wd == null) {
-            position.x = 0;
-            position.y = 0;
-        } else {
-            position.x = input.getJSONObject("menu").getInt("x");
-            position.y = input.getJSONObject("menu").getInt("y");
-        }
-
-        return position;
-    }
-
-    /**
      * Applies calculated layout
      */
     private void applyChanges() {
@@ -315,7 +175,6 @@ public class LayoutManagerImpl implements LayoutManager {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
-
     }
 
     /**
@@ -327,22 +186,6 @@ public class LayoutManagerImpl implements LayoutManager {
     private DisplayableWindow getDisplayableWindowByTitle(String title) {
         for (DisplayableWindow window : windows) {
             if (window.getTitle().equals(title)) {
-                return window;
-            }
-        }
-        return null;
-    }
-
-    private DisplayableWindow getDisplayableWindowByParameters(String[] parameters) {
-        for (DisplayableWindow window : windows) {
-            Boolean match = true;
-            for (String parameter : parameters) {
-                if (!window.getTitle().toUpperCase().contains(parameter.toUpperCase())) {
-                    match = false;
-                    break;
-                }
-            }
-            if (match) {
                 return window;
             }
         }
@@ -454,7 +297,7 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     private void recalculateAndApply() {
         synchronized (eventLock) {
-            recalculate();
+            calculator.recalculate(windows);
             applyChanges();
         }
     }

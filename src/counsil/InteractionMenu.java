@@ -249,10 +249,6 @@ public class InteractionMenu extends JFrame {
               try {
                     Process process = new ProcessBuilder("C:\\UltraGrid\\UltraGrid\\nircmd-x64\\nircmdc.exe",
                             "changesysvolume 0").start();
-                    
-                    /*  volumeListeners.stream().forEach((listener) -> {
-                    listener.volumeChangeActionPerformed(newValue);
-                    });*/
                 } catch (IOException ex) {
                     Logger.getLogger(VolumeSlider.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -261,10 +257,6 @@ public class InteractionMenu extends JFrame {
              try {
                     Process process = new ProcessBuilder("C:\\UltraGrid\\UltraGrid\\nircmd-x64\\nircmdc.exe",
                             "changesysvolume 30000").start();
-                    
-                    /*  volumeListeners.stream().forEach((listener) -> {
-                    listener.volumeChangeActionPerformed(newValue);
-                    });*/
                 } catch (IOException ex) {
                     Logger.getLogger(VolumeSlider.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -276,19 +268,9 @@ public class InteractionMenu extends JFrame {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                final VolumeSlider slider = VolumeSlider.getInstance();
-                slider.setValue(volumeValue);
+                final VolumeSlider slider = VolumeSlider.getInstance();               
                 slider.setVisible(true);
                 slider.setLocation(getLocation().x, getLocation().y + 200);
-                slider.addVolumeSliderListener(new VolumeSliderListener() {
-
-                    @Override
-                    public void volumeChangeActionPerformed(int newValue) {
-                        interactionMenuListeners.stream().forEach((listener) -> {
-                            listener.volumeChangeActionPerformed(newValue);
-                        });
-                    }
-                });
             }
         });
     }

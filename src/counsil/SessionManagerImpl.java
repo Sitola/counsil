@@ -95,7 +95,7 @@ public class SessionManagerImpl implements SessionManager {
     /**
      * Timers for alerting certain windows
      */
-    private static HashMap<String, Timer> timers = new HashMap<>();
+    private static final HashMap<String, Timer> timers = new HashMap<>();
 
     /**
      * Alert message is used for alerting other nodes
@@ -139,52 +139,7 @@ public class SessionManagerImpl implements SessionManager {
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission granted for node {0}...", windowName);
                     core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);                                        
             }
-
-            @Override
-            public void muteActionPerformed(String windowName) {
-                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
-                if (app != null) {
-                    UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                    if (handle != null) {
-                        handle.mute();
-                    }
-                }
-            }
-
-            @Override
-            public void volumeIncreasedActionPerformed(String windowName) {
-                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
-                if (app != null) {
-                    UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                    if (handle != null) {
-                        handle.increaseVolume();
-                    }
-                }
-            }
-
-            @Override
-            public void volumeDecreasedActionPerformed(String windowName) {
-                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
-                if (app != null) {
-                    UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                    if (handle != null) {
-                        handle.decreaseVolume();
-                    }
-                }
-
-            }
-
-            @Override
-            public void unmuteActionPerformed(String windowName) {
-                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
-                if (app != null) {
-                    UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                    if (handle != null) {
-                        handle.unmute();
-                    }
-                }
-            }
-
+            
             @Override
             public void windowRestartActionPerformed(String title) {
                 UltraGridConsumerApplication consumer = getConsumerByTitle(title);

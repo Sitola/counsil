@@ -8,8 +8,6 @@ package counsil;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -23,21 +21,7 @@ import javax.swing.event.ChangeListener;
  * @author Desanka
  */
 public class VolumeSlider extends JFrame {
-    
-    int value;
-          
-    /**
-     * List of volume listeners
-     */
-    private final List<VolumeSliderListener> volumeListeners = new ArrayList<>();
-               /**
-     * adds listener of button
-     * @param listener
-     */
-    public void addVolumeSliderListener(VolumeSliderListener listener) {
-        volumeListeners.add(listener);
-    }
-    
+
     private static VolumeSlider instance = null;
     private static final Object lock = new Object();
     
@@ -68,8 +52,7 @@ public class VolumeSlider extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);    
         setType(Type.UTILITY);
-        value = 5;
-       
+
         getRootPane().setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));  
                 
         JSlider volume = new JSlider(JSlider.HORIZONTAL,0, 10, 5);   
@@ -94,10 +77,6 @@ public class VolumeSlider extends JFrame {
         add(volume, BorderLayout.CENTER);
         pack();
         setVisible(true);
-    }
-
-    public void setValue(int volumeValue) {
-        value = volumeValue;
     }
 
 }
