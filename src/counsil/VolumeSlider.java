@@ -62,13 +62,16 @@ public class VolumeSlider extends JFrame {
 
             @Override
             public void stateChanged(ChangeEvent ce) {
-                int ratio = 65535 * (volume.getValue() / 10);                             
-                
+                float value = volume.getValue();
+                float ratio = 65535 * (value / 10);   
+                String path = "C:\\UltraGrid\\UltraGrid\\nircmd-x64\\nircmdc.exe";
+                String arg1 = "setsysvolume";
                 try {
-                    Process process = new ProcessBuilder("C:\\UltraGrid\\UltraGrid\\nircmd-x64\\nircmdc.exe",
-                            "changesysvolume " + ratio).start();
-                    
+                    Process process = new ProcessBuilder(path, arg1, Float.toString(ratio)).start();
+                    process.waitFor();
                 } catch (IOException ex) {
+                    Logger.getLogger(VolumeSlider.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InterruptedException ex) {
                     Logger.getLogger(VolumeSlider.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
