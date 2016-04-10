@@ -36,7 +36,8 @@ public class LayoutCalculator {
     private final String role;
     
     /**
-     * Create layout calculator
+     * Creates layout calculator
+     *
      * @throws java.io.FileNotFoundException
      * @throws org.json.JSONException
      */
@@ -45,12 +46,10 @@ public class LayoutCalculator {
         String entireFileText = new Scanner(new File("layoutConfigStatic.json")).useDelimiter("\\A").next();
         input = new JSONObject(entireFileText);
         role = input.getJSONObject("menu").get("role").toString();
-
     }
 
-
     /**
-     * gets role from configure file
+     * Gets role from configure file
      *
      * @return role of current user
      * @throws JSONException

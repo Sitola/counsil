@@ -69,11 +69,10 @@ public class SessionManagerImpl implements SessionManager {
      * Instance of couniverse Core
      */
     Core core;
-    
+
     /**
      * Shows if teacher consumer was already created
      */
-    
     Boolean teacherWasCreated;
 
     /**
@@ -82,7 +81,7 @@ public class SessionManagerImpl implements SessionManager {
     LayoutManager layoutManager;
     TopologyAggregator topologyAggregator;
 
-      /**
+    /**
      * Listens alert and permission to talk messages
      */
     MessageListener counsilListener;
@@ -91,7 +90,7 @@ public class SessionManagerImpl implements SessionManager {
      * Currently talking node
      */
     private volatile NetworkNode talkingNode;
-    
+
     /**
      * Timers for alerting certain windows
      */
@@ -102,7 +101,7 @@ public class SessionManagerImpl implements SessionManager {
      */
     public static MessageType ALERT = MessageType.createCustomMessageType("AlertMessage", "NetworkNode");
 
-      /**
+    /**
      * Talk message is used for granting talk permission
      */
     public static MessageType TALK = MessageType.createCustomMessageType("TalkPermissionGrantedMessage", "NetworkNode");
@@ -113,10 +112,10 @@ public class SessionManagerImpl implements SessionManager {
      * @param layoutManager
      */
     public SessionManagerImpl(LayoutManager layoutManager) {
-        
+
         teacherWasCreated = false;
         talkingNode = null;
-        
+
         if (layoutManager == null) {
             throw new IllegalArgumentException("layoutManager is null");
         }
@@ -134,12 +133,12 @@ public class SessionManagerImpl implements SessionManager {
 
             @Override
             public void windowChoosenActionPerformed(String windowName) {
-                NetworkNode choosenNode = getNetworkNodeByProducer(getProducerByConsumer(getConsumerByTitle(windowName)));           
-                    CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, choosenNode);
-                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission granted for node {0}...", windowName);
-                    core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);                                        
+                NetworkNode choosenNode = getNetworkNodeByProducer(getProducerByConsumer(getConsumerByTitle(windowName)));
+                CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, choosenNode);
+                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission granted for node {0}...", windowName);
+                core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);
             }
-            
+
             @Override
             public void windowRestartActionPerformed(String title) {
                 UltraGridConsumerApplication consumer = getConsumerByTitle(title);
@@ -244,14 +243,14 @@ public class SessionManagerImpl implements SessionManager {
 
                 @Override
                 public void init(Set<NetworkNode> nodes) {
-                    for (NetworkNode node : nodes) {                       
-                        onNodeChanged(node);                    
+                    for (NetworkNode node : nodes) {
+                        onNodeChanged(node);
                     }
                 }
 
                 @Override
-                public void onNewNodeAppeared(NetworkNode node) {                    
-                    onNodeChanged(node);                   
+                public void onNewNodeAppeared(NetworkNode node) {
+                    onNodeChanged(node);
                 }
 
                 @Override
@@ -265,10 +264,9 @@ public class SessionManagerImpl implements SessionManager {
                     String nodeName = consumer2name.get(producer2consumer.get(node2producer.get(node)));
                     if (nodeName != null) {
                         if ((talkingNode != null) && (node.getName().equals(talkingNode.getName()))) {
-                            layoutManager.refreshToDefaultLayout();                            
+                            layoutManager.refreshToDefaultLayout();
                             talkingNode = null;
-                        }
-                        else if (consumer2name.get(producer2consumer.get(node2producer.get(node))).contains("teacher")){
+                        } else if (consumer2name.get(producer2consumer.get(node2producer.get(node))).contains("teacher")) {
                             teacherWasCreated = false;
                         }
                     }
@@ -276,7 +274,7 @@ public class SessionManagerImpl implements SessionManager {
                 }
             });
         }
-       
+
         counsilListener = new MessageListener() {
             // catching alerting messages
             @Override
@@ -291,8 +289,8 @@ public class SessionManagerImpl implements SessionManager {
                         if (handle != null) {
                             try {
                                 handle.sendCommand("postprocess border:width=5:color=#ff0000");
-                                
-                                Timer currentTimer = timers.get(consumer.name);                                
+
+                                Timer currentTimer = timers.get(consumer.name);
                                 currentTimer.schedule(new TimerTask() {
                                     @Override
                                     public void run() {
@@ -305,7 +303,7 @@ public class SessionManagerImpl implements SessionManager {
                                             Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                                         }
                                     }
-                                }, 30000); 
+                                }, 30000);
                             } catch (InterruptedException ex) {
                                 Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                             } catch (TimeoutException ex) {
@@ -315,37 +313,37 @@ public class SessionManagerImpl implements SessionManager {
                     }
 
                 } else if (message.type.equals(TALK)) {
-                                     
+
                     String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]));
-                    if (title != null){                          
-                        System.err.println("NAME::::::::::::::::" + talkingNode.getName());                        
+                    if (title != null) {
+                        System.err.println("NAME::::::::::::::::" + talkingNode.getName());
                         System.err.print(consumer2name.get(producer2consumer.get(node2producer.get(talkingNode)[0])));
                         layoutManager.swapPosition(title, consumer2name.get(producer2consumer.get(node2producer.get(talkingNode)[0])));
                         talkingNode = (NetworkNode) message.content[0];
                     }
-                    
-                } 
+
+                }
             }
         };
 
         // define message types
         core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);
-        
+
         /*  
-            // refreshes layout on consumer restart
-            consumerListener = new ApplicationEventListener() {
-                @Override
-                public void onApplicationEvent(MediaApplication app, ApplicationEvent event) {
+         // refreshes layout on consumer restart
+         consumerListener = new ApplicationEventListener() {
+         @Override
+         public void onApplicationEvent(MediaApplication app, ApplicationEvent event) {
                     
-                        layoutManager.refresh();
-                    }
+         layoutManager.refresh();
+         }
                 
 
-                @Override
-                public void onApplicationStop(MediaApplication app, String message) {
-                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                }
-            };
+         @Override
+         public void onApplicationStop(MediaApplication app, String message) {
+         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+         }
+         };
         
          */
         Thread thread = new Thread(new Runnable() {
@@ -456,16 +454,16 @@ public class SessionManagerImpl implements SessionManager {
         String name = local.getName() + "-" + content;
 
         if ((name.contains("teacher")) && (name.contains("VIDEO"))) {
-             talkingNode = node;
-            if (!teacherWasCreated) {               
+            talkingNode = node;
+            if (!teacherWasCreated) {
                 teacherWasCreated = true;
-            } else {               
+            } else {
                 layoutManager.refreshToDefaultLayout();
-            }           
+            }
         }
-        
-        if (content.contains("SOUND") && isInterpreterOrTeacher((String) local.getProperty("role"))) {                        
-          
+
+        if (content.contains("SOUND") && isInterpreterOrTeacher((String) local.getProperty("role"))) {
+
             System.out.println(local.getName() + ":" + node.getName());
             if (node.getName().equals(local.getName())) {
                 return content;
@@ -530,7 +528,12 @@ public class SessionManagerImpl implements SessionManager {
                     if (producer2consumer.containsKey(producer) == false) {
                         String consumerName = createConsumer(producer, node);
                         if (!consumerName.contains("SOUND")) {
-                            layoutManager.addNode(consumerName, (String) node.getProperty("role"));
+                           
+                            if (consumerName.contains("PRESENTATION")) {
+                                System.out.println("I have created pres");
+                                layoutManager.addNode(consumerName, "presentation");
+                            }
+                            else layoutManager.addNode(consumerName, (String) node.getProperty("role"));
                         }
                     }
                 } catch (IOException ex) {
@@ -550,6 +553,7 @@ public class SessionManagerImpl implements SessionManager {
         if (node == null) {
             throw new IllegalArgumentException("node is null");
         }
+        if(node2producer.get(node) == null) return;        
         for (UltraGridProducerApplication app : node2producer.get(node)) {
             UltraGridConsumerApplication ugCon = producer2consumer.remove(app);
             if (ugCon != null) {
