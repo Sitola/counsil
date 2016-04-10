@@ -22,7 +22,9 @@ import couniverse.ultragrid.UltraGridControllerHandle;
 import couniverse.ultragrid.UltraGridProducerApplication;
 import java.awt.EventQueue;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -70,10 +72,12 @@ public class SessionManagerImpl implements SessionManager {
      */
     Core core;
     
+    
+    List<CounsilNode> nodes = new ArrayList<>();
+
     /**
      * Shows if teacher consumer was already created
      */
-    
     Boolean teacherWasCreated;
 
     /**
@@ -82,7 +86,7 @@ public class SessionManagerImpl implements SessionManager {
     LayoutManager layoutManager;
     TopologyAggregator topologyAggregator;
 
-      /**
+    /**
      * Listens alert and permission to talk messages
      */
     MessageListener counsilListener;
@@ -91,7 +95,7 @@ public class SessionManagerImpl implements SessionManager {
      * Currently talking node
      */
     private volatile NetworkNode talkingNode;
-    
+
     /**
      * Timers for alerting certain windows
      */
@@ -102,7 +106,7 @@ public class SessionManagerImpl implements SessionManager {
      */
     public static MessageType ALERT = MessageType.createCustomMessageType("AlertMessage", "NetworkNode");
 
-      /**
+    /**
      * Talk message is used for granting talk permission
      */
     public static MessageType TALK = MessageType.createCustomMessageType("TalkPermissionGrantedMessage", "NetworkNode");
@@ -113,10 +117,10 @@ public class SessionManagerImpl implements SessionManager {
      * @param layoutManager
      */
     public SessionManagerImpl(LayoutManager layoutManager) {
-        
+
         teacherWasCreated = false;
         talkingNode = null;
-        
+
         if (layoutManager == null) {
             throw new IllegalArgumentException("layoutManager is null");
         }
@@ -134,12 +138,12 @@ public class SessionManagerImpl implements SessionManager {
 
             @Override
             public void windowChoosenActionPerformed(String windowName) {
-                NetworkNode choosenNode = getNetworkNodeByProducer(getProducerByConsumer(getConsumerByTitle(windowName)));           
-                    CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, choosenNode);
-                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission granted for node {0}...", windowName);
-                    core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);                                        
+                NetworkNode choosenNode = getNetworkNodeByProducer(getProducerByConsumer(getConsumerByTitle(windowName)));
+                CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, choosenNode);
+                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission granted for node {0}...", windowName);
+                core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);
             }
-            
+
             @Override
             public void windowRestartActionPerformed(String title) {
                 UltraGridConsumerApplication consumer = getConsumerByTitle(title);
@@ -244,14 +248,14 @@ public class SessionManagerImpl implements SessionManager {
 
                 @Override
                 public void init(Set<NetworkNode> nodes) {
-                    for (NetworkNode node : nodes) {                       
-                        onNodeChanged(node);                    
+                    for (NetworkNode node : nodes) {
+                        onNodeChanged(node);
                     }
                 }
 
                 @Override
-                public void onNewNodeAppeared(NetworkNode node) {                    
-                    onNodeChanged(node);                   
+                public void onNewNodeAppeared(NetworkNode node) {
+                    onNodeChanged(node);
                 }
 
                 @Override
@@ -265,10 +269,9 @@ public class SessionManagerImpl implements SessionManager {
                     String nodeName = consumer2name.get(producer2consumer.get(node2producer.get(node)));
                     if (nodeName != null) {
                         if ((talkingNode != null) && (node.getName().equals(talkingNode.getName()))) {
-                            layoutManager.refreshToDefaultLayout();                            
+                            layoutManager.refreshToDefaultLayout();
                             talkingNode = null;
-                        }
-                        else if (consumer2name.get(producer2consumer.get(node2producer.get(node))).contains("teacher")){
+                        } else if (consumer2name.get(producer2consumer.get(node2producer.get(node))).contains("teacher")) {
                             teacherWasCreated = false;
                         }
                     }
@@ -276,7 +279,7 @@ public class SessionManagerImpl implements SessionManager {
                 }
             });
         }
-       
+
         counsilListener = new MessageListener() {
             // catching alerting messages
             @Override
@@ -291,8 +294,8 @@ public class SessionManagerImpl implements SessionManager {
                         if (handle != null) {
                             try {
                                 handle.sendCommand("postprocess border:width=5:color=#ff0000");
-                                
-                                Timer currentTimer = timers.get(consumer.name);                                
+
+                                Timer currentTimer = timers.get(consumer.name);
                                 currentTimer.schedule(new TimerTask() {
                                     @Override
                                     public void run() {
@@ -305,7 +308,7 @@ public class SessionManagerImpl implements SessionManager {
                                             Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                                         }
                                     }
-                                }, 30000); 
+                                }, 30000);
                             } catch (InterruptedException ex) {
                                 Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                             } catch (TimeoutException ex) {
@@ -315,37 +318,37 @@ public class SessionManagerImpl implements SessionManager {
                     }
 
                 } else if (message.type.equals(TALK)) {
-                                     
+
                     String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]));
-                    if (title != null){                          
-                        System.err.println("NAME::::::::::::::::" + talkingNode.getName());                        
+                    if (title != null) {
+                        System.err.println("NAME::::::::::::::::" + talkingNode.getName());
                         System.err.print(consumer2name.get(producer2consumer.get(node2producer.get(talkingNode)[0])));
                         layoutManager.swapPosition(title, consumer2name.get(producer2consumer.get(node2producer.get(talkingNode)[0])));
                         talkingNode = (NetworkNode) message.content[0];
                     }
-                    
-                } 
+
+                }
             }
         };
 
         // define message types
         core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);
-        
+
         /*  
-            // refreshes layout on consumer restart
-            consumerListener = new ApplicationEventListener() {
-                @Override
-                public void onApplicationEvent(MediaApplication app, ApplicationEvent event) {
+         // refreshes layout on consumer restart
+         consumerListener = new ApplicationEventListener() {
+         @Override
+         public void onApplicationEvent(MediaApplication app, ApplicationEvent event) {
                     
-                        layoutManager.refresh();
-                    }
+         layoutManager.refresh();
+         }
                 
 
-                @Override
-                public void onApplicationStop(MediaApplication app, String message) {
-                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                }
-            };
+         @Override
+         public void onApplicationStop(MediaApplication app, String message) {
+         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+         }
+         };
         
          */
         Thread thread = new Thread(new Runnable() {
@@ -365,64 +368,44 @@ public class SessionManagerImpl implements SessionManager {
     }
 
     /**
-     * Starts distributor on local node
-     *
-     * @throws IOException if there is problem during starting Distributor
-     */
-    private void createDistrubutor() throws IOException {
-        ObjectNode distConfig = core.newApplicationTemplate("distributor");
-        core.startApplication(distConfig, "distributor");
-    }
-
-    /**
      * Starts producer from local node
      *
      * @throws IOException if there is problem during starting Producer
      */
     private void createProducent(String role) throws IOException {
-        String producer = (String) local.getProperty("videoProducer");
-        if (producer == null) {
-            throw new IllegalArgumentException("Specify video producer in config");
+        Producer prod = new Producer(core, role);
+
+        // get VIDEO settings
+        String producerSettings = (String) local.getProperty("videoProducer");
+        if (producerSettings == null) {
+            throw new IllegalArgumentException("VIDEO settings are not specified");
         }
-        createProducer(TypeOfContent.VIDEO, producer, role);
+        prod.createVideo(producerSettings);
 
         // create audio producer
         // this require 1 teacher and 1 intepreter because of distributor 
         if (isInterpreterOrTeacher(role)) {
-            String audio = (String) local.getProperty("audioProducer");
-            if (audio == null) {
-                throw new IllegalArgumentException("Specify audio in config");
+            String audioSettings = (String) local.getProperty("audioProducer");
+            if (audioSettings == null) {
+                throw new IllegalArgumentException("AUDIO settings are not specified");
             }
-            createProducer(TypeOfContent.SOUND, audio, role);
+            prod.createSound(audioSettings);
         }
+
         if (role.equals("teacher")) {
-            String pres = (String) local.getProperty("presentationProducer");
-            if (pres == null) {
-                throw new IllegalArgumentException("Specify presentation in config");
+            String presentationSettings = (String) local.getProperty("presentationProducer");
+            if (presentationSettings == null) {
+                throw new IllegalArgumentException("PRESENTATION settings are not specified");
             }
-            createProducer(TypeOfContent.PRESENTATION, pres, role);
+            prod.createPresentation(presentationSettings);
         }
     }
 
-    private void createProducer(TypeOfContent type, String settings, String role) throws IOException {
-        String PRODUCER = "producer";
-        ObjectNode prodConfig = core.newApplicationTemplate(PRODUCER);
-        String identification = local.getName().toString() + "-" + type.toString() + "-" + role;
-        prodConfig.put("content", identification);
-        switch (type) {
-            case SOUND:
-                prodConfig.put("audio", settings);
-                break;
-            case PRESENTATION:
-                prodConfig.put("video", settings);
-                break;
-            case VIDEO:
-                prodConfig.put("video", settings);
-            default:
-                break;
+    private void createConsumers(CounsilNode app) {
+        if (app == null) {
+            throw new IllegalArgumentException("app is null");
         }
-        prodConfig.put("name", identification);
-        core.startApplication(prodConfig, "producer");
+        
     }
 
     /**
@@ -456,16 +439,16 @@ public class SessionManagerImpl implements SessionManager {
         String name = local.getName() + "-" + content;
 
         if ((name.contains("teacher")) && (name.contains("VIDEO"))) {
-             talkingNode = node;
-            if (!teacherWasCreated) {               
+            talkingNode = node;
+            if (!teacherWasCreated) {
                 teacherWasCreated = true;
-            } else {               
+            } else {
                 layoutManager.refreshToDefaultLayout();
-            }           
+            }
         }
-        
-        if (content.contains("SOUND") && isInterpreterOrTeacher((String) local.getProperty("role"))) {                        
-          
+
+        if (content.contains("SOUND") && isInterpreterOrTeacher((String) local.getProperty("role"))) {
+
             System.out.println(local.getName() + ":" + node.getName());
             if (node.getName().equals(local.getName())) {
                 return content;
@@ -522,10 +505,26 @@ public class SessionManagerImpl implements SessionManager {
         if (node == null) {
             throw new IllegalArgumentException("node is null");
         }
+        
+        boolean isNewNode = true;
+        
+        for(CounsilNode n : nodes){
+            if(n.getNode().equals(node)){
+                isNewNode = false;
+                break;
+            }
+        }
+        
+        if(isNewNode){
+            CounsilNode n = new CounsilNode(node);
+            nodes.add(n);
+        }
+        
         Set<MediaApplication> applications = node.getApplications();
         for (MediaApplication app : applications) {
             if (app instanceof UltraGridProducerApplication) {
                 UltraGridProducerApplication producer = (UltraGridProducerApplication) app;
+                
                 try {
                     if (producer2consumer.containsKey(producer) == false) {
                         String consumerName = createConsumer(producer, node);
