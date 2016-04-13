@@ -75,7 +75,7 @@ public class LayoutManagerImpl implements LayoutManager {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             System.exit(-1);
         }
-
+        
         // create menu
         EventQueue.invokeLater(new Runnable() {
           
@@ -155,13 +155,14 @@ public class LayoutManagerImpl implements LayoutManager {
         };
 
         // register listener to screen, turn off loggers
-        GlobalScreen.registerNativeHook();
-        GlobalScreen.addNativeMouseListener(mouseListener);
+        //GlobalScreen.registerNativeHook();
+        //GlobalScreen.addNativeMouseListener(mouseListener);
         Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
         logger.setLevel(Level.OFF);
         logger.setUseParentHandlers(false);
 
         recalculateAndApply();
+        
     }
 
     /**
@@ -299,6 +300,11 @@ public class LayoutManagerImpl implements LayoutManager {
         synchronized (eventLock) {
             calculator.recalculate(windows);
             applyChanges();
+            int x = calculator.getMenuPostion().x;
+            int y = calculator.getMenuPostion().y;
+            if(menu != null){
+                menu.setLocation(x,y);
+            }
         }
     }
 
