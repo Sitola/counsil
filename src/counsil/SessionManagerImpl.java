@@ -278,7 +278,6 @@ public class SessionManagerImpl implements SessionManager {
         NetworkNode.addPropertyParser("videoProducer", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("audioProducer", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("audioConsumer", NodePropertyParser.STRING_PARSER);
-        NetworkNode.addPropertyParser("enablePresentation", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("presentationProducer", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("videoConsumer", NodePropertyParser.STRING_PARSER);
 
@@ -460,11 +459,8 @@ public class SessionManagerImpl implements SessionManager {
         }
         if (role.equals("teacher")) {
             String pres = (String) local.getProperty("presentationProducer");
-            String enable = (String) local.getProperty("enablePresentation");
-            if (pres == null && enable.equals("yes")) {
-                throw new IllegalArgumentException("Specify presentation in config");
-            }
-			if(enable.equals("yes")){
+			// if configuration is not empty or empty string I will create pres
+			if((pres != null) && (!pres.equals(""))){
 				createProducer(TypeOfContent.PRESENTATION, pres, role);
 			}
 		}
