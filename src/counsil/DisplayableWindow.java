@@ -84,14 +84,25 @@ class DisplayableWindow{
      */
     public void adjustWindow (WDDMan wd) throws WDDManException {
 
-        System.out.print("[Window information]: " + title + " " + width + "x" + height + " [" + position.x + "," + position.y + "]\n");
-        System.out.print("[Role information]: Default role - " + defaultRole + ", current role - " + role + "\n");
-         try {
-                TimeUnit.SECONDS.sleep(1); //! todo less time
-            } catch (InterruptedException ex) {
-                Logger.getLogger(DisplayableWindow.class.getName()).log(Level.SEVERE, null, ex);
+        //System.out.print("[Window information]: " + title + " " + width + "x" + height + " [" + position.x + "," + position.y + "]\n");
+        //System.out.print("[Role information]: Default role - " + defaultRole + ", current role - " + role + "\n");
+        try {
+            TimeUnit.SECONDS.sleep(1);
+
+            wddman.Window win = wd.getWindowByTitle(title);
+            if (win != null) {
+                win.resize(position.x, position.y, width, height);
+            } else {
+                TimeUnit.SECONDS.sleep(5);
+                win = wd.getWindowByTitle(title);
+                if (win != null) {
+                    win.resize(position.x, position.y, width, height);
+                }
             }
-        wd.getWindowByTitle(title).resize(position.x, position.y, width, height);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DisplayableWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+               
     }
 
     /**
