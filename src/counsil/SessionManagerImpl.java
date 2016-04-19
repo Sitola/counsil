@@ -395,10 +395,10 @@ public class SessionManagerImpl implements SessionManager {
         }
         if (role.equals("teacher")) {
             String pres = (String) local.getProperty("presentationProducer");
-            if (pres == null) {
-                throw new IllegalArgumentException("Specify presentation in config");
-            }
-            createProducer(TypeOfContent.PRESENTATION, pres, role);
+            
+			if((pres != null) && (!pres.equals(""))){
+				createProducer(TypeOfContent.PRESENTATION, pres, role);
+			}
         }
     }
 
