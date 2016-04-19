@@ -56,6 +56,8 @@ public class LayoutManagerImpl implements LayoutManager {
     private List<LayoutManagerListener> layoutManagerListeners = new ArrayList<>();
 
     private LayoutCalculator calculator;
+    
+    private final NativeMouseInputListener mouseListener;
 
     /**
      * Initializes layout
@@ -99,7 +101,7 @@ public class LayoutManagerImpl implements LayoutManager {
         });
 
         // adding listener if role is interpreter
-        NativeMouseInputListener mouseListener = new NativeMouseInputListener() {
+        mouseListener = new NativeMouseInputListener() {
             @Override
             public void nativeMouseClicked(NativeMouseEvent nme) {
                 Point location = nme.getPoint();
@@ -155,8 +157,8 @@ public class LayoutManagerImpl implements LayoutManager {
         };
 
         // register listener to screen, turn off loggers
-        //GlobalScreen.registerNativeHook();
-        //GlobalScreen.addNativeMouseListener(mouseListener);
+        GlobalScreen.registerNativeHook();
+        GlobalScreen.addNativeMouseListener(mouseListener);
         Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
         logger.setLevel(Level.OFF);
         logger.setUseParentHandlers(false);
