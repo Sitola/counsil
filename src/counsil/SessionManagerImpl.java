@@ -40,8 +40,6 @@ import java.util.logging.Logger;
  */
 public class SessionManagerImpl implements SessionManager {
 
-    // TODO 2 different consumers per one node
-    // TODO 
     /**
      * Maps consumers on producers Producers are keys
      */
@@ -280,6 +278,7 @@ public class SessionManagerImpl implements SessionManager {
         NetworkNode.addPropertyParser("videoProducer", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("audioProducer", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("audioConsumer", NodePropertyParser.STRING_PARSER);
+        NetworkNode.addPropertyParser("enablePresentation", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("presentationProducer", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("videoConsumer", NodePropertyParser.STRING_PARSER);
 
@@ -461,11 +460,14 @@ public class SessionManagerImpl implements SessionManager {
         }
         if (role.equals("teacher")) {
             String pres = (String) local.getProperty("presentationProducer");
-            if (pres == null) {
+            String enable = (String) local.getProperty("enablePresentation");
+            if (pres == null && enable.equals("yes")) {
                 throw new IllegalArgumentException("Specify presentation in config");
             }
-            createProducer(TypeOfContent.PRESENTATION, pres, role);
-        }
+			if(enable.equals("yes")){
+				createProducer(TypeOfContent.PRESENTATION, pres, role);
+			}
+		}
     }
 
     private void createProducer(TypeOfContent type, String settings, String role) throws IOException {
