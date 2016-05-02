@@ -15,4 +15,7 @@ public interface InteractionMenuListener {
      * what to do when raise hand button is pushed
      */
     void raiseHandActionPerformed();
+    
+    
+    void resetActionPerformed();
 }
