@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package counsil;
 
 import java.util.Objects;
@@ -15,7 +10,7 @@ import wddman.WDDManException;
 
 /**
  * Represents window attributes * 
- * @author desanka
+ * @author xdaxner
  */
 class DisplayableWindow{
 
@@ -35,19 +30,24 @@ class DisplayableWindow{
     private Position position;
 
     /**
-     * Window default role
-     */
-    private final String defaultRole;
-    
-    /**
      * Window temporary role in layout
      */
-    private String currentRole;
+    private final String role;
 
     /**
      * Window title
      */
     private final String title;
+
+    /**
+     * wddman instance which this window uses
+     */
+    private WDDMan wd;     
+    
+    /**
+     * wddman window
+     */
+    private wddman.Window window;
 
     /**
      * Initializes arguments    
@@ -57,35 +57,30 @@ class DisplayableWindow{
      * @throws WDDManException
      * @throws UnsupportedOperatingSystemException
      */
-    DisplayableWindow(WDDMan wd, String title, String role) throws WDDManException, UnsupportedOperatingSystemException {
-        
-        wddman.Window content;        
-        while ((content = wd.getWindowByTitle(title)) == null) {          
+    DisplayableWindow(WDDMan wddman, String title, String role) throws WDDManException, UnsupportedOperatingSystemException {
+        wd = wddman;        
+        while ((window = wd.getWindowByTitle(title)) == null) {          
             try {
-                TimeUnit.MILLISECONDS.sleep(5);
+                TimeUnit.MILLISECONDS.sleep(3); 
             } catch (InterruptedException ex) {
                 Logger.getLogger(DisplayableWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
-        position = new Position(content.getLeft(), content.getTop());
-        width = content.getWidth();
-        height = content.getHeight();
-
-        this.title = title;
-        this.defaultRole = role;
-        this.currentRole = role;
+        }       
+        this.title = title;    
+        this.role = role;   
     }
 
     /**
      * Applies DisplayableWindow parameters to actual windows
-     *
-     * @param wd wddman instance
+     *    
      * @throws WDDManException
      */
-    public void adjustWindow (WDDMan wd) throws WDDManException {
-
-        // System.out.print("[Window information]: " + title + " " + width + "x" + height + " [" + position.x + "," + position.y + "]\n");
-        wd.getWindowByTitle(title).resize(position.x, position.y, width, height);
+    public void adjustWindow () throws WDDManException {
+    
+        wddman.Window win = getWindowInstance();
+        if (win != null) {
+            win.resize(position.x, position.y, width, height);
+        }               
     }
 
     /**
@@ -99,50 +94,58 @@ class DisplayableWindow{
 
     }
 
-    Position getPosition() {
-        return position;
+    private wddman.Window getWindowInstance() throws WDDManException{
+        return window == null ? wd.getWindowByTitle(title) : window;
+    }
+    
+    Position getPosition() throws WDDManException {
+        wddman.Window win = getWindowInstance();
+        if (win != null) {
+            return new Position(win.getLeft(),win.getTop());
+        } 
+        else return null;
     }
 
     void setPosition(Position position) {
         this.position = position;
     }
 
-    public int getHeight() {
-        return height;
+    public int getHeight() throws WDDManException {
+        wddman.Window win = getWindowInstance();
+        if (win != null) {
+            return win.getHeight();
+        } 
+        else return 100;
     }
 
     public void setHeight(int height) {
         this.height = height;
     }
 
-    public int getWidth() {
-        return width;
+    public int getWidth() throws WDDManException {
+        wddman.Window win = getWindowInstance();
+        if (win != null) {
+            return win.getWidth();
+        } else {
+            return 100;
+        }
     }
 
     public void setWidth(int width) {
         this.width = width;
     }
-
-    public String getDefaultRole() {
-        return defaultRole;
-    }    
-    
-    public  String geCurrentRole (){
-        return currentRole;
+      
+    public  String getRole (){
+        return role;
     }
   
     public String getTitle(){
         return title;
     }
     
-    public void setCurrentRole (String role){
-        currentRole = role;
-    }
-
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 53 * hash + Objects.hashCode(this.defaultRole);
+        int hash = 5;      
         hash = 53 * hash + Objects.hashCode(this.title);
         return hash;
     }
@@ -156,11 +159,6 @@ class DisplayableWindow{
             return false;
         }
         final DisplayableWindow other = (DisplayableWindow) obj;
-        if (!Objects.equals(this.defaultRole, other.defaultRole)) {
-            return false;
-        }
         return Objects.equals(this.title, other.title);
     }
-    
-    
 }

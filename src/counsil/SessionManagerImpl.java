@@ -11,13 +11,10 @@ import couniverse.core.NetworkNode;
 import couniverse.core.NodePropertyParser;
 import couniverse.core.mediaApplications.MediaApplication;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import couniverse.core.controllers.ApplicationEvent;
-import couniverse.core.controllers.ApplicationEventListener;
 import couniverse.core.p2p.CoUniverseMessage;
 import couniverse.core.p2p.GroupConnectorID;
 import couniverse.core.p2p.MessageListener;
 import couniverse.core.p2p.MessageType;
-import couniverse.gui.display.NodeGraphics;
 import couniverse.monitoring.NodePresenceListener;
 import couniverse.monitoring.TopologyAggregator;
 import couniverse.ultragrid.UltraGridConsumerApplication;
@@ -30,6 +27,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,11 +55,6 @@ public class SessionManagerImpl implements SessionManager {
     Map<UltraGridConsumerApplication, String> consumer2name = new HashMap<>();
 
     /**
-     * Shows if current consumer is alerting
-     */
-    Map<UltraGridConsumerApplication, Boolean> consumer2alert = new HashMap<>();
-
-    /**
      * Listens for ultragrid windows changes
      */
     couniverse.core.controllers.ApplicationEventListener consumerListener;
@@ -75,15 +69,15 @@ public class SessionManagerImpl implements SessionManager {
     Core core;
 
     /**
+     * Shows if teacher consumer was already created
+     */
+    Boolean teacherWasCreated;
+
+    /**
      * Instance of LayoutManager to notify Layout about changes
      */
     LayoutManager layoutManager;
     TopologyAggregator topologyAggregator;
-
-    /**
-     * Lock for gui and other stuff
-     */
-    final private Object eventLock = new Object();
 
     /**
      * Listens alert and permission to talk messages
@@ -91,14 +85,14 @@ public class SessionManagerImpl implements SessionManager {
     MessageListener counsilListener;
 
     /**
-     * Checks if someone is talking in this moment
-     */
-    private static Boolean isTalking;
-
-    /**
      * Currently talking node
      */
-    private static NetworkNode talkingNode;
+    private volatile NetworkNode talkingNode;
+
+    /**
+     * Timers for alerting certain windows
+     */
+    private static final HashMap<String, Timer> timers = new HashMap<>();
 
     /**
      * Alert message is used for alerting other nodes
@@ -106,19 +100,9 @@ public class SessionManagerImpl implements SessionManager {
     public static MessageType ALERT = MessageType.createCustomMessageType("AlertMessage", "NetworkNode");
 
     /**
-     * StopAlert message is used for stopping alerting other nodes
-     */
-    public static MessageType STOPALERT = MessageType.createCustomMessageType("StopAlertMessage", "NetworkNode");
-
-    /**
      * Talk message is used for granting talk permission
      */
     public static MessageType TALK = MessageType.createCustomMessageType("TalkPermissionGrantedMessage", "NetworkNode");
-
-    /**
-     * StopTalk message is used for removing talk right other nodes
-     */
-    public static MessageType STOPTALK = MessageType.createCustomMessageType("TalkPermissionRemovedMessage", "NetworkNode");
 
     /**
      * Constructor to initialize LayoutManager
@@ -126,6 +110,10 @@ public class SessionManagerImpl implements SessionManager {
      * @param layoutManager
      */
     public SessionManagerImpl(LayoutManager layoutManager) {
+
+        teacherWasCreated = false;
+        talkingNode = null;
+
         if (layoutManager == null) {
             throw new IllegalArgumentException("layoutManager is null");
         }
@@ -133,86 +121,45 @@ public class SessionManagerImpl implements SessionManager {
         this.layoutManager.addLayoutManagerListener(new LayoutManagerListener() {
 
             @Override
-            public void alertActionPerformed(Boolean wasAlerted) {
-                if (wasAlerted) {
-                    CoUniverseMessage alert = CoUniverseMessage.newInstance(ALERT, core.getLocalNode());
-                    System.out.println("Sending alert...");
-                    core.getConnector().sendMessageToGroup(alert, GroupConnectorID.ALL_NODES);
-                } else {
-                    CoUniverseMessage stopalert = CoUniverseMessage.newInstance(STOPALERT, core.getLocalNode());
-                    System.out.println("Sending stopalert...");
-                    core.getConnector().sendMessageToGroup(stopalert, GroupConnectorID.ALL_NODES);
-                }
+            public void alertActionPerformed() {
+
+                CoUniverseMessage alert = CoUniverseMessage.newInstance(ALERT, core.getLocalNode());
+                System.out.println("Sending alert...");
+                core.getConnector().sendMessageToGroup(alert, GroupConnectorID.ALL_NODES);
 
             }
 
             @Override
             public void windowChoosenActionPerformed(String windowName) {
                 NetworkNode choosenNode = getNetworkNodeByProducer(getProducerByConsumer(getConsumerByTitle(windowName)));
-                if (!isTalking) {
-                    CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, choosenNode);
-                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission granted for node {0}...", windowName);
-                    core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);
-                    talkingNode = choosenNode;
-                    isTalking = true;
-                } else {
-                    CoUniverseMessage stoptalk = CoUniverseMessage.newInstance(STOPTALK, choosenNode);
-                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission removed for node {0}...", windowName);
-                    core.getConnector().sendMessageToGroup(stoptalk, GroupConnectorID.ALL_NODES);
-                    talkingNode = null;
-                    isTalking = false;
-                }
-
+                CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, choosenNode);
+                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission granted for node {0}...", windowName);
+                core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);
             }
 
             @Override
-            public void muteActionPerformed(String windowName) {
-                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
-                if (app != null) {
-                    UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                    if (handle != null) {
-                        handle.mute();
-                    }
-                }
-            }
-
-            @Override
-            public void volumeIncreasedActionPerformed(String windowName) {
-                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
-                if (app != null) {
-                    UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                    if (handle != null) {
-                        handle.increaseVolume();
-                    }
-                }
-            }
-
-            @Override
-            public void volumeDecreasedActionPerformed(String windowName) {
-                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
-                if (app != null) {
-                    UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                    if (handle != null) {
-                        handle.decreaseVolume();
+            public void windowRestartActionPerformed(String title) {
+                UltraGridConsumerApplication consumer = getConsumerByTitle(title);
+                if (consumer != null) {
+                    System.out.println("Restarting consumer: " + title);
+                    try {
+                        Runtime.getRuntime().exec("taskkill /F /FI \"Windowtitle eq " + title + "\" /T");
+                    } catch (IOException ex) {
+                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
 
-            }
-
-            @Override
-            public void unmuteActionPerformed(String windowName) {
-                UltraGridConsumerApplication app = getKeyByValue(consumer2name, windowName);
-                if (app != null) {
-                    UltraGridControllerHandle handle = (UltraGridControllerHandle) core.getApplicationControllerHandle(app);
-                    if (handle != null) {
-                        handle.unmute();
+                Timer currentTimer = timers.get(consumer.name);
+                currentTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        // layoutManager.refresh();
+                        currentTimer.purge();
                     }
-                }
+                }, 5000);
+
             }
         });
-
-        isTalking = false;
-
     }
 
     /**
@@ -295,135 +242,125 @@ public class SessionManagerImpl implements SessionManager {
                 @Override
                 public void init(Set<NetworkNode> nodes) {
                     for (NetworkNode node : nodes) {
-                      //  synchronized (eventLock) {
-                            onNodeChanged(node);
-                      //  }
+                        onNodeChanged(node);
                     }
                 }
 
                 @Override
                 public void onNewNodeAppeared(NetworkNode node) {
-                    //synchronized (eventLock) {
-                        onNodeChanged(node);
-                    //}
+                    onNodeChanged(node);
                 }
 
                 @Override
-                public void onNodeChanged(NetworkNode node) {          
+                public void onNodeChanged(NetworkNode node) {
                     // Check if there is new media application
                     checkProducent(node);
                 }
 
                 @Override
-                public void onNodeLeft(NetworkNode node) {                   
+                public void onNodeLeft(NetworkNode node) {
                     String nodeName = consumer2name.get(producer2consumer.get(node2producer.get(node)));
                     if (nodeName != null) {
-                        if (((talkingNode != null) && (node.getName().equals(talkingNode.getName())))
-                                || (nodeName.toUpperCase().contains("TEACHER"))) {                         
-                            layoutManager.refreshToDefaultLayout();
-                            isTalking = false;
-                            talkingNode = null;                           
+                        if ((talkingNode != null) && (node.getName().equals(talkingNode.getName()))) {
+                            layoutManager.refreshLayout();
+                            talkingNode = null;
+                        } else if (consumer2name.get(producer2consumer.get(node2producer.get(node))).contains("teacher")) {
+                            teacherWasCreated = false;
                         }
                     }
-                    stopConsumer(node);                    
+                    stopConsumer(node);
                 }
             });
         }
 
-        //synchronized (listenerLock) {
-            counsilListener = new MessageListener() {
-
-                // catching alerting messages
-                @Override
-                public void onMessageArrived(CoUniverseMessage message) {
-                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Received new message " + message);
-                    if (message.type.equals(ALERT)) {
-                        UltraGridConsumerApplication consumer = producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]);
-
-                        if (consumer != null) {
-                            // get application handle and draw/remove border
-                            UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
-                            if (handle != null) {
-                                try {
-                                    handle.sendCommand("postprocess border:width=5:color=#ff0000");
-                                    consumer2alert.replace(consumer, true);
-                                } catch (InterruptedException ex) {
-                                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                } catch (TimeoutException ex) {
-                                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                }
-                            }
-                        }
-
-                    } else if (message.type.equals(STOPALERT)) {
-                        UltraGridConsumerApplication consumer = producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]);
-                        if (consumer != null) {
-                            // get application handle and draw/remove border
-                            UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
-                            if (handle != null) {
-                                try {
-                                    handle.sendCommand("postprocess flush");
-                                    consumer2alert.replace(consumer, false);
-                                } catch (InterruptedException ex) {
-                                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                } catch (TimeoutException ex) {
-                                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                }
-                            }
-                        }
-
-                    } else if (message.type.equals(TALK)) {
-                        String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]));
-                      //  synchronized (eventLock) {
-                            layoutManager.swapPosition(title);
-                       // }
-                        isTalking = true;
-                        talkingNode = (NetworkNode) message.content[0];
-                    } else if (message.type.equals(STOPTALK)) {
-                       // synchronized (eventLock) {
-                            layoutManager.refreshToDefaultLayout();
-                        //}
-                        isTalking = false;
-                        talkingNode = null;
-                    }
-                }
-            };
-
-            // define message types
-            core.getConnector().attachMessageListener(counsilListener, ALERT, TALK, STOPALERT, STOPTALK);
-        //}
-
-      /*  synchronized (listenerLock) {
-            // refreshes layout on consumer restart
-            consumerListener = new ApplicationEventListener() {
-                @Override
-                public void onApplicationEvent(MediaApplication app, ApplicationEvent event) {
-                    synchronized (eventLock) {
-                        layoutManager.refresh();
-                    }
-                }
-
-                @Override
-                public void onApplicationStop(MediaApplication app, String message) {
-                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                }
-            };
-        }
-*/
-        Thread thread = new Thread(new Runnable() {
+        counsilListener = new MessageListener() {
+            // catching alerting messages
             @Override
-            public void run() {
-                try {
-                    while (true) {
-                        Thread.sleep(30 * 1000);
-                        EventQueue.invokeLater(() -> layoutManager.refresh());
+            public void onMessageArrived(CoUniverseMessage message) {
+                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Received new message " + message);
+                if (message.type.equals(ALERT)) {
+                    UltraGridConsumerApplication consumer = producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]);
+
+                    if (consumer != null) {
+                        // get application handle and draw/remove border
+                        UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
+                        if (handle != null) {
+                            Timer currentTimer = timers.get(consumer.name);
+                            currentTimer.schedule(new TimerTask() {
+                                @Override
+                                public void run() {
+
+                                    for (int i = 0; i < 10; i++) {
+                                        if (i % 2 == 0) {
+                                            try {
+                                                handle.sendCommand("postprocess flush");
+                                            } catch (InterruptedException ex) {
+                                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                            } catch (TimeoutException ex) {
+                                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                            }
+                                        } else {
+                                            try {
+                                                handle.sendCommand("postprocess border:width=10:color=#ff0000");
+                                            } catch (InterruptedException ex) {
+                                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                            } catch (TimeoutException ex) {
+                                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                            }
+                                        }
+                                    }
+                                }
+                            }, 1000);
+
+                            currentTimer.schedule(new TimerTask() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        handle.sendCommand("postprocess flush");
+                                        currentTimer.purge();
+                                    } catch (InterruptedException ex) {
+                                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                    } catch (TimeoutException ex) {
+                                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                    }
+                                }
+                            }, 20000);
+                        }
                     }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+
+                } else if (message.type.equals(TALK)) {
+
+                    String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]));
+                    if (title != null) {
+                        System.err.print(consumer2name.get(producer2consumer.get(node2producer.get(talkingNode)[0])));
+                        // layoutManager.Resize(title, consumer2name.get(producer2consumer.get(node2producer.get(talkingNode)[0])));
+                        talkingNode = (NetworkNode) message.content[0];
+                    }
+
                 }
             }
-        });
-        thread.start();
+        };
+
+        // define message types
+        core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);
+
+        /*  
+         // refreshes layout on consumer restart
+         consumerListener = new ApplicationEventListener() {
+         @Override
+         public void onApplicationEvent(MediaApplication app, ApplicationEvent event) {
+                    
+         layoutManager.refresh();
+         }
+                
+
+         @Override
+         public void onApplicationStop(MediaApplication app, String message) {
+         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+         }
+         };
+        
+         */
     }
 
     /**
@@ -459,11 +396,11 @@ public class SessionManagerImpl implements SessionManager {
         }
         if (role.equals("teacher")) {
             String pres = (String) local.getProperty("presentationProducer");
-			// if configuration is not empty or empty string I will create pres
-			if((pres != null) && (!pres.equals(""))){
-				createProducer(TypeOfContent.PRESENTATION, pres, role);
-			}
-		}
+            if ((pres != null) && (!pres.equals(""))) {
+                createProducer(TypeOfContent.PRESENTATION, pres, role);
+            }
+        }
+
     }
 
     private void createProducer(TypeOfContent type, String settings, String role) throws IOException {
@@ -517,7 +454,17 @@ public class SessionManagerImpl implements SessionManager {
         UltraGridConsumerApplication con = null;
         String name = local.getName() + "-" + content;
 
+        if ((name.contains("teacher")) && (name.contains("VIDEO"))) {
+            talkingNode = node;
+            if (!teacherWasCreated) {
+                teacherWasCreated = true;
+            } else {
+                layoutManager.refreshLayout();
+            }
+        }
+
         if (content.contains("SOUND") && isInterpreterOrTeacher((String) local.getProperty("role"))) {
+
             System.out.println(local.getName() + ":" + node.getName());
             if (node.getName().equals(local.getName())) {
                 return content;
@@ -539,7 +486,7 @@ public class SessionManagerImpl implements SessionManager {
             apps[0] = app;
         }
 
-        consumer2alert.put(con, false);
+        timers.put(name, new Timer());
         producer2consumer.put(app, con);
         node2producer.put(node, apps);
         consumer2name.put(con, name);
@@ -582,7 +529,13 @@ public class SessionManagerImpl implements SessionManager {
                     if (producer2consumer.containsKey(producer) == false) {
                         String consumerName = createConsumer(producer, node);
                         if (!consumerName.contains("SOUND")) {
-                            layoutManager.addNode(consumerName, (String) node.getProperty("role"));
+
+                            if (consumerName.contains("PRESENTATION")) {
+                                System.out.println("I have created pres");
+                                layoutManager.addNode(consumerName, "presentation");
+                            } else {
+                                layoutManager.addNode(consumerName, (String) node.getProperty("role"));
+                            }
                         }
                     }
                 } catch (IOException ex) {
@@ -602,18 +555,24 @@ public class SessionManagerImpl implements SessionManager {
         if (node == null) {
             throw new IllegalArgumentException("node is null");
         }
+        if (node2producer.get(node) == null) {
+            return;
+        }
         for (UltraGridProducerApplication app : node2producer.get(node)) {
             UltraGridConsumerApplication ugCon = producer2consumer.remove(app);
-            consumer2alert.remove(ugCon);            
-            String removed = consumer2name.remove(ugCon);
+            if (ugCon != null) {
+                timers.remove(ugCon.name);
 
-            if (removed != null) {               
-                layoutManager.removeNode(removed);
-                core.stopApplication(ugCon);                
-            } else {
-                System.out.println("You are trying to stop non-registered application");
+                String removed = consumer2name.remove(ugCon);
+
+                if (removed != null) {
+                    layoutManager.removeNode(removed);
+                    core.stopApplication(ugCon);
+                } else {
+                    System.out.println("You are trying to stop non-registered application");
+                }
             }
-        }        
+        }
         node2producer.remove(node);
 
     }

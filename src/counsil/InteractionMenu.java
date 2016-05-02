@@ -8,6 +8,7 @@ package counsil;
 import java.awt.EventQueue;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -25,11 +26,6 @@ import javax.swing.LayoutStyle;
  * @author desanka
  */
 public class InteractionMenu extends JFrame {
-    
-    /**
-     * Represents current state of raise hand button
-     */
-    private boolean raisedHand;
         
     /**
      * Represents buttons in current menu instance
@@ -85,8 +81,7 @@ public class InteractionMenu extends JFrame {
         setLocationRelativeTo(null);
         setLocation(position.x, position.y);
                 
-        buttons = new ArrayList<>();
-        raisedHand = false;
+        buttons = new ArrayList<>();       
         muted = false;
         volumeValue = 5;
         
@@ -235,16 +230,9 @@ public class InteractionMenu extends JFrame {
      * Starts raise/lower hand interaction when button is clicked
      * @param button clicked button 
      */
-    private void attentionButtonActionPerformed(JButton button) {                                                 
-        if (raisedHand) {
-            button.setText("Raise hand");            
-        } else {
-            button.setText("Lower hand");             
-        }
-        raisedHand = !raisedHand;
-        
+    private void attentionButtonActionPerformed(JButton button) {                                                
         interactionMenuListeners.stream().forEach((listener) -> {            
-            listener.raiseHandActionPerformed(raisedHand);
+            listener.raiseHandActionPerformed();
         });
     }  
     
@@ -258,46 +246,32 @@ public class InteractionMenu extends JFrame {
         
         if (muted) {
             button.setText("Mute");     
-             interactionMenuListeners.stream().forEach((listener) -> {
-                listener.unmuteActionPerformed();
-            });
+              try {
+                    Process process = new ProcessBuilder("C:\\UltraGrid\\UltraGrid\\nircmd-x64\\nircmdc.exe",
+                            "changesysvolume 0").start();
+                } catch (IOException ex) {
+                    Logger.getLogger(VolumeSlider.class.getName()).log(Level.SEVERE, null, ex);
+                }
         } else {
             button.setText("Unmute");   
-            interactionMenuListeners.stream().forEach((listener) -> {
-                listener.muteActionPerformed();
-            });
+             try {
+                    Process process = new ProcessBuilder("C:\\UltraGrid\\UltraGrid\\nircmd-x64\\nircmdc.exe",
+                            "changesysvolume 30000").start();
+                } catch (IOException ex) {
+                    Logger.getLogger(VolumeSlider.class.getName()).log(Level.SEVERE, null, ex);
+                }
         }        
         muted = !muted;        
     }
     
-    private void volumeButtonActionPerformed() {       
+    private void volumeButtonActionPerformed() {
         EventQueue.invokeLater(new Runnable() {
             @Override
-            public void run() {                
-                final VolumeSlider slider = VolumeSlider.getInstance();   
-                slider.setValue(volumeValue);
+            public void run() {
+                final VolumeSlider slider = VolumeSlider.getInstance();               
                 slider.setVisible(true);
-                slider.setLocation(getLocation().x, getLocation().y + 200);                    
-                slider.addVolumeSliderListener(new VolumeSliderListener() {
-
-                    @Override
-                    public void increaseActionPerformed() {
-                        interactionMenuListeners.stream().forEach((listener) -> {
-                            volumeValue++;
-                            listener.increaseActionPerformed();
-                        }); 
-                    }
-
-                    @Override
-                    public void decreaseActionPerformed() {
-                        volumeValue--;
-                        interactionMenuListeners.stream().forEach((listener) -> {
-                            listener.decreaseActionPerformed();
-                        }); 
-                    }                        
-                });
-            }               
-        });  
+                slider.setLocation(getLocation().x, getLocation().y + 200);
+            }
+        });
     }
 }
-    
