@@ -1,4 +1,34 @@
 {
+<<<<<<< HEAD
+    "windows":{
+        "presentation": [
+            {"x": "0", "y": "0", "width": "1024", "height": "768"}
+        ],
+        "interpreter": [
+            {"x": "1024", "y": "0", "width": "640", "height": "480"}
+        ],
+        "teacher": [
+            {"x": "1", "y": "769", "width": "428", "height": "321"}
+        ],
+        "student":[
+            {"x": "1028", "y": "513", "width": "296", "height": "222"},
+            {"x": "1324", "y": "513", "width": "296", "height": "222"},
+	    {"x": "1622", "y": "513", "width": "296", "height": "222"},
+            
+            {"x": "431", "y": "818", "width": "296", "height": "222"},
+            {"x": "729", "y": "818", "width": "296", "height": "222"},
+            {"x": "1027", "y": "818", "width": "296", "height": "222"},
+            {"x": "1325", "y": "818", "width": "296", "height": "222"},
+            {"x": "1623", "y": "818", "width": "296", "height": "222"}
+        ]
+    },
+    "menu" : {
+        "role" : "student",
+        "x" : "1750",
+        "y" : "0"
+    }
+}
+=======
     "layouts" : [
         {
             "conditions":[
@@ -148,3 +178,4 @@
     },
     "role" : "student"
 }
+>>>>>>> refactored
