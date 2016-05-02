@@ -7,56 +7,47 @@ package counsil;
 
 /**
  * Represents structure which manipulates with layout
- *
  * @author xminarik
  */
 public interface LayoutManager {
 
     /**
      * Adds new node window to layout
-     *
      * @param title window title
      * @param role tole of window user
      */
     public void addNode(String title, String role);
-
+    
     /**
      * Removes window from layout
-     *
      * @param title window title
      */
     public void removeNode(String title);
-
+       
     /**
      * adds listener of layout manager events
-     *
      * @param listener
      */
     public void addLayoutManagerListener(LayoutManagerListener listener);
-
+    
     /**
-     * Scales window size down
-     *
-     * @param name
+     * Refreshes layout
      */
-    public void downScale(String name);
-
+    public void refresh();
+    
+    
     /**
-     * Scales window size up
-     *
-     * @param name
+     * Swaps position of new and old window and specified window 
+     * @param newWindowName
+     * @param oldWindowName
      */
-    public void upScale(String name);
+     public void swapPosition(String newWindowName, String oldWindowName);
 
     /**
      * Refreshes layout to default positions
      */
-    public void refreshLayout();
+    public void refreshToDefaultLayout();
 
-     /**
-     * set ratio
-     * @param newRatio 
-     */
-    public void initializeScaleRatio(int newRatio);
+   
 
 }

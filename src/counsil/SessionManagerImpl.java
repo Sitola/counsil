@@ -153,7 +153,7 @@ public class SessionManagerImpl implements SessionManager {
                 currentTimer.schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        // layoutManager.refresh();
+                        layoutManager.refresh();
                         currentTimer.purge();
                     }
                 }, 5000);
@@ -262,7 +262,7 @@ public class SessionManagerImpl implements SessionManager {
                     String nodeName = consumer2name.get(producer2consumer.get(node2producer.get(node)));
                     if (nodeName != null) {
                         if ((talkingNode != null) && (node.getName().equals(talkingNode.getName()))) {
-                            layoutManager.refreshLayout();
+                            layoutManager.refreshToDefaultLayout();
                             talkingNode = null;
                         } else if (consumer2name.get(producer2consumer.get(node2producer.get(node))).contains("teacher")) {
                             teacherWasCreated = false;
@@ -285,46 +285,28 @@ public class SessionManagerImpl implements SessionManager {
                         // get application handle and draw/remove border
                         UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
                         if (handle != null) {
-                            Timer currentTimer = timers.get(consumer.name);
-                            currentTimer.schedule(new TimerTask() {
-                                @Override
-                                public void run() {
+                            try {
+                                handle.sendCommand("postprocess border:width=5:color=#ff0000");
 
-                                    for (int i = 0; i < 10; i++) {
-                                        if (i % 2 == 0) {
-                                            try {
-                                                handle.sendCommand("postprocess flush");
-                                            } catch (InterruptedException ex) {
-                                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                            } catch (TimeoutException ex) {
-                                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                            }
-                                        } else {
-                                            try {
-                                                handle.sendCommand("postprocess border:width=10:color=#ff0000");
-                                            } catch (InterruptedException ex) {
-                                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                            } catch (TimeoutException ex) {
-                                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                            }
+                                Timer currentTimer = timers.get(consumer.name);
+                                currentTimer.schedule(new TimerTask() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            handle.sendCommand("postprocess flush");
+                                            currentTimer.purge();
+                                        } catch (InterruptedException ex) {
+                                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                        } catch (TimeoutException ex) {
+                                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                                         }
                                     }
-                                }
-                            }, 1000);
-
-                            currentTimer.schedule(new TimerTask() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        handle.sendCommand("postprocess flush");
-                                        currentTimer.purge();
-                                    } catch (InterruptedException ex) {
-                                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                    } catch (TimeoutException ex) {
-                                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                    }
-                                }
-                            }, 20000);
+                                }, 30000);
+                            } catch (InterruptedException ex) {
+                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (TimeoutException ex) {
+                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                         }
                     }
 
@@ -332,8 +314,9 @@ public class SessionManagerImpl implements SessionManager {
 
                     String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]));
                     if (title != null) {
+                        System.err.println("NAME::::::::::::::::" + talkingNode.getName());
                         System.err.print(consumer2name.get(producer2consumer.get(node2producer.get(talkingNode)[0])));
-                        // layoutManager.Resize(title, consumer2name.get(producer2consumer.get(node2producer.get(talkingNode)[0])));
+                        layoutManager.swapPosition(title, consumer2name.get(producer2consumer.get(node2producer.get(talkingNode)[0])));
                         talkingNode = (NetworkNode) message.content[0];
                     }
 
@@ -361,6 +344,20 @@ public class SessionManagerImpl implements SessionManager {
          };
         
          */
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    while (true) {
+                        Thread.sleep(30 * 1000);
+                        EventQueue.invokeLater(() -> layoutManager.refresh());
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
     }
 
     /**
@@ -396,11 +393,8 @@ public class SessionManagerImpl implements SessionManager {
         }
         if (role.equals("teacher")) {
             String pres = (String) local.getProperty("presentationProducer");
-<<<<<<< HEAD
 
             // if configuration is not empty or empty string I will create pres
-=======
->>>>>>> e278d272a259fda4281bacec108ab307d42fc2a3
             if ((pres != null) && (!pres.equals(""))) {
                 createProducer(TypeOfContent.PRESENTATION, pres, role);
             }
@@ -464,7 +458,7 @@ public class SessionManagerImpl implements SessionManager {
             if (!teacherWasCreated) {
                 teacherWasCreated = true;
             } else {
-                layoutManager.refreshLayout();
+                layoutManager.refreshToDefaultLayout();
             }
         }
 
