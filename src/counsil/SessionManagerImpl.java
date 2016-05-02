@@ -124,7 +124,6 @@ public class SessionManagerImpl implements SessionManager {
 
             @Override
             public void alertActionPerformed() {
-
                 CoUniverseMessage alert = CoUniverseMessage.newInstance(ALERT, core.getLocalNode());
                 System.out.println("Sending alert...");
                 core.getConnector().sendMessageToGroup(alert, GroupConnectorID.ALL_NODES);
@@ -155,7 +154,7 @@ public class SessionManagerImpl implements SessionManager {
                 currentTimer.schedule(new TimerTask() {
                     @Override
                     public void run() {
-                       // layoutManager.refresh();
+                        // layoutManager.refresh();
                         currentTimer.purge();
                     }
                 }, 5000);
@@ -276,93 +275,83 @@ public class SessionManagerImpl implements SessionManager {
         }
 
         counsilListener = new MessageListener() {
-            // catching alerting messages
+
             @Override
             public void onMessageArrived(CoUniverseMessage message) {
-                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Received new message " + message);
+                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Received new message {0}", message);
                 if (message.type.equals(ALERT)) {
                     UltraGridConsumerApplication consumer = producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]);
 
                     if (consumer != null) {
+
                         // get application handle and draw/remove border
                         UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
                         if (handle != null) {
-                            Timer currentTimer = timers.get(consumer.name);
-                            currentTimer.schedule(new TimerTask() {
-                                @Override
-                                public void run() {
-
-                                    for (int i = 0; i < 10; i++) {
-                                        if (i % 2 == 0) {
-                                            try {
-                                                handle.sendCommand("postprocess flush");
-                                            } catch (InterruptedException ex) {
-                                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                            } catch (TimeoutException ex) {
-                                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                            }
-                                        } else {
-                                            try {
-                                                handle.sendCommand("postprocess border:width=10:color=#ff0000");
-                                            } catch (InterruptedException ex) {
-                                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                            } catch (TimeoutException ex) {
-                                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                            }
-                                        }
-                                    }
-                                }
-                            }, 1000);
-
-                            currentTimer.schedule(new TimerTask() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        handle.sendCommand("postprocess flush");
-                                        currentTimer.purge();
-                                    } catch (InterruptedException ex) {
-                                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                    } catch (TimeoutException ex) {
-                                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                    }
-                                }
-                            }, 20000);
+                            alertConsumer(handle, timers.get(consumer.name));
                         }
                     }
 
                 } else if (message.type.equals(TALK)) {
 
                     String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]));
-                    if (title != null) {
-                        System.err.print(consumer2name.get(producer2consumer.get(node2producer.get(talkingNode)[0])));
-                       // layoutManager.Resize(title, consumer2name.get(producer2consumer.get(node2producer.get(talkingNode)[0])));
-                        talkingNode = (NetworkNode) message.content[0];
+                    if (title != null) {                        
+                        String currentTalkingName = consumer2name.get(producer2consumer.get(node2producer.get(talkingNode)));
+                        
+                        if (talkingNode != null){
+                            layoutManager.downScale(currentTalkingName);
+                            talkingNode = null;
+                        }                        
+                        else {
+                            talkingNode = (NetworkNode) message.content[0];
+                            layoutManager.upScale(title);
+                        }                        
                     }
-
                 }
             }
-        };
 
+            private void alertConsumer(UltraGridControllerHandle handle, Timer timer) {
+                alertConsumerByFlashing(handle, timer);
+                alertConsumerContinuously(handle, timer, 20000);
+            }
+
+            private void alertConsumerContinuously(UltraGridControllerHandle handle, Timer timer, int duration) {
+
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        try {
+                            handle.sendCommand("postprocess flush");
+                            timer.purge();
+                        } catch (InterruptedException | TimeoutException ex) {
+                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }, duration);
+            }
+
+            private void alertConsumerByFlashing(UltraGridControllerHandle handle, Timer timer) {
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+
+                        for (int i = 0; i < 10; i++) {
+                            try {
+                                if (i % 2 == 0) {
+                                    handle.sendCommand("postprocess flush");
+                                } else {
+                                    handle.sendCommand("postprocess border:width=10:color=#ff0000");
+                                }
+                            } catch (InterruptedException | TimeoutException ex) {
+                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    }
+
+                }, 1000);
+            }
+        };
         // define message types
         core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);
-
-        /*  
-         // refreshes layout on consumer restart
-         consumerListener = new ApplicationEventListener() {
-         @Override
-         public void onApplicationEvent(MediaApplication app, ApplicationEvent event) {
-                    
-         layoutManager.refresh();
-         }
-                
-
-         @Override
-         public void onApplicationStop(MediaApplication app, String message) {
-         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-         }
-         };
-        
-         */
     }
 
     /**
@@ -531,12 +520,13 @@ public class SessionManagerImpl implements SessionManager {
                     if (producer2consumer.containsKey(producer) == false) {
                         String consumerName = createConsumer(producer, node);
                         if (!consumerName.contains("SOUND")) {
-                           
+
                             if (consumerName.contains("PRESENTATION")) {
                                 System.out.println("I have created pres");
                                 layoutManager.addNode(consumerName, "presentation");
+                            } else {
+                                layoutManager.addNode(consumerName, (String) node.getProperty("role"));
                             }
-                            else layoutManager.addNode(consumerName, (String) node.getProperty("role"));
                         }
                     }
                 } catch (IOException ex) {
@@ -556,7 +546,9 @@ public class SessionManagerImpl implements SessionManager {
         if (node == null) {
             throw new IllegalArgumentException("node is null");
         }
-        if(node2producer.get(node) == null) return;        
+        if (node2producer.get(node) == null) {
+            return;
+        }
         for (UltraGridProducerApplication app : node2producer.get(node)) {
             UltraGridConsumerApplication ugCon = producer2consumer.remove(app);
             if (ugCon != null) {
