@@ -34,15 +34,15 @@ class DisplayableWindow{
      */
     private Position position;
 
-    /**
-     * Window default role
-     */
-    private final String defaultRole;
+
     
     /**
      * Window temporary role in layout
      */
-    private String currentRole;
+    private String role;
+    
+    
+    private final String defaultRole;
 
     /**
      * Window title
@@ -62,7 +62,7 @@ class DisplayableWindow{
         wddman.Window content;        
         while ((content = wd.getWindowByTitle(title)) == null) {          
             try {
-                TimeUnit.MILLISECONDS.sleep(5);
+                TimeUnit.MILLISECONDS.sleep(3); 
             } catch (InterruptedException ex) {
                 Logger.getLogger(DisplayableWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -71,9 +71,9 @@ class DisplayableWindow{
         width = content.getWidth();
         height = content.getHeight();
 
-        this.title = title;
-        this.defaultRole = role;
-        this.currentRole = role;
+        this.title = title;    
+        this.role = role;
+        defaultRole = role;
     }
 
     /**
@@ -84,8 +84,25 @@ class DisplayableWindow{
      */
     public void adjustWindow (WDDMan wd) throws WDDManException {
 
-        // System.out.print("[Window information]: " + title + " " + width + "x" + height + " [" + position.x + "," + position.y + "]\n");
-        wd.getWindowByTitle(title).resize(position.x, position.y, width, height);
+        //System.out.print("[Window information]: " + title + " " + width + "x" + height + " [" + position.x + "," + position.y + "]\n");
+        //System.out.print("[Role information]: Default role - " + defaultRole + ", current role - " + role + "\n");
+        try {
+            TimeUnit.SECONDS.sleep(1);
+
+            wddman.Window win = wd.getWindowByTitle(title);
+            if (win != null) {
+                win.resize(position.x, position.y, width, height);
+            } else {
+                TimeUnit.SECONDS.sleep(5);
+                win = wd.getWindowByTitle(title);
+                if (win != null) {
+                    win.resize(position.x, position.y, width, height);
+                }
+            }
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DisplayableWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+               
     }
 
     /**
@@ -122,27 +139,23 @@ class DisplayableWindow{
     public void setWidth(int width) {
         this.width = width;
     }
-
-    public String getDefaultRole() {
-        return defaultRole;
-    }    
+  
     
-    public  String geCurrentRole (){
-        return currentRole;
+    public  String getRole (){
+        return role;
     }
   
     public String getTitle(){
         return title;
     }
     
-    public void setCurrentRole (String role){
-        currentRole = role;
+    public void setRole (String role){
+        this.role = role;
     }
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 53 * hash + Objects.hashCode(this.defaultRole);
+        int hash = 5;      
         hash = 53 * hash + Objects.hashCode(this.title);
         return hash;
     }
@@ -155,12 +168,13 @@ class DisplayableWindow{
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final DisplayableWindow other = (DisplayableWindow) obj;
-        if (!Objects.equals(this.defaultRole, other.defaultRole)) {
-            return false;
-        }
+        final DisplayableWindow other = (DisplayableWindow) obj;  
         return Objects.equals(this.title, other.title);
     }
     
+    String getDefaultRole(){
+        return defaultRole;
+    }
+
     
 }

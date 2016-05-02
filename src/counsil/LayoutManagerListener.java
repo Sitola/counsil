@@ -13,38 +13,19 @@ public interface LayoutManagerListener {
     
     /**
      * what to do when user wants to talk
-     * @param wasRaised
      */
-    void alertActionPerformed(Boolean wasRaised);
+    void alertActionPerformed();
     
     /**
      *  what to do when window is chosen
      * @param windowName of window
      */
     
-    void windowChoosenActionPerformed(String windowName);
+    void windowChoosenActionPerformed(String windowName); 
 
     /**
-     * what to do when volume is muted
-     * @param windowName
+     * restart consumer application by title
+     * @param title 
      */
-    void muteActionPerformed(String windowName);
-    
-    /**
-     * what to do when volume is increased
-     * @param windowName
-     */
-    void volumeIncreasedActionPerformed(String windowName);
-   
-    /**
-     * what to do when volume is decreased
-     * @param windowName
-     */
-    void volumeDecreasedActionPerformed(String windowName);
-    
-    /**
-     * what to do when volume is unmuted
-     * @param windowName
-     */
-    void unmuteActionPerformed(String windowName);
+    public void windowRestartActionPerformed(String title);
 }

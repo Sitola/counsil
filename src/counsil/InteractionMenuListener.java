@@ -14,26 +14,5 @@ public interface InteractionMenuListener {
     /**
      * what to do when raise hand button is pushed
      */
-    void raiseHandActionPerformed(Boolean wasRaised);
-
-      /**
-     * what to do when mute button is pushed
-     */
-    void muteActionPerformed();
-
-      /**
-     * what to do when unmute button is pushed
-     */
-    void unmuteActionPerformed();
-    
-     /**
-     * what to do when volume is increased
-     */
-    void increaseActionPerformed();
-    
-     /**
-     * what to do when volume is decreased
-     */
-    void decreaseActionPerformed();
-    
+    void raiseHandActionPerformed();
 }

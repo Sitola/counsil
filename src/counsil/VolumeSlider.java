@@ -7,8 +7,9 @@ package counsil;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JSlider;
@@ -20,21 +21,7 @@ import javax.swing.event.ChangeListener;
  * @author Desanka
  */
 public class VolumeSlider extends JFrame {
-    
-    int value;
-          
-    /**
-     * List of volume listeners
-     */
-    private final List<VolumeSliderListener> volumeListeners = new ArrayList<>();
-               /**
-     * adds listener of button
-     * @param listener
-     */
-    public void addVolumeSliderListener(VolumeSliderListener listener) {
-        volumeListeners.add(listener);
-    }
-    
+
     private static VolumeSlider instance = null;
     private static final Object lock = new Object();
     
@@ -65,42 +52,34 @@ public class VolumeSlider extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);    
         setType(Type.UTILITY);
-        value = 5;
-       
+
         getRootPane().setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));  
                 
         JSlider volume = new JSlider(JSlider.HORIZONTAL,0, 10, 5);   
         volume.setMajorTickSpacing(1);
-        volume.setPaintTicks(true);       
+        volume.setPaintTicks(true);
         volume.addChangeListener(new ChangeListener() {
 
             @Override
             public void stateChanged(ChangeEvent ce) {
-                int newValue = volume.getValue();
-                while (value != newValue){
-                    if (newValue > value){
-                        value++;
-                        volumeListeners.stream().forEach((listener) -> {
-                            listener.increaseActionPerformed();
-                        }); 
-                    }
-                    else if (newValue < value){
-                        value--;
-                        volumeListeners.stream().forEach((listener) -> {
-                            listener.decreaseActionPerformed();
-                        }); 
-                    }                    
+                float value = volume.getValue();
+                float ratio = 65535 * (value / 10);   
+                String path = "C:\\UltraGrid\\UltraGrid\\nircmd-x64\\nircmdc.exe";
+                String arg1 = "setsysvolume";
+                try {
+                    Process process = new ProcessBuilder(path, arg1, Float.toString(ratio)).start();
+                    process.waitFor();
+                } catch (IOException ex) {
+                    Logger.getLogger(VolumeSlider.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(VolumeSlider.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });
-        
-        add(volume, BorderLayout.CENTER);           
-        pack();
-        setVisible(true);  
-    }
 
-    public void setValue(int volumeValue) {
-        value = volumeValue;
+        add(volume, BorderLayout.CENTER);
+        pack();
+        setVisible(true);
     }
 
 }
