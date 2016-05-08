@@ -102,7 +102,7 @@ public class LayoutManagerImpl implements LayoutManager {
                         }
 
                         @Override
-                        public void resetActionPerformed() {
+                        public void resetActionPerformed() {                            
                             refreshLayout();
                         }
                     });
@@ -135,13 +135,15 @@ public class LayoutManagerImpl implements LayoutManager {
 
         DisplayableWindow window = getDisplayableWindowByTitle(name);
         if (window != null) {
-            try {
-                int newX = window.getPosition().x + (window.getHeight() / scaleRatio);
-                int newY = window.getPosition().y + (window.getWidth() / scaleRatio);
+            try {               
+                window.loadCurrentInfo();
+                
+                int newX = window.getPosition().x + getPositionChange(window.getHeight());
+                int newY = window.getPosition().y + getPositionChange(window.getWidth());
 
                 window.setPosition(new Position(newX, newY));
-                window.setHeight(window.getHeight() / (100 - scaleRatio));
-                window.setWidth(window.getWidth() / (100 - scaleRatio));
+                window.setHeight(window.getHeight() * (100 - scaleRatio) / 100);
+                window.setWidth(window.getWidth() * (100 - scaleRatio) / 100);
 
                 window.adjustWindow();
 
@@ -153,6 +155,15 @@ public class LayoutManagerImpl implements LayoutManager {
     }
 
     /**
+     * Gets change in position while resizing
+     * @param size
+     * @return 
+     */
+    private int getPositionChange(int size){
+        return size / scaleRatio / 2;
+    }
+    
+    /**
      * Scales window size up
      *
      * @param name
@@ -163,12 +174,14 @@ public class LayoutManagerImpl implements LayoutManager {
         DisplayableWindow window = getDisplayableWindowByTitle(name);
         if (window != null) {
             try {
-                int newX = window.getPosition().x - (window.getHeight() * scaleRatio);
-                int newY = window.getPosition().y - (window.getWidth() * scaleRatio);
+                window.loadCurrentInfo();
+                
+                int newX = window.getPosition().x - getPositionChange(window.getHeight());
+                int newY = window.getPosition().y - getPositionChange(window.getWidth());
 
                 window.setPosition(new Position(newX, newY));
-                window.setHeight(window.getHeight() * (100 + scaleRatio));
-                window.setWidth(window.getWidth() * (100 + scaleRatio));
+                window.setHeight(window.getHeight() * 100 / (100 - scaleRatio));
+                window.setWidth(window.getWidth() * 100 / (100 - scaleRatio));
 
                 window.adjustWindow();
 
@@ -324,6 +337,7 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     private DisplayableWindow findClickedWindow(Point position) throws WDDManException {
         for (DisplayableWindow window : windows) {
+            window.loadCurrentInfo();
             if ((window.getPosition().x <= position.x)
                     && (window.getPosition().y <= position.y)
                     && (window.getPosition().x + window.getWidth() >= position.x)

@@ -32,11 +32,18 @@ public class InteractionMenu extends JFrame {
      */
     private final List<JButton> buttons;
 
+    private void resetButtonActionPerformed() {
+        
+        interactionMenuListeners.stream().forEach((listener) -> {            
+            listener.resetActionPerformed();
+        });
+    }
+
     /**
      * Represents button types
      */
     private enum ButtonType { 
-        ABOUT, EXIT, ATTENTION, MUTE, VOLUME 
+        ABOUT, EXIT, ATTENTION, MUTE, VOLUME, RESET
     }
     
     /**
@@ -111,8 +118,9 @@ public class InteractionMenu extends JFrame {
              list.add(InteractionMenu.ButtonType.VOLUME);
          }
          
+         list.add(InteractionMenu.ButtonType.RESET);
          list.add(InteractionMenu.ButtonType.ABOUT);
-         list.add(InteractionMenu.ButtonType.EXIT);
+         list.add(InteractionMenu.ButtonType.EXIT);         
          
          return list;
     }
@@ -140,19 +148,19 @@ public class InteractionMenu extends JFrame {
        
         GroupLayout layout = new GroupLayout(getContentPane());               
                    
-        GroupLayout.ParallelGroup hGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
+        GroupLayout.ParallelGroup verticalGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
         buttons.stream().forEach((button) -> {
-            hGroup.addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
+            verticalGroup.addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
         });
                
-        GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
+        GroupLayout.SequentialGroup horizontalGroup = layout.createSequentialGroup();
         buttons.stream().forEach((button) -> {
-            vGroup.addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            horizontalGroup.addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
         });
         
-        layout.setHorizontalGroup(hGroup);
-        layout.setVerticalGroup(vGroup);
+        layout.setHorizontalGroup(horizontalGroup);
+        layout.setVerticalGroup(verticalGroup);
         getContentPane().setLayout(layout); 
 
         pack();  
@@ -166,37 +174,40 @@ public class InteractionMenu extends JFrame {
      */
     private void setSpecificAttributes (JButton button, InteractionMenu.ButtonType type){
        
-       if (type == InteractionMenu.ButtonType.EXIT){
-           button.setText("Exit");
-           button.addActionListener((ActionEvent evt) -> {
-               exitButtonActionPerformed();
-           });
-       }
-       else if (type == InteractionMenu.ButtonType.ABOUT){
-           button.setText("About");
-           button.addActionListener((ActionEvent evt) -> {
-               aboutButtonActionPerformed();
-           });
-       }
-       else if (type == InteractionMenu.ButtonType.ATTENTION){
-            button.setText("Raise hand");
-            button.addActionListener((ActionEvent evt) -> {
-                attentionButtonActionPerformed(button);
-            });
-       }
-       else if (type == InteractionMenu.ButtonType.MUTE){
-           button.setText("Mute");
-           button.addActionListener((ActionEvent evt) -> {
-               muteButtonActionPerformed(button);
-           });           
-       }
-       
-       else if (type == InteractionMenu.ButtonType.VOLUME){
-           button.setText("Volume");
-           button.addActionListener((ActionEvent evt) -> {
-               volumeButtonActionPerformed();
-           }); 
-       }     
+       if (null != type)switch (type) {
+            case EXIT:
+                button.setText("Exit");
+                button.addActionListener((ActionEvent evt) -> {
+                    exitButtonActionPerformed();
+                });  break;
+            case ABOUT:
+                button.setText("About");
+                button.addActionListener((ActionEvent evt) -> {
+                    aboutButtonActionPerformed();
+                });  break;
+            case ATTENTION:
+                button.setText("Raise hand");
+                button.addActionListener((ActionEvent evt) -> {
+                    attentionButtonActionPerformed(button);
+                }); break;
+            case MUTE:
+                button.setText("Mute");
+                button.addActionListener((ActionEvent evt) -> {
+                    muteButtonActionPerformed(button);
+                });  break;
+            case VOLUME:
+                button.setText("Volume");
+                button.addActionListener((ActionEvent evt) -> {
+                    volumeButtonActionPerformed();
+                });  break;
+            case RESET:
+                button.setText("Reset");
+                button.addActionListener((ActionEvent evt) -> {
+                    resetButtonActionPerformed();
+                });  break;
+            default:
+                break;
+        }           
        
     }   
     

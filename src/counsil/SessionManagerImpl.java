@@ -71,11 +71,6 @@ public class SessionManagerImpl implements SessionManager {
     Core core;
 
     /**
-     * Shows if teacher consumer was already created
-     */
-    Boolean teacherWasCreated;
-
-    /**
      * Instance of LayoutManager to notify Layout about changes
      */
     LayoutManager layoutManager;
@@ -113,7 +108,6 @@ public class SessionManagerImpl implements SessionManager {
      */
     public SessionManagerImpl(LayoutManager layoutManager) {
 
-        teacherWasCreated = false;
         talkingNode = null;
 
         if (layoutManager == null) {
@@ -154,6 +148,7 @@ public class SessionManagerImpl implements SessionManager {
                 currentTimer.schedule(new TimerTask() {
                     @Override
                     public void run() {
+                        // todo
                         // layoutManager.refresh();
                         currentTimer.purge();
                     }
@@ -262,12 +257,9 @@ public class SessionManagerImpl implements SessionManager {
                 public void onNodeLeft(NetworkNode node) {
                     String nodeName = consumer2name.get(producer2consumer.get(node2producer.get(node)));
                     if (nodeName != null) {
-                        if ((talkingNode != null) && (node.getName().equals(talkingNode.getName()))) {
-                            layoutManager.refreshLayout();
+                        if ((talkingNode != null) && (node.getName().equals(talkingNode.getName()))) {                          
                             talkingNode = null;
-                        } else if (consumer2name.get(producer2consumer.get(node2producer.get(node))).contains("teacher")) {
-                            teacherWasCreated = false;
-                        }
+                        } 
                     }
                     stopConsumer(node);
                 }
@@ -279,32 +271,51 @@ public class SessionManagerImpl implements SessionManager {
             @Override
             public void onMessageArrived(CoUniverseMessage message) {
                 Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Received new message {0}", message);
-                if (message.type.equals(ALERT)) {
-                    UltraGridConsumerApplication consumer = producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]);
-
-                    if (consumer != null) {
-
-                        // get application handle and draw/remove border
-                        UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
+                
+                UltraGridConsumerApplication consumer = producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]);
+                String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]));
+                UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
+                
+                if (message.type.equals(ALERT)) {                   
+                    if (consumer != null) {                       
                         if (handle != null) {
                             alertConsumer(handle, timers.get(consumer.name));
                         }
                     }
 
-                } else if (message.type.equals(TALK)) {
-
-                    String title = consumer2name.get(producer2consumer.get(node2producer.get((NetworkNode) message.content[0])[0]));
+                } else if (message.type.equals(TALK)) {                    
                     if (title != null) {                        
                         String currentTalkingName = consumer2name.get(producer2consumer.get(node2producer.get(talkingNode)));
                         
-                        if (talkingNode != null){
+                        // STOP TALKING old node
+                        if (talkingNode != null) {
                             layoutManager.downScale(currentTalkingName);
                             talkingNode = null;
-                        }                        
-                        else {
-                            talkingNode = (NetworkNode) message.content[0];
-                            layoutManager.upScale(title);
-                        }                        
+                    
+                            if (handle != null) {
+                                try {
+                                    handle.sendCommand("postprocess flush");
+                                } catch (InterruptedException ex) {
+                                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                } catch (TimeoutException ex) {
+                                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        }
+
+                        // new node TALK!
+                        talkingNode = (NetworkNode) message.content[0];
+                        layoutManager.upScale(title);
+                        if (handle != null) {
+                            try {
+                                handle.sendCommand("postprocess border:width=10:color=#0000FF");
+                            } catch (InterruptedException ex) {
+                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                            } catch (TimeoutException ex) {
+                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+
                     }
                 }
             }
@@ -444,15 +455,6 @@ public class SessionManagerImpl implements SessionManager {
         }
         UltraGridConsumerApplication con = null;
         String name = local.getName() + "-" + content;
-
-        if ((name.contains("teacher")) && (name.contains("VIDEO"))) {
-            talkingNode = node;
-            if (!teacherWasCreated) {
-                teacherWasCreated = true;
-            } else {
-                layoutManager.refreshLayout();
-            }
-        }
 
         if (content.contains("SOUND") && isInterpreterOrTeacher((String) local.getProperty("role"))) {
 
