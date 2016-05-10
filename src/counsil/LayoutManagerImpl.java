@@ -306,12 +306,13 @@ public class LayoutManagerImpl implements LayoutManager {
             switch (button) {
                 case 1: {
                     try {
-                        if (!calculator.getMenuRole().equals("student") && clicked.getRole().equals("student")) {
+                        if (!calculator.getMenuRole().equals("student") && clicked.getRole().equals("student")) {                            
                             listener.windowChoosenActionPerformed(clicked.getTitle());
                         }
                     } catch (JSONException ex) {
                         Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                     }
+                    break;
                 }
                 case 2:
                     listener.windowRestartActionPerformed(clicked.getTitle());

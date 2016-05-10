@@ -147,7 +147,7 @@ class DisplayableWindow{
             getWindowInstance();
             if (window != null){
                 position.x = window.getLeft();
-                position.y = window.getLeft();
+                position.y = window.getTop();
                 width = window.getWidth();
                 height = window.getHeight();
             }

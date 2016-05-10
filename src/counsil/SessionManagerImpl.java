@@ -20,7 +20,6 @@ import couniverse.monitoring.TopologyAggregator;
 import couniverse.ultragrid.UltraGridConsumerApplication;
 import couniverse.ultragrid.UltraGridControllerHandle;
 import couniverse.ultragrid.UltraGridProducerApplication;
-import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -121,7 +120,6 @@ public class SessionManagerImpl implements SessionManager {
                 CoUniverseMessage alert = CoUniverseMessage.newInstance(ALERT, core.getLocalNode());
                 System.out.println("Sending alert...");
                 core.getConnector().sendMessageToGroup(alert, GroupConnectorID.ALL_NODES);
-
             }
 
             @Override
@@ -143,17 +141,6 @@ public class SessionManagerImpl implements SessionManager {
                         Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-
-                Timer currentTimer = timers.get(consumer.name);
-                currentTimer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        // todo
-                        // layoutManager.refresh();
-                        currentTimer.purge();
-                    }
-                }, 5000);
-
             }
         });
     }
@@ -295,9 +282,7 @@ public class SessionManagerImpl implements SessionManager {
                             if (handle != null) {
                                 try {
                                     handle.sendCommand("postprocess flush");
-                                } catch (InterruptedException ex) {
-                                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                } catch (TimeoutException ex) {
+                                } catch (InterruptedException | TimeoutException ex) {
                                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                             }
@@ -309,9 +294,7 @@ public class SessionManagerImpl implements SessionManager {
                         if (handle != null) {
                             try {
                                 handle.sendCommand("postprocess border:width=10:color=#0000FF");
-                            } catch (InterruptedException ex) {
-                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                            } catch (TimeoutException ex) {
+                            } catch (InterruptedException | TimeoutException ex) {
                                 Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }
@@ -321,12 +304,18 @@ public class SessionManagerImpl implements SessionManager {
             }
 
             private void alertConsumer(UltraGridControllerHandle handle, Timer timer) {
-                alertConsumerByFlashing(handle, timer);
+                alertConsumerByFlashing(handle);
                 alertConsumerContinuously(handle, timer, 20000);
             }
 
             private void alertConsumerContinuously(UltraGridControllerHandle handle, Timer timer, int duration) {
 
+                try {
+                    handle.sendCommand("postprocess border:width=10:color=#ff0000");
+                } catch (InterruptedException | TimeoutException ex) {
+                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
                 timer.schedule(new TimerTask() {
                     @Override
                     public void run() {
@@ -337,28 +326,37 @@ public class SessionManagerImpl implements SessionManager {
                             Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
-                }, duration);
+                }, duration);               
             }
 
-            private void alertConsumerByFlashing(UltraGridControllerHandle handle, Timer timer) {
-                timer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
+            private void alertConsumerByFlashing(UltraGridControllerHandle handle) {
+                for (int i = 0; i < 10; i++) {
+                    if (i % 2 == 0) {
+                        try {
+                            handle.sendCommand("postprocess border:width=10:color=#ff0000");
 
-                        for (int i = 0; i < 10; i++) {
-                            try {
-                                if (i % 2 == 0) {
-                                    handle.sendCommand("postprocess flush");
-                                } else {
-                                    handle.sendCommand("postprocess border:width=10:color=#ff0000");
-                                }
-                            } catch (InterruptedException | TimeoutException ex) {
-                                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                            }
+                        } catch (InterruptedException | TimeoutException ex) {
+                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    } else {
+                        try {
+                            handle.sendCommand("postprocess flush");
+                        } catch (InterruptedException | TimeoutException ex) {
+                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
-
-                }, 1000);
+                }
             }
         };
         // define message types
