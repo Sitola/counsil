@@ -51,6 +51,11 @@ public class InteractionMenu extends JFrame {
     public static int volumeValue;
     
     /**
+     * Instance of initial menu to return after counsil session end
+     */
+    private InitialMenuLayout initialMenuLayout;
+    
+    /**
      * List of raiseHandButton listeners
      */
     private final List<InteractionMenuListener> interactionMenuListeners = new ArrayList<>();
@@ -70,9 +75,10 @@ public class InteractionMenu extends JFrame {
      * @param role role of current user
      * @param position menu position
      */
-    InteractionMenu(String role, Position position){    
+    InteractionMenu(String role, Position position, InitialMenuLayout iml){    
         
-        super("CoUnSil");         
+        super("CoUnSil");       
+        initialMenuLayout = iml;  
         setLayout(new GridBagLayout());
         setUndecorated(true);         
         getRootPane().setBorder(BorderFactory.createTitledBorder(role));
@@ -222,7 +228,8 @@ public class InteractionMenu extends JFrame {
                 Logger.getLogger(InteractionMenu.class.getName()).log(Level.SEVERE, null, ex);
             }
             dispose();
-            System.exit(0);
+            initialMenuLayout.closeCounsil();
+            //System.exit(0);
         }
     }   
    

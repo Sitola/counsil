@@ -43,14 +43,15 @@ public class LayoutCalculator {
     /**
      * Creates layout calculator
      *
+     * @param myRole role to create correct layout
      * @throws java.io.FileNotFoundException
      * @throws org.json.JSONException
      */
-    public LayoutCalculator() throws FileNotFoundException, JSONException {
+    public LayoutCalculator(String myRole) throws FileNotFoundException, JSONException {
         Scanner scanner = new Scanner(new File("layoutConfigStatic.json"));
         String entireFileText = scanner.useDelimiter("\\A").next();
         input = new JSONObject(entireFileText);
-        role = input.getString("role");        
+        role = myRole;        
             
         menuPosition = new Position();
         menuPosition.x = input.getJSONObject("startingMenu").getInt("x");

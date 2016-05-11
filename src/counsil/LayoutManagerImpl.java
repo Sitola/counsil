@@ -49,7 +49,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * Instance of CoUnSIl menu
      */
     private InteractionMenu menu;
-
+            
     /**
      * List of layout manager listeners
      */
@@ -62,14 +62,16 @@ public class LayoutManagerImpl implements LayoutManager {
     /**
      * Initializes layout
      *
+     * @param role of this layout
+     * @param iml initialMenuLayout to return when counsil exit
      * @throws org.json.JSONException
      * @throws java.io.FileNotFoundException
      * @throws wddman.WDDManException
      * @throws org.jnativehook.NativeHookException
      */
-    public LayoutManagerImpl() throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
+    public LayoutManagerImpl(String role, InitialMenuLayout iml) throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
 
-        calculator = new LayoutCalculator();
+        calculator = new LayoutCalculator(role);
         
         try {
             wd = new WDDMan();
@@ -84,7 +86,7 @@ public class LayoutManagerImpl implements LayoutManager {
             @Override
             public void run() {
                 try {
-                    menu = new InteractionMenu(calculator.getMenuRole(), calculator.getMenuPostion());                  
+                    menu = new InteractionMenu(calculator.getMenuRole(), calculator.getMenuPostion(), iml);                  
                     menu.addInteractionMenuListener(new InteractionMenuListener() {
 
                         @Override

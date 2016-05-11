@@ -1,0 +1,10 @@
+{
+    "name":"madeira",
+    "this ip":"147.251.54.45",
+    "ultragrid path":"/home/xminarik/Ultragrid/ultragrid/bin/uv",
+    "producer settings":"dshow:1",
+    "distributor path":"/home/xminarik/Ultragrid/ultragrid/bin/hd-rum-transcode",
+    "consumer settings":"gl",
+    "audio consumer":"portaudio",
+    "audio producer":"portaudio"
+}

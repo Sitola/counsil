@@ -588,4 +588,9 @@ public class SessionManagerImpl implements SessionManager {
     private boolean isInterpreterOrTeacher(String role) {
         return role.equals("teacher") || role.equals("interpreter");
     }
+
+    @Override
+    public void stopCounsil() {
+        core.stop();
+    }
 }
