@@ -17,5 +17,5 @@ public interface InteractionMenuListener {
     void raiseHandActionPerformed();
     
     
-    void resetActionPerformed();
+    void refreshActionPerformed();
 }

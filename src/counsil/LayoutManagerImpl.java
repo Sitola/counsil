@@ -102,7 +102,7 @@ public class LayoutManagerImpl implements LayoutManager {
                         }
 
                         @Override
-                        public void resetActionPerformed() {                            
+                        public void refreshActionPerformed() {                            
                             refreshLayout();
                         }
                     });
@@ -338,12 +338,14 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     private DisplayableWindow findClickedWindow(Point position) throws WDDManException {
         for (DisplayableWindow window : windows) {
-            window.loadCurrentInfo();
-            if ((window.getPosition().x <= position.x)
-                    && (window.getPosition().y <= position.y)
-                    && (window.getPosition().x + window.getWidth() >= position.x)
-                    && (window.getPosition().y + window.getHeight() >= position.y)) {
-                return window;
+            synchronized (eventLock) {
+                window.loadCurrentInfo();
+                if ((window.getPosition().x <= position.x)
+                        && (window.getPosition().y <= position.y)
+                        && (window.getPosition().x + window.getWidth() >= position.x)
+                        && (window.getPosition().y + window.getHeight() >= position.y)) {
+                    return window;
+                }
             }
         }
         return null;
@@ -353,13 +355,13 @@ public class LayoutManagerImpl implements LayoutManager {
      * Applies calculated layout
      */
     private void applyChanges() {
-        windows.stream().forEach((window) -> {
+       for (DisplayableWindow window : windows){
             try {
                 window.adjustWindow();
             } catch (WDDManException ex) {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
-        });
+        }
     }
 
     /**

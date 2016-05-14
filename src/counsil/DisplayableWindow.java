@@ -69,6 +69,7 @@ class DisplayableWindow{
      * @throws WDDManException
      */
     public void adjustWindow () throws WDDManException {
+        getWindowInstance();
         if (window != null) {
             window.resize(position.x, position.y, width, height);
         }               
@@ -85,10 +86,8 @@ class DisplayableWindow{
 
     }
 
-    private void getWindowInstance() throws WDDManException {
-        if (window == null) {
-            window = wd.getWindowByTitle(title);
-        }
+    private void getWindowInstance() throws WDDManException {       
+        window = wd.getWindowByTitle(title);        
     }
 
     Position getPosition() {

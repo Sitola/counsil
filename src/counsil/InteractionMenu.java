@@ -32,10 +32,10 @@ public class InteractionMenu extends JFrame {
      */
     private final List<JButton> buttons;
 
-    private void resetButtonActionPerformed() {
+    private void refreshButtonActionPerformed() {
         
         interactionMenuListeners.stream().forEach((listener) -> {            
-            listener.resetActionPerformed();
+            listener.refreshActionPerformed();
         });
     }
 
@@ -43,7 +43,7 @@ public class InteractionMenu extends JFrame {
      * Represents button types
      */
     private enum ButtonType { 
-        ABOUT, EXIT, ATTENTION, MUTE, VOLUME, RESET
+        ABOUT, EXIT, ATTENTION, MUTE, VOLUME, REFRESH
     }
     
     /**
@@ -118,7 +118,7 @@ public class InteractionMenu extends JFrame {
              list.add(InteractionMenu.ButtonType.VOLUME);
          }
          
-         list.add(InteractionMenu.ButtonType.RESET);
+         list.add(InteractionMenu.ButtonType.REFRESH);
          list.add(InteractionMenu.ButtonType.ABOUT);
          list.add(InteractionMenu.ButtonType.EXIT);         
          
@@ -200,10 +200,10 @@ public class InteractionMenu extends JFrame {
                 button.addActionListener((ActionEvent evt) -> {
                     volumeButtonActionPerformed();
                 });  break;
-            case RESET:
-                button.setText("Reset");
+            case REFRESH:
+                button.setText("Refresh");
                 button.addActionListener((ActionEvent evt) -> {
-                    resetButtonActionPerformed();
+                    refreshButtonActionPerformed();
                 });  break;
             default:
                 break;
