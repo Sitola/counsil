@@ -1,0 +1,33 @@
+{
+    "producer" : {
+        "presets" : [
+            {
+                "label" : "tall",
+                "video" : "testcard:256:512:30:UYVY"
+            }, {
+                "label" : "wide",
+                "video" : "testcard:512:256:30:UYVY"
+            }, {
+                "label" : "audio",
+                "audio" : "testcard"
+            }
+            
+        ],
+        "history" : []
+    },
+    "consumer" : {
+        "presets" : [
+            {
+                "label" : "GL display",
+                "video" : "gl"
+            }, {
+                "label" : "SDL display",
+                "video" : "sdl"
+            }, {
+                "label" : "Audio out",
+                "audio" : "alsa"
+            }
+        ]
+        
+    }
+}

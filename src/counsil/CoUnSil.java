@@ -25,8 +25,9 @@ public class CoUnSil {
      * @throws wddman.WDDManException
      */
     public static void main(String[] args) throws IOException, InterruptedException, JSONException, WDDManException, FileNotFoundException, NativeHookException {
-        LayoutManagerImpl lm = new LayoutManagerImpl();
+        InitialMenu im = new InitialMenu();
+        /*LayoutManagerImpl lm = new LayoutManagerImpl();
         SessionManager sm = new SessionManagerImpl(lm);
-        sm.initCounsil();
+        sm.initCounsil();*/
   }
 }

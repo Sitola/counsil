@@ -19,4 +19,6 @@ public interface SessionManager {
      * @throws InterruptedException if it's not possible to start Couniverse core 
      */
     public void initCounsil() throws IOException, InterruptedException;
+    
+    public void stopCounsil();
 }
