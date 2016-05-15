@@ -23,11 +23,11 @@ public class CoUnSil {
      * @throws java.lang.InterruptedException
      * @throws org.json.JSONException
      * @throws wddman.WDDManException
+     * @throws java.io.FileNotFoundException
+     * @throws org.jnativehook.NativeHookException
      */
     public static void main(String[] args) throws IOException, InterruptedException, JSONException, WDDManException, FileNotFoundException, NativeHookException {
-        InitialMenu im = new InitialMenu();
-        /*LayoutManagerImpl lm = new LayoutManagerImpl();
-        SessionManager sm = new SessionManagerImpl(lm);
-        sm.initCounsil();*/
+
+        InitialMenu im = new InitialMenu();      
   }
 }
