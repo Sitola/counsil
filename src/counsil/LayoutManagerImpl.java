@@ -163,7 +163,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * @return 
      */
     private int getPositionChange(int size){
-        return size / scaleRatio / 2;
+        return (size / scaleRatio) / 2;
     }
     
     /**
@@ -183,8 +183,8 @@ public class LayoutManagerImpl implements LayoutManager {
                 int newY = window.getPosition().y - getPositionChange(window.getWidth());
 
                 window.setPosition(new Position(newX, newY));
-                window.setHeight(window.getHeight() * 100 / (100 - scaleRatio));
-                window.setWidth(window.getWidth() * 100 / (100 - scaleRatio));
+                window.setHeight(window.getHeight() * (100 + scaleRatio) / 100);
+                window.setWidth(window.getWidth() * (100 + scaleRatio) / 100);
 
                 window.adjustWindow();
 
@@ -374,7 +374,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * @return
      */
     private DisplayableWindow getDisplayableWindowByTitle(String title) {
-        for (DisplayableWindow window : windows) {
+        for (DisplayableWindow window : windows) {           
             if (window.contains(title)) {
                 return window;
             }

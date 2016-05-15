@@ -82,7 +82,7 @@ class DisplayableWindow{
      * @return true, if Displayable window contains wddman window
      */
     public Boolean contains(String title) {
-        return title.equals(this.title);
+        return this.title.equals(title);
 
     }
 

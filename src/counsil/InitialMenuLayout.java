@@ -231,7 +231,7 @@ public class InitialMenuLayout extends JFrame {
             if(ipAddres.compareTo("0.0.0.0") == 0){
                 return null;
             }
-            serverResponse = webClient.getRoomList(ipAddres, 8080);
+            serverResponse = webClient.getRoomList(ipAddres, 80);
             System.out.println(serverResponse);
             if(serverResponse == null){
                 return null;
@@ -255,7 +255,7 @@ public class InitialMenuLayout extends JFrame {
             if(ipAddres.compareTo("0.0.0.0") == 0){
                 return null;
             }
-            serverResponse = webClient.getRoom(ipAddres, 8080, room);
+            serverResponse = webClient.getRoom(ipAddres, 80, room);
             System.out.println(serverResponse);
             if(serverResponse == null){
                 return null;
