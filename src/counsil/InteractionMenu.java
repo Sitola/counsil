@@ -238,8 +238,8 @@ public class InteractionMenu extends JFrame {
             } catch (InterruptedException ex) {
                 Logger.getLogger(InteractionMenu.class.getName()).log(Level.SEVERE, null, ex);
             }
-            dispose();
             initialMenuLayout.closeCounsil();
+            this.dispose();
             //System.exit(0);
         }
     }   

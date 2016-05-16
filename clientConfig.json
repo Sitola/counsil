@@ -6,5 +6,7 @@
     "distributor path":"/home/xminarik/Ultragrid/ultragrid/bin/hd-rum-transcode",
     "consumer settings":"gl",
     "audio consumer":"portaudio",
-    "audio producer":"portaudio"
+    "audio producer":"portaudio",
+    "presentation producer":"dshow:2",
+    "audio":"false"
 }

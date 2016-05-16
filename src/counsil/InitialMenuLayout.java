@@ -479,6 +479,7 @@ public class InitialMenuLayout extends JFrame {
      */
     final void closeCounsil(){
         sm.stopCounsil();
+        sm = null;
         startIpSetWindow();
     }
     
@@ -516,6 +517,11 @@ public class InitialMenuLayout extends JFrame {
             properties.put("audioProducer", clientConfig.getString("audio producer"));
             properties.put("audioConsumer", clientConfig.getString("audio consumer"));
             properties.put("videoConsumer", clientConfig.getString("consumer settings"));
+            properties.put("audio", clientConfig.getBoolean("audio"));
+            
+            if(clientConfig.has("presentation producer")){
+                properties.put("presentationProducer", clientConfig.getString("presentation producer"));
+            }
 
             localNode.put("name", name);
             localNode.put("interfaces", interfaces);
