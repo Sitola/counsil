@@ -99,6 +99,12 @@ public class SessionManagerImpl implements SessionManager {
     public static MessageType TALK = MessageType.createCustomMessageType("TalkPermissionGrantedMessage", "NetworkNode");
 
     /**
+     * 30 seconds timer, to forbid user spamming alert messages
+     */
+    private Boolean canAlert;    
+    Timer alertTimer;
+    
+    /**
      * Constructor to initialize LayoutManager
      *
      * @param layoutManager
@@ -106,6 +112,8 @@ public class SessionManagerImpl implements SessionManager {
     public SessionManagerImpl(LayoutManager layoutManager) {
 
         talkingNode = null;
+        canAlert = true;
+        alertTimer = new Timer();
 
         if (layoutManager == null) {
             throw new IllegalArgumentException("layoutManager is null");
@@ -116,13 +124,21 @@ public class SessionManagerImpl implements SessionManager {
             @Override
             public void alertActionPerformed() {
 
-                if (talkingNode != null && local.getName().equals(talkingNode.getName())) {
+                if ((talkingNode != null && local.getName().equals(talkingNode.getName())) || !canAlert) {
                     return;
                 }
 
                 CoUniverseMessage alert = CoUniverseMessage.newInstance(ALERT, core.getLocalNode());
                 System.out.println("Sending alert...");
                 core.getConnector().sendMessageToGroup(alert, GroupConnectorID.ALL_NODES);
+                canAlert = false;
+                
+                alertTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        canAlert = true;
+                    }
+                }, 30000);
 
             }
 
