@@ -263,6 +263,9 @@ public class LayoutManagerImpl implements LayoutManager {
             @Override
             public void nativeMouseClicked(NativeMouseEvent nme) {
                 try {
+                    if (wasClickedInMenu(nme.getPoint())){
+                        return;
+                    }
                     DisplayableWindow clicked = findClickedWindow(nme.getPoint());
                     if (clicked != null){
                         System.err.println(clicked.getTitle() + " was CLICKED!");
@@ -291,6 +294,18 @@ public class LayoutManagerImpl implements LayoutManager {
             @Override
             public void nativeMouseDragged(NativeMouseEvent nme) {
                 // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            /**
+             * checks if point was clicked in menu
+             * @param point
+             * @return 
+             */
+            private boolean wasClickedInMenu(Point point) {
+                return menu.getAlignmentX() < point.x 
+                    && menu.getAlignmentY() < point.y
+                    && menu.getAlignmentX() + menu.getWidth() > point.x
+                    && menu.getAlignmentY() + menu.getHeight() > point.y;
             }
         };
 
@@ -340,13 +355,16 @@ public class LayoutManagerImpl implements LayoutManager {
      * finds clicked window and alerts listeners
      */
     private DisplayableWindow findClickedWindow(Point position) throws WDDManException {
+        
+        final int OFFSET = 50;
+        
         for (DisplayableWindow window : windows) {
             synchronized (eventLock) {
                 window.loadCurrentInfo();
-                if ((window.getPosition().x <= position.x)
-                        && (window.getPosition().y <= position.y)
-                        && (window.getPosition().x + window.getWidth() >= position.x)
-                        && (window.getPosition().y + window.getHeight() >= position.y)) {
+                if ((window.getPosition().x + OFFSET <= position.x)
+                        && (window.getPosition().y + OFFSET <= position.y)
+                        && (window.getPosition().x + window.getWidth() - OFFSET >= position.x)
+                        && (window.getPosition().y + window.getHeight() - OFFSET >= position.y)) {
                     return window;
                 }
             }
