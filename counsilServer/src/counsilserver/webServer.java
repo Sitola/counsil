@@ -5,13 +5,10 @@
  */
 package counsilserver;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Locale;
-import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,12 +61,6 @@ public class webServer implements Runnable{
         }
         inputJson = input;
 
-        /*Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                
-            }
-        });*/
     }
 
     @Override

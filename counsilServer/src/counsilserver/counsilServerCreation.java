@@ -8,15 +8,10 @@ package counsilserver;
 import couniverse.Main;
 import couniverse.clientServerCommunication.ServerConnector;
 import couniverse.core.Core;
-import couniverse.core.NetworkNode;
-import couniverse.core.NodePropertyParser;
-import couniverse.monitoring.NodePresenceListener;
-import couniverse.monitoring.TopologyAggregator;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -106,6 +101,17 @@ public class counsilServerCreation {
 
             JSONObject properties = new JSONObject();
             properties.put("agc", input.getString("agc"));
+            properties.put("distributor", "true");
+            if(input.has("dummy compress")){
+                if(input.getString("dummy compress").compareTo("") != 0){
+                    properties.put("dummy-compress", input.getString("dummy compress"));
+                }
+            }
+            if(input.has("dummy distributor compress")){
+                if(input.getString("dummy distributor compress").compareTo("") != 0){
+                    properties.put("dummy-distributor-compress", input.getString("dummy distributor compress"));
+                }
+            }
             
             localNode.put("name", name);
             localNode.put("interfaces", interfaces);
