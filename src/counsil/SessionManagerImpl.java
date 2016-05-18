@@ -427,7 +427,7 @@ public class SessionManagerImpl implements SessionManager {
             if (audio == null) {
                 throw new IllegalArgumentException("Specify audio in config");
             }
-            createProducer(TypeOfContent.SOUND, audio, role);
+            //createProducer(TypeOfContent.SOUND, audio, role);
         }
         if (role.equals("teacher")) {
             String pres = (String) local.getProperty("presentationProducer");
@@ -502,7 +502,7 @@ public class SessionManagerImpl implements SessionManager {
             if (audio == null) {
                 throw new IllegalArgumentException("Specify audio in config");
             }
-            con = createConsumer(content, audio, "dummy");
+            //con = createConsumer(content, audio, "dummy");
             apps[2] = app;
         }
         if (content.contains("PRESENTATION")) {
