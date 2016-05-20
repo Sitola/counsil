@@ -148,20 +148,7 @@ public class SessionManagerImpl implements SessionManager {
                 CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, choosenNode);
                 Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission granted for node {0}...", windowName);
                 core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);
-            }
-
-            @Override
-            public void windowRestartActionPerformed(String title) {
-                UltraGridConsumerApplication consumer = getConsumerByTitle(title);
-                if (consumer != null) {
-                    System.out.println("Restarting consumer: " + title);
-                    try {
-                        Runtime.getRuntime().exec("taskkill /F /FI \"Windowtitle eq " + title + "\" /T");
-                    } catch (IOException ex) {
-                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
+            }           
         });
     }
 

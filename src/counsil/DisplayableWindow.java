@@ -141,7 +141,7 @@ class DisplayableWindow{
         return Objects.equals(this.title, other.title);
     }
 
-    final void loadCurrentInfo() {
+    public final void loadCurrentInfo() {
         try {
             getWindowInstance();
             if (window != null){
@@ -154,5 +154,12 @@ class DisplayableWindow{
             Logger.getLogger(DisplayableWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+    }
+
+    public void close() throws WDDManException {
+        getWindowInstance();
+        if (window != null){
+            window.close();
+        }
     }
 }

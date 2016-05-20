@@ -22,10 +22,4 @@ public interface LayoutManagerListener {
      */
     
     void windowChoosenActionPerformed(String windowName); 
-
-    /**
-     * restart consumer application by title
-     * @param title 
-     */
-    public void windowRestartActionPerformed(String title);
 }
