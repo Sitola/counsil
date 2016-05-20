@@ -44,7 +44,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * Instance of CoUnSIl menu
      */
     private InteractionMenu menu;
-            
+
     /**
      * List of layout manager listeners
      */
@@ -94,7 +94,7 @@ public class LayoutManagerImpl implements LayoutManager {
             public void run() {
                 try {
 
-                    menu = new InteractionMenu(calculator.getMenuRole(), calculator.getMenuPostion(), iml);  
+                    menu = new InteractionMenu(calculator.getMenuRole(), calculator.getMenuPostion(), iml);
                     menu.addInteractionMenuListener(new InteractionMenuListener() {
 
                         @Override
@@ -105,7 +105,7 @@ public class LayoutManagerImpl implements LayoutManager {
                         }
 
                         @Override
-                        public void refreshActionPerformed() {                            
+                        public void refreshActionPerformed() {
                             refreshLayout();
                         }
                     });
@@ -138,9 +138,9 @@ public class LayoutManagerImpl implements LayoutManager {
 
         DisplayableWindow window = getDisplayableWindowByTitle(name);
         if (window != null) {
-            try {               
+            try {
                 window.loadCurrentInfo();
-                
+
                 int newX = window.getPosition().x + getPositionChange(window.getHeight());
                 int newY = window.getPosition().y + getPositionChange(window.getWidth());
 
@@ -159,13 +159,14 @@ public class LayoutManagerImpl implements LayoutManager {
 
     /**
      * Gets change in position while resizing
+     *
      * @param size
-     * @return 
+     * @return
      */
-    private int getPositionChange(int size){
+    private int getPositionChange(int size) {
         return (size / scaleRatio) / 2;
     }
-    
+
     /**
      * Scales window size up
      *
@@ -178,7 +179,7 @@ public class LayoutManagerImpl implements LayoutManager {
         if (window != null) {
             try {
                 window.loadCurrentInfo();
-                
+
                 int newX = window.getPosition().x - getPositionChange(window.getHeight());
                 int newY = window.getPosition().y - getPositionChange(window.getWidth());
 
@@ -263,14 +264,14 @@ public class LayoutManagerImpl implements LayoutManager {
             @Override
             public void nativeMouseClicked(NativeMouseEvent nme) {
                 try {
-                    if (wasClickedInMenu(nme.getPoint())){
+                    if (wasClickedInMenu(nme.getPoint())) {
                         return;
                     }
                     DisplayableWindow clicked = findClickedWindow(nme.getPoint());
-                    if (clicked != null){
+                    if (clicked != null) {
                         System.err.println(clicked.getTitle() + " was CLICKED!");
                         sendClickToListeners(clicked, nme.getButton());
-                    }                   
+                    }
                 } catch (WDDManException ex) {
                     Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -298,14 +299,15 @@ public class LayoutManagerImpl implements LayoutManager {
 
             /**
              * checks if point was clicked in menu
+             *
              * @param point
-             * @return 
+             * @return
              */
             private boolean wasClickedInMenu(Point point) {
-                return menu.getAlignmentX() < point.x 
-                    && menu.getAlignmentY() < point.y
-                    && menu.getAlignmentX() + menu.getWidth() > point.x
-                    && menu.getAlignmentY() + menu.getHeight() > point.y;
+                return menu.getAlignmentX() < point.x
+                        && menu.getAlignmentY() < point.y
+                        && menu.getAlignmentX() + menu.getWidth() > point.x
+                        && menu.getAlignmentY() + menu.getHeight() > point.y;
             }
         };
 
@@ -324,7 +326,7 @@ public class LayoutManagerImpl implements LayoutManager {
             switch (button) {
                 case 1: {
                     try {
-                        if (!calculator.getMenuRole().equals("student") && clicked.getRole().equals("student")) {                            
+                        if (!calculator.getMenuRole().equals("student") && clicked.getRole().equals("student")) {
                             listener.windowChoosenActionPerformed(clicked.getTitle());
                         }
                     } catch (JSONException ex) {
@@ -332,8 +334,13 @@ public class LayoutManagerImpl implements LayoutManager {
                     }
                     break;
                 }
-                case 2:
-                    listener.windowRestartActionPerformed(clicked.getTitle());
+                case 2: {
+                    try {
+                        clicked.close();
+                    } catch (WDDManException ex) {
+                        Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
             }
         });
     }
@@ -355,9 +362,9 @@ public class LayoutManagerImpl implements LayoutManager {
      * finds clicked window and alerts listeners
      */
     private DisplayableWindow findClickedWindow(Point position) throws WDDManException {
-        
+
         final int OFFSET = 50;
-        
+
         for (DisplayableWindow window : windows) {
             synchronized (eventLock) {
                 window.loadCurrentInfo();
@@ -376,7 +383,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * Applies calculated layout
      */
     private void applyChanges() {
-       for (DisplayableWindow window : windows){
+        for (DisplayableWindow window : windows) {
             try {
                 window.adjustWindow();
             } catch (WDDManException ex) {
@@ -392,7 +399,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * @return
      */
     private DisplayableWindow getDisplayableWindowByTitle(String title) {
-        for (DisplayableWindow window : windows) {           
+        for (DisplayableWindow window : windows) {
             if (window.contains(title)) {
                 return window;
             }

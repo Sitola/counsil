@@ -30,7 +30,7 @@ public class InteractionMenu extends JFrame {
     /**
      * Represents buttons in current menu instance
      */
-    private final List<JButton> buttons;
+    private final List<JButton> buttons  = new ArrayList<>();
 
     private void refreshButtonActionPerformed() {
         
@@ -43,24 +43,14 @@ public class InteractionMenu extends JFrame {
      * Represents button types
      */
     private enum ButtonType { 
-        ABOUT, EXIT, ATTENTION, MUTE, VOLUME, REFRESH
+        ABOUT, EXIT, ATTENTION, REFRESH
     }
     
-    /**
-     * Represents current state of sound
-     */
-    private boolean muted;
-    
-    /**
-     * volume value
-     */
-    
-    public static int volumeValue;
-    
+ 
     /**
      * Instance of initial menu to return after counsil session end
      */
-    private InitialMenuLayout initialMenuLayout;
+    private final InitialMenuLayout initialMenuLayout;
     
     /**
      * List of raiseHandButton listeners
@@ -93,10 +83,6 @@ public class InteractionMenu extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);
         setLocation(position.x, position.y);
-                
-        buttons = new ArrayList<>();       
-        muted = false;
-        volumeValue = 5;
         
         initComponents(getButtonsByRole(role));   
       
@@ -118,12 +104,7 @@ public class InteractionMenu extends JFrame {
                   
          if ("student".equals(role.toLowerCase())){
               list.add(InteractionMenu.ButtonType.ATTENTION);             
-         }
-         else {
-             list.add(InteractionMenu.ButtonType.MUTE);
-             list.add(InteractionMenu.ButtonType.VOLUME);
-         }
-         
+         }        
          list.add(InteractionMenu.ButtonType.REFRESH);
          list.add(InteractionMenu.ButtonType.ABOUT);
          list.add(InteractionMenu.ButtonType.EXIT);         
@@ -195,17 +176,7 @@ public class InteractionMenu extends JFrame {
                 button.setText("Raise hand");
                 button.addActionListener((ActionEvent evt) -> {
                     attentionButtonActionPerformed(button);
-                }); break;
-            case MUTE:
-                button.setText("Mute");
-                button.addActionListener((ActionEvent evt) -> {
-                    muteButtonActionPerformed(button);
-                });  break;
-            case VOLUME:
-                button.setText("Volume");
-                button.addActionListener((ActionEvent evt) -> {
-                    volumeButtonActionPerformed();
-                });  break;
+                }); break;           
             case REFRESH:
                 button.setText("Refresh");
                 button.addActionListener((ActionEvent evt) -> {
@@ -253,43 +224,4 @@ public class InteractionMenu extends JFrame {
             listener.raiseHandActionPerformed();
         });
     }  
-    
-   
-    
-    /**
-     * Mutes/unmutes sound
-     * @param button clicked button
-     */
-    private void muteButtonActionPerformed(JButton button) {       
-        
-        if (muted) {
-            button.setText("Mute");     
-              try {
-                    Process process = new ProcessBuilder("C:\\UltraGrid\\UltraGrid\\nircmd-x64\\nircmdc.exe",
-                            "changesysvolume 0").start();
-                } catch (IOException ex) {
-                    Logger.getLogger(VolumeSlider.class.getName()).log(Level.SEVERE, null, ex);
-                }
-        } else {
-            button.setText("Unmute");   
-             try {
-                    Process process = new ProcessBuilder("C:\\UltraGrid\\UltraGrid\\nircmd-x64\\nircmdc.exe",
-                            "changesysvolume 30000").start();
-                } catch (IOException ex) {
-                    Logger.getLogger(VolumeSlider.class.getName()).log(Level.SEVERE, null, ex);
-                }
-        }        
-        muted = !muted;        
-    }
-    
-    private void volumeButtonActionPerformed() {
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                final VolumeSlider slider = VolumeSlider.getInstance();               
-                slider.setVisible(true);
-                slider.setLocation(getLocation().x, getLocation().y + 200);
-            }
-        });
-    }
 }
