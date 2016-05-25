@@ -1,0 +1,12 @@
+{
+    "name":"computer_name",
+    "this ip":"147.251.0.1",
+    "ultragrid path":"C:\\ultragrid\\ultragrid\\uv.exe",
+    "producer settings":"dshow:1",
+    "distributor path":"C:\\ultragrid\\ultragrid\\hd-rum-transcode.exe",
+    "consumer settings":"gl",
+    "audio consumer":"portaudio",
+    "audio producer":"portaudio",
+    "presentation producer":"",
+    "audio":"false"
+}
