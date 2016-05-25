@@ -39,11 +39,15 @@ public class InteractionMenu extends JFrame {
         });
     }
 
+    private void settingsButtonActionPerformed() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     /**
      * Represents button types
      */
     private enum ButtonType { 
-        ABOUT, EXIT, ATTENTION, REFRESH
+         ATTENTION, REFRESH, SETTINGS, ABOUT, EXIT,
     }
     
  
@@ -106,6 +110,7 @@ public class InteractionMenu extends JFrame {
               list.add(InteractionMenu.ButtonType.ATTENTION);             
          }        
          list.add(InteractionMenu.ButtonType.REFRESH);
+         list.add(InteractionMenu.ButtonType.SETTINGS);
          list.add(InteractionMenu.ButtonType.ABOUT);
          list.add(InteractionMenu.ButtonType.EXIT);         
          
@@ -175,8 +180,13 @@ public class InteractionMenu extends JFrame {
             case ATTENTION:
                 button.setText("Raise hand");
                 button.addActionListener((ActionEvent evt) -> {
-                    attentionButtonActionPerformed(button);
-                }); break;           
+                    attentionButtonActionPerformed();
+                }); break;    
+            case SETTINGS:
+                button.setText("Settings");
+                button.addActionListener((ActionEvent evt) -> {
+                    settingsButtonActionPerformed();
+                }); break;  
             case REFRESH:
                 button.setText("Refresh");
                 button.addActionListener((ActionEvent evt) -> {
@@ -210,16 +220,14 @@ public class InteractionMenu extends JFrame {
                 Logger.getLogger(InteractionMenu.class.getName()).log(Level.SEVERE, null, ex);
             }
             initialMenuLayout.closeCounsil();
-            this.dispose();
-            //System.exit(0);
+            this.dispose();           
         }
     }   
    
     /**
-     * Starts raise/lower hand interaction when button is clicked
-     * @param button clicked button 
+     * Starts raise/lower hand interaction when button is clicked    
      */
-    private void attentionButtonActionPerformed(JButton button) {                                                
+    private void attentionButtonActionPerformed() {                                                
         interactionMenuListeners.stream().forEach((listener) -> {            
             listener.raiseHandActionPerformed();
         });
