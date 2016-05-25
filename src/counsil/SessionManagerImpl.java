@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -101,9 +102,9 @@ public class SessionManagerImpl implements SessionManager {
     /**
      * 30 seconds timer, to forbid user spamming alert messages
      */
-    private Boolean canAlert;    
+    private Boolean canAlert;
     Timer alertTimer;
-    
+
     /**
      * Constructor to initialize LayoutManager
      *
@@ -132,7 +133,7 @@ public class SessionManagerImpl implements SessionManager {
                 System.out.println("Sending alert...");
                 core.getConnector().sendMessageToGroup(alert, GroupConnectorID.ALL_NODES);
                 canAlert = false;
-                
+
                 alertTimer.schedule(new TimerTask() {
                     @Override
                     public void run() {
@@ -148,7 +149,7 @@ public class SessionManagerImpl implements SessionManager {
                 CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, choosenNode);
                 Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission granted for node {0}...", windowName);
                 core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);
-            }           
+            }
         });
     }
 
@@ -266,7 +267,7 @@ public class SessionManagerImpl implements SessionManager {
             public void onMessageArrived(CoUniverseMessage message) {
                 Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Received new message {0}", message);
 
-                NetworkNode talker = (NetworkNode) message.content[0];              
+                NetworkNode talker = (NetworkNode) message.content[0];
                 UltraGridConsumerApplication consumer = producer2consumer.get(node2producer.get(talker)[0]);
                 String title = consumer.getName();
                 UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
@@ -281,16 +282,16 @@ public class SessionManagerImpl implements SessionManager {
 
                         String currentTalkingName = null;
                         // STOP TALKING old node
-                        if (talkingNode != null) {                           
-                          
+                        if (talkingNode != null) {
+
                             UltraGridConsumerApplication oldConsumer = producer2consumer.get(node2producer.get(talkingNode)[0]);
                             currentTalkingName = oldConsumer.getName();
-                            if (currentTalkingName != null) {                              
+                            if (currentTalkingName != null) {
                                 layoutManager.downScale(currentTalkingName);
-                            }                            
-                            if (oldConsumer != null) {                               
+                            }
+                            if (oldConsumer != null) {
                                 UltraGridControllerHandle oldHandle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(oldConsumer));
-                                if (oldHandle != null) {                                    
+                                if (oldHandle != null) {
                                     try {
                                         oldHandle.sendCommand("postprocess flush");
                                     } catch (InterruptedException | TimeoutException ex) {
@@ -302,7 +303,7 @@ public class SessionManagerImpl implements SessionManager {
                         }
 
                         if (!title.equals(currentTalkingName)) {
-                            
+
                             CounsilTimer currentTimer = timers.get(consumer.name);
                             currentTimer.task.cancel();
                             currentTimer.timer.purge();
@@ -310,7 +311,7 @@ public class SessionManagerImpl implements SessionManager {
                             talkingNode = talker;
                             layoutManager.upScale(title);
                             if (handle != null) {
-                                try {                                    
+                                try {
                                     handle.sendCommand("postprocess border:width=10:color=#0000FF");
                                 } catch (InterruptedException | TimeoutException ex) {
                                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -324,7 +325,7 @@ public class SessionManagerImpl implements SessionManager {
 
             private void alertConsumer(UltraGridControllerHandle handle, CounsilTimer timer) {
                 // alertConsumerByFlashing(handle, timer);
-                alertConsumerContinuously(handle, timer, 30000);              
+                alertConsumerContinuously(handle, timer, 30000);
             }
 
             private void alertConsumerContinuously(UltraGridControllerHandle handle, CounsilTimer counsilTimer, int duration) {
@@ -346,12 +347,12 @@ public class SessionManagerImpl implements SessionManager {
                         }
                     }
                 };
-                
-                counsilTimer.timer.schedule(counsilTimer.task , duration);
+
+                counsilTimer.timer.schedule(counsilTimer.task, duration);
             }
 
             private void alertConsumerByFlashing(UltraGridControllerHandle handle, CounsilTimer timer) {
-                
+
                 for (int i = 0; i < 10; i++) {
                     if (i % 2 == 0) {
                         try {
@@ -608,5 +609,58 @@ public class SessionManagerImpl implements SessionManager {
     @Override
     public void stopCounsil() {
         core.stop();
+    }
+
+    @Override
+    public String getStatus() {
+
+        String status = new String();
+
+        int studentCount = 0;
+        Boolean teacher = false, interpreter = false, presentation = false;
+
+        for (String name : consumer2name.values()) {
+            if (name.toUpperCase().contains("STUDENT")) {
+                studentCount++;
+            } else if (name.toUpperCase().contains("INTERPRETER")) {
+                interpreter = true;
+            } else if (name.toUpperCase().contains("TEACHER")) {
+                if (name.toUpperCase().contains("PRESENTATION")) {
+                    presentation = true;
+                } else {
+                    teacher = true;
+                }
+            }
+        }
+        
+        status += (getResource().getString("INTERPRETER") + ": ");
+        if (interpreter) {
+            status += (getResource().getString("ONLINE") + "\n");
+        } else {
+            status += (getResource().getString("OFFLINE") + "\n");
+        }
+
+        status += (getResource().getString("TEACHER") + ": ");
+        if (teacher) {
+            status += (getResource().getString("ONLINE") + "\n");
+        } else {
+            status += (getResource().getString("OFFLINE") + "\n");
+        }
+
+        status += (getResource().getString("PRESENTATION") + ": ");
+        if (presentation) {
+            status += (getResource().getString("ONLINE") + "\n");
+        } else {
+            status += (getResource().getString("OFFLINE") + "\n");
+        }
+        
+        status += (getResource().getString("STUDENTS") + ": ");
+        status += studentCount;
+        
+        return status;
+    }
+    
+      static ResourceBundle getResource() {
+        return java.util.ResourceBundle.getBundle("resources");
     }
 }

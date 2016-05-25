@@ -21,4 +21,6 @@ public interface SessionManager {
     public void initCounsil() throws IOException, InterruptedException;
     
     public void stopCounsil();
+
+    public String getStatus();
 }

@@ -18,8 +18,6 @@ import wddman.WDDManException;
  */
 public class CoUnSil {
 
-    private static final ResourceBundle resources = ResourceBundle.getBundle("resources");
-
     /**
      * @param args the command line arguments
      * @throws java.io.IOException
