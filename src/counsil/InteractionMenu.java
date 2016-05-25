@@ -5,12 +5,11 @@
  */
 package counsil;
 
-import java.awt.EventQueue;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -40,7 +39,7 @@ public class InteractionMenu extends JFrame {
     }
 
     private void settingsButtonActionPerformed() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("NOT SUPPORTED YET."); //To change body of generated methods, choose Tools | Templates.
     }
 
     /**
@@ -106,7 +105,7 @@ public class InteractionMenu extends JFrame {
     private List<InteractionMenu.ButtonType> getButtonsByRole(String role){
          List<InteractionMenu.ButtonType> list = new ArrayList<>();
                   
-         if ("student".equals(role.toLowerCase())){
+         if (role.toLowerCase().equals("student")){
               list.add(InteractionMenu.ButtonType.ATTENTION);             
          }        
          list.add(InteractionMenu.ButtonType.REFRESH);
@@ -168,27 +167,27 @@ public class InteractionMenu extends JFrame {
        
        if (null != type)switch (type) {
             case EXIT:
-                button.setText("Exit");
+                button.setText(getResource().getString("EXIT"));
                 button.addActionListener((ActionEvent evt) -> {
                     exitButtonActionPerformed();
                 });  break;
             case ABOUT:
-                button.setText("About");
+                button.setText(getResource().getString("ABOUT"));
                 button.addActionListener((ActionEvent evt) -> {
                     aboutButtonActionPerformed();
                 });  break;
             case ATTENTION:
-                button.setText("Raise hand");
+                button.setText(getResource().getString("RAISE_HAND"));
                 button.addActionListener((ActionEvent evt) -> {
                     attentionButtonActionPerformed();
                 }); break;    
             case SETTINGS:
-                button.setText("Settings");
+                button.setText(getResource().getString("SETTINGS"));
                 button.addActionListener((ActionEvent evt) -> {
                     settingsButtonActionPerformed();
                 }); break;  
             case REFRESH:
-                button.setText("Refresh");
+                button.setText(getResource().getString("REFRESH"));
                 button.addActionListener((ActionEvent evt) -> {
                     refreshButtonActionPerformed();
                 });  break;
@@ -202,16 +201,20 @@ public class InteractionMenu extends JFrame {
     * Shows message after "About" button is clicked
     */
    private void aboutButtonActionPerformed() {                                                 
-        JOptionPane.showMessageDialog(null, " CoUnSiL\n" +"(CoUniverse for Sign Language)\n" +"\n" +"\n" +
-            "Videoconferencing environment for remote interpretation of sign language.");           
+        JOptionPane.showMessageDialog(null, " CoUnSiL\n" +getResource().getString("ABOUT_MESSAGE") +"\n" +"\n" +
+            getResource().getString("ABOUT_TITLE"));           
     }   
+
+    private static ResourceBundle getResource() {
+        return java.util.ResourceBundle.getBundle("resources");
+    }
    
     /**
     * Starts exiting program when "Exit" button is clicked
     */
     private void exitButtonActionPerformed() {                                                 
-        String message = "Do you really want to quit CoUnSiL?";
-        String title = "Quit CoUnSiL?";
+        String message = getResource().getString("EXIT_CONFIRMATION");
+        String title = getResource().getString("EXIT_TITLE");
         int reply = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
         if (reply == JOptionPane.YES_OPTION) {                        
             try {
