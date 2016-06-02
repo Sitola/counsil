@@ -17,5 +17,8 @@ public interface InteractionMenuListener {
     void raiseHandActionPerformed();
     
     
+    /**
+     * Listens for layout refresh 
+     */
     void refreshActionPerformed();
 }

@@ -94,7 +94,13 @@ public class LayoutManagerImpl implements LayoutManager {
             public void run() {
                 try {
 
-                    menu = new InteractionMenu(calculator.getMenuRole(), calculator.getMenuPostion(), iml);
+                    if (role.toUpperCase().equals("STUDENT")) {
+                        menu = new InteractionMenuStudentExtension(calculator.getMenuRole(), calculator.getMenuPostion(), iml);
+                    }
+                    else {
+                        menu = new InteractionMenu(calculator.getMenuRole(), calculator.getMenuPostion(), iml);
+                    }
+                    menu.publish();
                     menu.addInteractionMenuListener(new InteractionMenuListener() {
 
                         @Override
