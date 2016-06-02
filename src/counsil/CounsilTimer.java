@@ -14,12 +14,22 @@ import java.util.TimerTask;
  */
 public class CounsilTimer {
     
+    public TimerTask stopper;
     public Timer timer;
     public TimerTask task;
 
     public CounsilTimer() {
         timer = new Timer();
         task = null;
+        stopper = null;
+    }
+
+    public void killAllTasks() {
+        
+        timer.cancel();
+        timer = new Timer();
+        task = null;
+                
     }
     
     

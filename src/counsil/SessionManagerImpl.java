@@ -324,8 +324,8 @@ public class SessionManagerImpl implements SessionManager {
             }
 
             private void alertConsumer(UltraGridControllerHandle handle, CounsilTimer timer) {
-                // alertConsumerByFlashing(handle, timer);
-                alertConsumerContinuously(handle, timer, 30000);
+                alertConsumerByFlashing(handle, timer, 5000);
+                //alertConsumerContinuously(handle, timer, 25000);
             }
 
             private void alertConsumerContinuously(UltraGridControllerHandle handle, CounsilTimer counsilTimer, int duration) {
@@ -351,36 +351,42 @@ public class SessionManagerImpl implements SessionManager {
                 counsilTimer.timer.schedule(counsilTimer.task, duration);
             }
 
-            private void alertConsumerByFlashing(UltraGridControllerHandle handle, CounsilTimer timer) {
+            private void alertConsumerByFlashing(UltraGridControllerHandle handle, CounsilTimer timer, int duration) {
 
-                for (int i = 0; i < 10; i++) {
-                    if (i % 2 == 0) {
-                        try {
-                            handle.sendCommand("postprocess border:width=10:color=#ff0000");
+                timer.stopper = new TimerTask() {
+                    @Override
+                    public void run() {
+                        timer.killAllTasks();
+                    }
+                };
 
-                        } catch (InterruptedException | TimeoutException ex) {
-                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ex) {
-                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    } else {
+                TimerTask stopFlashing = new TimerTask() {
+                    @Override
+                    public void run() {
                         try {
                             handle.sendCommand("postprocess flush");
                         } catch (InterruptedException | TimeoutException ex) {
                             Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                         }
+                    }
+                };
+
+                TimerTask startFlashing = new TimerTask() {
+                    @Override
+                    public void run() {
                         try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ex) {
+                             handle.sendCommand("postprocess border:width=10:color=#ff0000");                           
+                        } catch (InterruptedException | TimeoutException ex) {
                             Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
-                }
+                };
+
+               // timer.timer.scheduleAtFixedRate(stopFlashing, 0, 2000);
+                timer.timer.schedule(startFlashing, 1000, 2000);               
+               // timer.timer.schedule(timer.stopper, duration);
             }
+
         };
         // define message types
         core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);
@@ -632,7 +638,7 @@ public class SessionManagerImpl implements SessionManager {
                 }
             }
         }
-        
+
         status += (getResource().getString("INTERPRETER") + ": ");
         if (interpreter) {
             status += (getResource().getString("ONLINE") + "\n");
@@ -653,14 +659,14 @@ public class SessionManagerImpl implements SessionManager {
         } else {
             status += (getResource().getString("OFFLINE") + "\n");
         }
-        
+
         status += (getResource().getString("STUDENTS") + ": ");
         status += studentCount;
-        
+
         return status;
     }
-    
-      static ResourceBundle getResource() {
+
+    static ResourceBundle getResource() {
         return java.util.ResourceBundle.getBundle("resources");
     }
 }
