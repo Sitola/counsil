@@ -78,7 +78,7 @@ public class LayoutManagerImpl implements LayoutManager {
     public LayoutManagerImpl(String role, InitialMenuLayout iml) throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
 
         calculator = new LayoutCalculator(role);
-        scaleRatio = 10;
+        scaleRatio = 100;
 
         try {
             wd = new WDDMan();
@@ -147,12 +147,12 @@ public class LayoutManagerImpl implements LayoutManager {
             try {
                 window.loadCurrentInfo();
 
-                int newX = window.getPosition().x + getPositionChange(window.getHeight());
-                int newY = window.getPosition().y + getPositionChange(window.getWidth());
+                int newX = window.getPosition().x + getPositionChange();
+                int newY = window.getPosition().y + getPositionChange();
 
                 window.setPosition(new Position(newX, newY));
-                window.setHeight(window.getHeight() * (100 - scaleRatio) / 100);
-                window.setWidth(window.getWidth() * (100 - scaleRatio) / 100);
+                window.setHeight(window.getHeight() - scaleRatio);
+                window.setWidth(window.getWidth() - scaleRatio);
 
                 window.adjustWindow();
 
@@ -169,8 +169,8 @@ public class LayoutManagerImpl implements LayoutManager {
      * @param size
      * @return
      */
-    private int getPositionChange(int size) {
-        return (size / scaleRatio) / 2;
+    private int getPositionChange() {
+        return scaleRatio / 2;
     }
 
     /**
@@ -186,12 +186,12 @@ public class LayoutManagerImpl implements LayoutManager {
             try {
                 window.loadCurrentInfo();
 
-                int newX = window.getPosition().x - getPositionChange(window.getHeight());
-                int newY = window.getPosition().y - getPositionChange(window.getWidth());
+                int newX = window.getPosition().x - getPositionChange();
+                int newY = window.getPosition().y - getPositionChange();
 
                 window.setPosition(new Position(newX, newY));
-                window.setHeight(window.getHeight() * (100 + scaleRatio) / 100);
-                window.setWidth(window.getWidth() * (100 + scaleRatio) / 100);
+                window.setHeight(window.getHeight() + scaleRatio);
+                window.setWidth(window.getWidth() + scaleRatio);
 
                 window.adjustWindow();
 
