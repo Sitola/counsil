@@ -6,30 +6,46 @@
 package counsil;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Enumeration;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.InputVerifier;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.MaskFormatter;
+import javax.swing.text.PlainDocument;
 import org.jnativehook.NativeHookException;
 import wddman.WDDManException;
 
@@ -38,73 +54,173 @@ import wddman.WDDManException;
  * @author xminarik
  */
 public class InitialMenuLayout extends JFrame {
-
-    private final JFrame ipSetWindow;
-    private final JFrame errorWindow;
-    private final JFrame roomChooseWindow;
-    private final JFrame roleChooseWindow;
+    
+   //String ipAddress;
+    JTextField errorMessageField;
+    JPanel roomPanel;
+    String[] layoutArray;
+    ButtonGroup roomGroup;
+    
+    Position position;
     private final Font font;
-    private String serverResponse;
     private final WebClient webClient;
-    JFormattedTextField ipField[];
-    Integer ipValue[];
-    JSONObject roomList;
+    int port;
+    
+    private final JFrame serverChooseWindow;
+    private final JFrame settingRoomWindow;
+    private final JFrame errorWindow;
+    private final JFrame ipSettingWindow;
+    
+    private OptionsMainMenuWindow optionMainMenuWindow;
+        
+    //JSONObject roomList;
     JSONObject roomConfiguration;
     JSONObject clientConfig;
-    String errorMessage;
+
     String roomName;
-    Position position;
     String nameList[];
+    
+    JFormattedTextField ipField[];
+    Integer ipValue[];
+    
+    File configurationFile;
     
     /**
      * to init and end couniverse part of counsil
      */
     SessionManager sm;
-        
-    class IPTextFieldVerifier extends InputVerifier {
+    
+    class JTextFieldLimit extends PlainDocument {
+        private int limit;
+        JTextFieldLimit(int limit) {
+          super();
+          this.limit = limit;
+        }
+
         @Override
-        public boolean verify(JComponent input) {
-            JFormattedTextField tf = (JFormattedTextField) input;
-            String strInput = tf.getText();
-            if("".compareTo(strInput.trim()) == 0){
-                strInput = "0";
-            }
-            Integer ipNumber = Integer.parseInt(strInput.trim());
-            if(ipNumber > 255){ipNumber = 255;}
-            if(ipNumber < 0){ipNumber = 0;}
-            tf.setText(ipNumber.toString());
-            return true;
-        } 
+        public void insertString(int offset, String str, AttributeSet attr) throws BadLocationException {
+          if (str == null)
+            return;
+
+          if ((getLength() + str.length()) <= limit) {
+            super.insertString(offset, str, attr);
+          }
+        }
     }
     
-    InitialMenuLayout(Position cenerPosition, JSONObject clientConfiguration) {
+    InitialMenuLayout(Position cenerPosition, File clientConfigurationFile) {
         webClient = new WebClient();
-        ipSetWindow = new JFrame();
-        errorMessage = "nedokumentovana chyba";
+        
+        errorMessageField = null;
+        roomPanel = null;
+        layoutArray = new String[1];
+        layoutArray[0] = "layoutConfigStatic";
+        roomGroup = new ButtonGroup();
+        
         roomName = "none";
-        roomList = null;
+        //roomList = null;
         font = new Font("Tahoma", 0, 18);
         roomConfiguration = null;
+        
+        serverChooseWindow = new JFrame();
+        settingRoomWindow = new JFrame();
         errorWindow = new JFrame();
-        roomChooseWindow = new JFrame();
-        roleChooseWindow = new JFrame();
+        ipSettingWindow = new JFrame();
+        
+        optionMainMenuWindow = null;
+        configurationFile = clientConfigurationFile;
+        
+        //OptionsMainMenuWindow a = new OptionsMainMenuWindow(font, new Font("Tahoma", 0, 13), clientConfigurationFile);
         position = cenerPosition;
-        clientConfig = clientConfiguration;
+        
+        clientConfig = readJsonFile(clientConfigurationFile);
+        if(clientConfig.has("server port comunication")){
+            try {
+                port = clientConfig.getInt("server port comunication");
+            } catch (JSONException ex) {
+                port = 8080;
+                Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }else{
+            port = 8080;
+        }
         nameList = null;
-        initIpSetWindow();
+        
+        initSettingRoomWindow();
+        initServerChooseWindow();
+        initIpSettingWindow();
         initErrorWindow();
-        initRoomChooseWindow();
-        initRoleChooseWindow();
-        startIpSetWindow();
+        openServerChooseWindow();
     }
     
-    final void initRoomChooseWindow(){
-        if(roomChooseWindow == null){
+    final void initServerChooseWindow(){
+        if(serverChooseWindow == null){
             return;
         }
-        roomChooseWindow.setTitle("CoUnSil");
+        serverChooseWindow.setTitle("CoUnSil");
+        serverChooseWindow.setVisible(false);
         
-        roomChooseWindow.setVisible(false);
+        JSONArray ipAddresses;
+        JButton[] buttonAdresses = null;
+        JPanel mainPanel;
+        if(clientConfig.has("server ips")){
+            try {
+                ipAddresses = clientConfig.getJSONArray("server ips");
+                buttonAdresses = new JButton[ipAddresses.length()];
+                for(int i=0;i<ipAddresses.length();i++){
+                    String buttonServerName = ipAddresses.getJSONObject(i).getString("name");
+                    String buttonServerIP = ipAddresses.getJSONObject(i).getString("ip");
+                    buttonAdresses[i] = new JButton(buttonServerName);
+                    buttonAdresses[i].setFont(font);
+                    buttonAdresses[i].addActionListener((ActionEvent event) -> {
+                        if(optionMainMenuWindow != null){
+                            optionMainMenuWindow.discardAction();
+                            optionMainMenuWindow = null;
+                        }
+                        JSONObject roomListNames = getServerRoomList(buttonServerIP);
+                        if(roomListNames != null){
+                            openSettingRoomWindow(buttonServerIP, roomListNames);
+                        }else{
+                            openErrorWindow("problem to connect to server, check if server is running");
+                        }
+                    });
+                }
+            } catch (JSONException ex) {
+                Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new GridLayout(6, 1));
+        if(buttonAdresses != null){
+            mainPanel.setLayout(new GridLayout(buttonAdresses.length + 3, 1));
+            for (JButton buttonAdresse : buttonAdresses) {
+                mainPanel.add(buttonAdresse);
+            }
+        }else{
+            mainPanel.setLayout(new GridLayout(2, 1));
+        }
+        JButton differentServerButton = new JButton("different");
+        differentServerButton.setFont(font);
+        differentServerButton.addActionListener((ActionEvent event) -> {
+            openIpSettingWindow();
+            //close this window and open window to set own ip addres
+        });
+        JButton optionsButton = new JButton("options");
+        optionsButton.setFont(font);
+        optionsButton.addActionListener((ActionEvent event) -> {
+            optionMainMenuWindow = new OptionsMainMenuWindow(font, new Font("Tahoma", 0, 13), configurationFile);
+        });
+        JButton exitButton = new JButton("exit");
+        exitButton.setFont(font);
+        exitButton.addActionListener((ActionEvent event) -> {
+            System.exit(0);
+        });
+        mainPanel.add(differentServerButton);
+        mainPanel.add(optionsButton);
+        mainPanel.add(exitButton);
+        serverChooseWindow.getContentPane().add(mainPanel);
+        serverChooseWindow.pack();
+        serverChooseWindow.setLocation(position.x - serverChooseWindow.getWidth()/2, position.y - serverChooseWindow.getHeight()/2);
     }
     
     final void initErrorWindow(){        
@@ -112,112 +228,259 @@ public class InitialMenuLayout extends JFrame {
             return;
         }
         errorWindow.setTitle("CoUnSil");
-        
         errorWindow.setVisible(false);
+        
+        JPanel jButtonPanel = new JPanel();
+        JPanel jMainPanel = new JPanel();
+        jMainPanel.setLayout(new BorderLayout());
+        errorMessageField = new JTextField("nedokumentovana chyba");
+        errorMessageField.setFont(font);
+        errorMessageField.setEditable(false);
+        JButton okButton = new JButton("OK");
+        okButton.setFont(font);
+        okButton.addActionListener((ActionEvent e) -> {
+            openServerChooseWindow();
+            //go to choose server window
+        });
+        jMainPanel.add(errorMessageField, BorderLayout.NORTH);
+        jButtonPanel.add(okButton);
+        jMainPanel.add(okButton, BorderLayout.SOUTH);
+        errorWindow.getContentPane().add(jMainPanel);
+        
+        errorWindow.pack();
+        errorWindow.setLocation(position.x - errorWindow.getWidth() / 2, position.y - errorWindow.getHeight());
     }
     
-    final void initIpSetWindow(){
-        JPanel jMainPanel, jIPPanle;
-                
-        if(ipSetWindow == null){
+    final void  initSettingRoomWindow(){
+        if(settingRoomWindow == null){
             return;
         }
+        settingRoomWindow.setTitle("CoUnSil");
+        settingRoomWindow.setVisible(false);
         
-        //setUndecorated(true);
-        ipSetWindow.setTitle("CoUnSil");
+        //create panels, room panel is declared globaly to be able simply change rooms as download from server
+        JPanel rolePanel, layoutPanel, actionPanel, mainPanel, audioPanel, namePanel;
+        rolePanel = new JPanel();
+        rolePanel.setLayout(new GridLayout(3, 1));
+        layoutPanel = new JPanel();
+        layoutPanel.setLayout(new GridLayout(layoutArray.length, 1));
+        roomPanel = new JPanel();
+        //room layout will be set when we know how many room there is
+        actionPanel = new JPanel();
+        actionPanel.setLayout(new GridLayout(4, 1));
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new GridBagLayout());
+        audioPanel = new JPanel();
+        audioPanel.setLayout(new GridLayout(1,1));
+        namePanel = new JPanel();
+        namePanel.setLayout(new GridLayout(1,1));
         
-        jIPPanle = new JPanel();
-        jMainPanel = new JPanel();
-        jIPPanle.setLayout(new FlowLayout(FlowLayout.CENTER, 1, 5));
-        jMainPanel.setLayout(new GridLayout(4, 1));
-        JLabel dot[] = new JLabel[3];
-        JTextField infoField = new JTextField("Zadajte IP adresu servru na ktory sa chcete pripojit");
-        infoField.setFont(font);
-        infoField.setEditable(false);
-        ipField = new JFormattedTextField[4];
         
-        //set ip addres fields
-        try {
-            MaskFormatter ipMask = new MaskFormatter("***");
-            ipMask.setValidCharacters("0123456789 ");
-            for(int i=0; i<4; i++){
-                ipField[i] = new JFormattedTextField(ipMask);
-                ipField[i].setInputVerifier(new InitialMenuLayout.IPTextFieldVerifier());
-                ipField[i].setColumns(3);
-                ipField[i].setFont(font);
-                jIPPanle.add(ipField[i]);
-                if(i<3){
-                    dot[i] = new JLabel(".");
-                    dot[i].setFont(font);
-                    jIPPanle.add(dot[i]);
-                }
-            } 
-        } catch (ParseException ex) {
-            Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        ButtonGroup layoutGroup =  new ButtonGroup();
+        ButtonGroup roleGroup = new ButtonGroup();
         
-        JButton connectButton = new JButton("pripojiť na server");
-        connectButton.setFont(font);
-        connectButton.addActionListener((ActionEvent e) -> {
-            roomList = getServerRoomList();
-            readIpAddres();
-            cleanIPField();
-            if(roomList == null){
-                errorMessage = "cannot connect to server";
-                startErrorWindow();
+        //create buttons
+        //role
+        JRadioButton studentButton = new JRadioButton("student");
+        studentButton.setFont(font);
+        JRadioButton teacherButton = new JRadioButton("teacher");
+        teacherButton.setFont(font);
+        JRadioButton interpreterButton = new JRadioButton("interpreter");
+        interpreterButton.setFont(font);
+        roleGroup.add(studentButton);
+        roleGroup.add(teacherButton);
+        roleGroup.add(interpreterButton);
+        roleGroup.setSelected(studentButton.getModel(), true);
+        rolePanel.add(studentButton);
+        rolePanel.add(teacherButton);
+        rolePanel.add(interpreterButton);
+        //audio
+        JCheckBox audioCheckBox = new JCheckBox("audio");
+        audioCheckBox.setFont(font);
+        audioCheckBox.setSelected(false);
+        audioPanel.add(audioCheckBox);
+        //set name
+        JTextField setNameInfoField = new JTextField("meno");
+        setNameInfoField.setFont(font);
+        setNameInfoField.setEditable(false);
+        JTextField setNameSettingField = new JTextField();
+        setNameSettingField.setFont(font);
+        setNameSettingField.setEditable(true);
+        setNameSettingField.setColumns(10);
+        //namePanel.add(setNameInfoField);
+        namePanel.add(setNameSettingField);
+        //action
+        JButton startButton = new JButton("start");
+        startButton.setFont(font);
+        startButton.addActionListener((ActionEvent event) -> {
+            //login to room
+            String role = getSelectedRadioButtonText(roleGroup);
+            String layout = getSelectedRadioButtonText(layoutGroup);
+            String room = getSelectedRadioButtonText(roomGroup);
+            if(rolePanel.getComponentCount() > 0){
+                String ipAddress = settingRoomWindow.getTitle();
+                System.out.println(ipAddress);
+                startCounsil(ipAddress, role, audioCheckBox.isSelected());
             }else{
-                startRoomChooseWindow(roomList);
+                openErrorWindow("necakana chyba č.1");
             }
+        });
+        JButton leaveButton = new JButton("leave server");
+        leaveButton.setFont(font);
+        leaveButton.addActionListener((ActionEvent event) -> {
+            openServerChooseWindow();
         });
         JButton exitButton = new JButton("exit");
         exitButton.setFont(font);
         exitButton.addActionListener((ActionEvent event) -> {
             System.exit(0);
         });
+        JButton aboutButton = new JButton("about");
+        aboutButton.setFont(font);
+        aboutButton.addActionListener((ActionEvent event) -> {
+            //start about window
+        });
+        actionPanel.add(startButton);
+        actionPanel.add(leaveButton);
+        actionPanel.add(exitButton);
+        actionPanel.add(aboutButton);
+        //layout
+        for(int i=0;i<layoutArray.length;i++){
+            JRadioButton layoutButton = new JRadioButton(layoutArray[i]);
+            layoutButton.setFont(font);
+            layoutPanel.add(layoutButton);
+            layoutGroup.add(layoutButton);
+            if(i==0){//select first layout
+                layoutGroup.setSelected(layoutButton.getModel(), true);
+            }
+        }
         
-        jMainPanel.add(infoField);
-        jMainPanel.add(jIPPanle);
-        jMainPanel.add(connectButton);
-        jMainPanel.add(exitButton);
-        ipSetWindow.getContentPane().add(jMainPanel);
-        //Display the window.
-        ipSetWindow.pack();
-        ipSetWindow.setVisible(false);
+        //map layouts 
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.weightx = 0.5;
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        rolePanel.setBorder(BorderFactory.createTitledBorder("role"));
+        mainPanel.add(rolePanel, constraints);
+        constraints.weightx = 0.5;
+        constraints.gridx = 0;
+        constraints.gridy = 1;
+        namePanel.setBorder(BorderFactory.createTitledBorder("meno"));
+        mainPanel.add(namePanel, constraints);
+        constraints.weightx = 0.5;
+        constraints.gridx = 0;
+        constraints.gridy = 2;
+        layoutPanel.setBorder(BorderFactory.createTitledBorder("layout"));
+        mainPanel.add(layoutPanel, constraints);
+        constraints.weightx = 0.5;
+        constraints.gridx = 1;
+        constraints.gridheight = 2;
+        constraints.gridy = 0;
+        roomPanel.setBorder(BorderFactory.createTitledBorder("room"));
+        mainPanel.add(roomPanel, constraints);
+        constraints.weightx = 0.5;
+        constraints.gridx = 2;
+        constraints.gridheight = 1;
+        constraints.gridy = 0;
+        mainPanel.add(actionPanel, constraints);
+        constraints.weightx = 0.5;
+        constraints.gridx = 2;
+        constraints.gridheight = 1;
+        constraints.gridy = 1;
+        audioPanel.setBorder(BorderFactory.createTitledBorder("audio"));
+        mainPanel.add(audioPanel, constraints);
+        settingRoomWindow.getContentPane().add(mainPanel);
+        settingRoomWindow.pack();
+        settingRoomWindow.setLocation(position.x - settingRoomWindow.getWidth()/2, position.y - settingRoomWindow.getHeight()/2);
     }
     
-    final void initRoleChooseWindow(){ 
-                        
-        roleChooseWindow.setVisible(false);
-    }
-    
-    private void readIpAddres(){
-        if(ipField == null){
+    final void initIpSettingWindow(){
+        if(ipSettingWindow == null){
             return;
         }
-        ipSetWindow.setVisible(false);
-        ipValue = new Integer[4];
-        String addres = null;
-        for(int i=0;i<ipField.length;i++){
-            String tmp = ipField[i].getText().trim();
-            if("".compareTo(tmp) == 0){
-                tmp = "0";
+        ipSettingWindow.setTitle("Counsil");
+        ipSettingWindow.setVisible(false);
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new GridLayout(3, 1));
+        
+        JTextFieldLimit ipText = new JTextFieldLimit(15);
+        JTextField ipField = new JTextField();
+        ipField.setFont(font);
+        ipField.setDocument(ipText);
+        
+        JButton connectButton = new JButton("connect");
+        connectButton.setFont(font);
+        connectButton.addActionListener((ActionEvent event) -> {
+            String loadedString = null;
+            try {
+                loadedString = ipText.getText(0, ipText.getLength());
+            } catch (BadLocationException ex) {
+                Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
             }
-            ipValue[i] = Integer.parseInt(tmp);
+            if(ipFormatCorrect(loadedString)){
+                JSONObject roomNameList = getServerRoomList(loadedString);
+                if(roomNameList != null){
+                    openSettingRoomWindow(loadedString, roomNameList);
+                }else{
+                    openErrorWindow("cannot connect to this server " + loadedString);
+                }
+            }else{
+                JOptionPane.showMessageDialog(new Frame(), loadedString + " nie je spravne definovana adresa", "Chyba", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        
+        JButton cancelButton = new JButton("cancel");
+        cancelButton.setFont(font);
+        cancelButton.addActionListener((ActionEvent event) -> {
+            openServerChooseWindow();
+        });
+        
+        ipField.setPreferredSize(new Dimension(160, 20));
+        mainPanel.add(ipField);
+        mainPanel.add(connectButton);
+        mainPanel.add(cancelButton);
+        
+        ipSettingWindow.getContentPane().add(mainPanel);
+        ipSettingWindow.pack();
+        ipSettingWindow.setLocation(position.x - ipSettingWindow.getWidth()/2, position.y - ipSettingWindow.getHeight()/2);
+    }
+       
+    public String getSelectedRadioButtonText(ButtonGroup buttonGroup) {
+        for (Enumeration<AbstractButton> buttons = buttonGroup.getElements(); buttons.hasMoreElements();) {
+            AbstractButton button = buttons.nextElement();
+
+            if (button.isSelected()) {
+                return button.getText();
+            }
         }
+        return null;
     }
     
-    /**
-     * 
-     * @return ip addres set in ipField (if empty is 0)
-     */
-    private String getIpAddres(){
-        if(ipField == null){
-            return null;
+    private boolean ipFormatCorrect(String ip) {
+        try {
+            if ( ip == null || ip.isEmpty() ) {
+                return false;
+            }
+
+            String[] parts = ip.split( "\\." );
+            if ( parts.length != 4 ) {
+                return false;
+            }
+
+            for ( String s : parts ) {
+                int i = Integer.parseInt( s );
+                if ( (i < 0) || (i > 255) ) {
+                    return false;
+                }
+            }
+            if ( ip.endsWith(".") ) {
+                return false;
+            }
+
+            return true;
+        } catch (NumberFormatException nfe) {
+            return false;
         }
-        if((ipValue == null) || (ipValue.length != 4)){
-            readIpAddres();
-        }  
-        return ipValue[0].toString()+"."+ipValue[1].toString()+"."+ipValue[2].toString()+"."+ipValue[3].toString();
     }
     
     /**
@@ -225,20 +488,18 @@ public class InitialMenuLayout extends JFrame {
      * @param room
      * @return list of rooms form server (server address is getIpAddres())
      */
-    private JSONObject getServerRoomList() {
+    private JSONObject getServerRoomList(String ipAddress) {
         try {
-            String ipAddres = getIpAddres();
-            if(ipAddres.compareTo("0.0.0.0") == 0){
+            if(ipAddress.compareTo("0.0.0.0") == 0){
                 return null;
             }
-            serverResponse = webClient.getRoomList(ipAddres, 80);
+            String serverResponse = webClient.getRoomList(ipAddress, port);
             System.out.println(serverResponse);
             if(serverResponse == null){
                 return null;
             }
             return new JSONObject(serverResponse);
         } catch (JSONException | IOException ex) {
-            serverResponse = null;
             Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
@@ -249,212 +510,88 @@ public class InitialMenuLayout extends JFrame {
      * @param room
      * @return room configuration from server (server address is getIpAddres())
      */
-    private JSONObject getRoomConfiguraton(String room){
+    private JSONObject getRoomConfiguraton(String ipAddress, String room){
         try {
-            String ipAddres = getIpAddres();
-            if(ipAddres.compareTo("0.0.0.0") == 0){
+            if(ipAddress.compareTo("0.0.0.0") == 0){
                 return null;
             }
-            serverResponse = webClient.getRoom(ipAddres, 80, room);
+            String serverResponse = webClient.getRoom(ipAddress, port, room);
             System.out.println(serverResponse);
             if(serverResponse == null){
                 return null;
             }
             return new JSONObject(serverResponse);
         } catch (JSONException | IOException ex) {
-            serverResponse = null;
             Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
     
-    /**
-     * open initial menu window for room chooesing
-     * @param roomList 
-     */
-    private void startRoomChooseWindow(JSONObject roomList) {
-        roomChooseWindow.setVisible(true);
-        errorWindow.setVisible(false);
-        ipSetWindow.setVisible(false);
-        roleChooseWindow.setVisible(false);
-        JPanel jMainPanel = new JPanel();
-        
-        if(roomList.isNull("names")){
-            System.out.println("somthing is wrong");
-            errorMessage = "server je ok, nemá zapnuté žiadne miestnosti";
-            startErrorWindow();
-            return;
-        }
-        
-        roomChooseWindow.getContentPane().removeAll();
-        //nameList = null;
+    private void openServerChooseWindow(){
+        closeAllWindows();
+        serverChooseWindow.setVisible(true);
+    }
+    
+    private void openIpSettingWindow(){
+        closeAllWindows();
+        ipSettingWindow.setVisible(true);
+    }
+    
+    private void openErrorWindow(String message){
+        closeAllWindows();
+        errorMessageField.setText(message);
+        errorWindow.pack();
+        errorWindow.setVisible(true);
+    }
+    
+    private void openSettingRoomWindow(String ipAddress, JSONObject roomNameList){
+        closeAllWindows();
+        JSONArray roomList = null;
         try {
-            JSONArray rooms = roomList.getJSONArray("names");
-            nameList = new String[rooms.length()];
-            for (int i=0; i<rooms.length(); i++){
-                JSONObject room = rooms.getJSONObject(i);
-                nameList[i] = room.getString("name");
-            }
+            roomList = roomNameList.getJSONArray("names");
         } catch (JSONException ex) {
             Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        if(nameList == null){
-            errorMessage = "server je ok, chyba pri spracovani zoznamu miestnosti";
-            startErrorWindow();
+        
+        roomPanel.removeAll();
+        settingRoomWindow.setTitle(ipAddress);
+       // JTextField serverAddress = new JTextField(ipAddress);
+       // serverAddress.setFont(font);
+       // serverAddress.setEditable(false);
+       // serverAddress.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+       // roomPanel.add(serverAddress);
+        if(roomList != null){
+            roomPanel.setLayout(new GridLayout(roomList.length()+1, 1));
+            for(int i=0;i<roomList.length();i++){
+                try {
+                    String roomName = roomList.getJSONObject(i).getString("name");
+                    JRadioButton roomButton = new JRadioButton(roomName);
+                    roomButton.setFont(font);
+                    roomPanel.add(roomButton);
+                    roomGroup.add(roomButton);
+                    if(i==0){
+                        roomGroup.setSelected(roomButton.getModel(), true);
+                    }
+                } catch (JSONException ex) {
+                    Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
-        jMainPanel.setLayout(new GridLayout(nameList.length + 1, 1));
-        JButton roomButon[] = new JButton[nameList.length];
-        for (int i=0;i<nameList.length;i++) {
-            roomButon[i] = new JButton(nameList[i]);
-            roomButon[i].setFont(font);
-            roomButon[i].addActionListener((ActionEvent e) -> {
-                roomName = e.getActionCommand();
-                startRoleChooseWindow();
-            });
-            jMainPanel.add(roomButon[i]);
-        }
-        JButton leaveButton =  new JButton("odpojiť zo servera");
-        leaveButton.setFont(font);
-        leaveButton.addActionListener((ActionEvent e) -> {
-            cleanIPField();
-            ipValue = null;
-            startIpSetWindow();
-        });
-        jMainPanel.add(leaveButton);
-        roomChooseWindow.getContentPane().add(jMainPanel);
-        roomChooseWindow.pack();
-        roomChooseWindow.setLocation(position.x - roomChooseWindow.getWidth() / 2, position.y - roomChooseWindow.getHeight() / 2);
-    }
-    
-    /**
-     * open initial menu window for errors
-     */
-    final void startErrorWindow(){
-        roomChooseWindow.setVisible(false);
-        errorWindow.setVisible(true);
-        ipSetWindow.setVisible(false);
-        roleChooseWindow.setVisible(false);
         
-        errorWindow.getContentPane().removeAll();
-        JPanel jButtonPanel = new JPanel();
-        JPanel jMainPanel = new JPanel();
-        jMainPanel.setLayout(new BorderLayout());
-        JTextField infoField = new JTextField(errorMessage);
-        infoField.setFont(font);
-        infoField.setEditable(false);
-        JButton okButton = new JButton("OK");
-        okButton.setFont(font);
-        okButton.addActionListener((ActionEvent e) -> {
-            cleanIPField();
-            ipValue = null;
-            startIpSetWindow();
-        });
-        jMainPanel.add(infoField, BorderLayout.NORTH);
-        jButtonPanel.add(okButton);
-        jMainPanel.add(jButtonPanel, BorderLayout.SOUTH);
-        errorWindow.getContentPane().add(jMainPanel);
-        
-        errorWindow.pack();
-        errorWindow.setLocation(position.x - errorWindow.getWidth() / 2, position.y - errorWindow.getHeight());
-    }
-    
-    /**
-     * open initial menu window set ip addres
-     */
-    final void startIpSetWindow(){
-        roomChooseWindow.setVisible(false);
-        errorWindow.setVisible(false);
-        ipSetWindow.setVisible(true);
-        roleChooseWindow.setVisible(false);
-        
-        ipSetWindow.pack();
-        ipSetWindow.setLocation(position.x - ipSetWindow.getWidth() / 2, position.y - ipSetWindow.getHeight() / 2);
-    }
-    
-    /**
-     * clean ip field so they can be set again
-     */
-    final void cleanIPField(){
-        for(int i=0; i<4;i++){
-            ipField[i].setText("");
-        }
-    }
-    
-    /**
-     * open initial menu window role choose
-     */
-    final void startRoleChooseWindow(){
-        roomChooseWindow.setVisible(false);
-        errorWindow.setVisible(false);
-        ipSetWindow.setVisible(false);
-        roleChooseWindow.setVisible(true);
-        
-        JPanel jMainPanel = new JPanel();
-        roleChooseWindow.getContentPane().removeAll();
-        
-        roleChooseWindow.setTitle("CoUnSil");
-        
-        JTextField roomLabel = new JTextField("miestnost: " + roomName);
-        roomLabel.setEditable(false);
-        
-        JButton student = new JButton("študent");
-        JButton teacher = new JButton("učiteľ");
-        JButton interpreter = new JButton("prekladateľ");
-        JButton changeRoom = new JButton("iná miestnosť");
-        JButton leaveServer = new JButton("odpojiť zo servera");
-        
-        roomLabel.setFont(font);
-        student.setFont(font);
-        teacher.setFont(font);
-        interpreter.setFont(font);
-        changeRoom.setFont(font);
-        leaveServer.setFont(font);
-        
-        
-        student.addActionListener((ActionEvent e) -> {
-            closeAllWindows();
-            startCounsil("student");
-        });
-        teacher.addActionListener((ActionEvent e) -> {
-            closeAllWindows();
-            startCounsil("teacher");
-        });
-        interpreter.addActionListener((ActionEvent e) -> {
-            closeAllWindows();
-            startCounsil("interpreter");
-        });
-        changeRoom.addActionListener((ActionEvent e) -> {
-            startRoomChooseWindow(roomList);
-        });
-        leaveServer.addActionListener((ActionEvent e) -> {
-            cleanIPField();
-            ipValue = null;
-            startIpSetWindow();
-        });
-        
-        jMainPanel.setLayout(new GridLayout(6, 1));
-        
-        jMainPanel.add(roomLabel);
-        jMainPanel.add(student);
-        jMainPanel.add(teacher);
-        jMainPanel.add(interpreter);
-        jMainPanel.add(changeRoom);
-        jMainPanel.add(leaveServer);
-        
-        roleChooseWindow.getContentPane().add(jMainPanel);
-        roleChooseWindow.pack();
-        roleChooseWindow.setLocation(position.x - roleChooseWindow.getWidth() / 2, position.y - roleChooseWindow.getHeight() / 2);
+        settingRoomWindow.setVisible(true);
+        settingRoomWindow.pack();
+        settingRoomWindow.setLocation(position.x - settingRoomWindow.getWidth()/2, position.y - settingRoomWindow.getHeight()/2);
     }
     
     /**
      * close all initial menu windows
      */
     final void closeAllWindows(){
-        roomChooseWindow.setVisible(false);
+        serverChooseWindow.setVisible(false);
         errorWindow.setVisible(false);
-        ipSetWindow.setVisible(false);
-        roleChooseWindow.setVisible(false);
+        ipSettingWindow.setVisible(false);
+        settingRoomWindow.setVisible(false);
     }
     
     
@@ -462,9 +599,10 @@ public class InitialMenuLayout extends JFrame {
      * start cousil
      * @param role of the user
      */
-    final void startCounsil(String role){
+    final void startCounsil(String ipAddress, String role, boolean audio){
+        closeAllWindows();
         try {
-            setConfiguration(role);
+            setConfiguration(ipAddress, role, audio);
             LayoutManagerImpl lm;
             lm = new LayoutManagerImpl(role, this);
             sm = new SessionManagerImpl(lm);
@@ -480,14 +618,14 @@ public class InitialMenuLayout extends JFrame {
     final void closeCounsil(){
         sm.stopCounsil();
         sm = null;
-        startIpSetWindow();
+        //startIpSetWindow();
     }
     
     /**
      * create nodeConfig.json from others configuration files
      */
-    final void setConfiguration(String role) throws InterruptedException{
-        JSONObject infoFromServer = getRoomConfiguraton(roomName);
+    final void setConfiguration(String ipAddress, String role, boolean audio) throws InterruptedException{
+        JSONObject infoFromServer = getRoomConfiguraton(ipAddress, roomName);
         if(infoFromServer == null){
             throw new InterruptedException("cannot get room configuration from server");
         }
@@ -496,7 +634,7 @@ public class InitialMenuLayout extends JFrame {
         JSONObject localNode = new JSONObject();
         JSONObject consumer = new JSONObject();
         try {
-            connector.put("serverAddress", getIpAddres());
+            connector.put("serverAddress", ipAddress);
             connector.put("serverPort", infoFromServer.getInt("comunication port"));
             connector.put("startServer", "false");
 
@@ -517,7 +655,7 @@ public class InitialMenuLayout extends JFrame {
             properties.put("audioProducer", clientConfig.getString("audio producer"));
             properties.put("audioConsumer", clientConfig.getString("audio consumer"));
             properties.put("videoConsumer", clientConfig.getString("consumer settings"));
-            properties.put("audio", clientConfig.getBoolean("audio"));
+            properties.put("audio", audio);
             
             if(clientConfig.has("presentation producer")){
                 properties.put("presentationProducer", clientConfig.getString("presentation producer"));
@@ -559,5 +697,15 @@ public class InitialMenuLayout extends JFrame {
     
     final JSONObject getConfiguration(){
         return roomConfiguration;
+    }
+    
+    JSONObject readJsonFile(File jsonFile){
+        try {
+            String entireFileText = new Scanner(jsonFile).useDelimiter("\\A").next();
+            return new JSONObject(entireFileText);
+        } catch (JSONException | FileNotFoundException ex) {
+            Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 }

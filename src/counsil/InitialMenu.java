@@ -39,19 +39,14 @@ public class InitialMenu {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        try {
-            String entireFileText = new Scanner(new File("clientConfig.json")).useDelimiter("\\A").next();
-            inputConfig = new JSONObject(entireFileText);
-        } catch (FileNotFoundException | JSONException ex) {
-            Logger.getLogger(InitialMenu.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        File clientConfigurationFile = new File("clientConfig.json");
         
         // create menu
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
                 try {
-                    menu = new InitialMenuLayout(centerPosition(), inputConfig);
+                    menu = new InitialMenuLayout(centerPosition(), clientConfigurationFile);
                 } catch (JSONException ex) {
                     Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -77,8 +72,12 @@ public class InitialMenu {
             try {
                 position.x = (int) (wd.getScreenWidth() / 2);
                 position.y = (int) (wd.getScreenHeight() / 2);
-                //150 is set by menu creating in InteractionMenu.java if change have to update here also
-                //500 is set by menu creating in InteractionMenu.java if change have to update here also
+                if(position.x > 1600){
+                    position.x = 960;
+                }
+                if(position.y > 800){
+                    position.y = 540;
+                }
             } catch (WDDManException ex) {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
