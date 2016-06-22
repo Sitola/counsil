@@ -623,30 +623,57 @@ public class SessionManagerImpl implements SessionManager {
         String status = new String();
 
         int studentCount = 0;
-        Boolean teacher = false, interpreter = false, presentation = false;
+        Boolean teacher = false,
+                interpreter = false, 
+                presentation = false,
+                interpreterAudio = false,
+                teacherAudio = false;
 
         for (String name : consumer2name.values()) {
-            if (name.toUpperCase().contains("STUDENT")) {
+            
+            String nameToUpper = name.toUpperCase();
+            
+            if (nameToUpper.contains("STUDENT")) {
                 studentCount++;
-            } else if (name.toUpperCase().contains("INTERPRETER")) {
-                interpreter = true;
-            } else if (name.toUpperCase().contains("TEACHER")) {
-                if (name.toUpperCase().contains("PRESENTATION")) {
+            } else if (nameToUpper.contains("INTERPRETER")) {
+                if (nameToUpper.contains("AUDIO")){
+                    interpreterAudio = true;
+                }
+                else interpreter = true;
+            } else if (nameToUpper.contains("TEACHER")) {
+                if (nameToUpper.contains("PRESENTATION")) {
                     presentation = true;
                 } else {
-                    teacher = true;
+                    if (nameToUpper.contains("AUDIO")){
+                        teacherAudio = true;
+                    }
+                    else teacher = true;
                 }
             }
         }
 
-        status += (getResource().getString("INTERPRETER") + ": ");
+        status += (getResource().getString("INTERPRETER") + " video: ");       
         if (interpreter) {
             status += (getResource().getString("ONLINE") + "\n");
         } else {
             status += (getResource().getString("OFFLINE") + "\n");
         }
 
-        status += (getResource().getString("TEACHER") + ": ");
+        status += (getResource().getString("INTERPRETER") + " audio: ");       
+        if (interpreterAudio) {
+            status += (getResource().getString("ONLINE") + "\n");
+        } else {
+            status += (getResource().getString("OFFLINE") + "\n");
+        }
+
+        status += (getResource().getString("TEACHER") + " video: ");
+        if (teacher) {
+            status += (getResource().getString("ONLINE") + "\n");
+        } else {
+            status += (getResource().getString("OFFLINE") + "\n");
+        }
+        
+        status += (getResource().getString("TEACHER") + " audio: ");
         if (teacher) {
             status += (getResource().getString("ONLINE") + "\n");
         } else {
