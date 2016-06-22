@@ -2,4 +2,6 @@
 /nbproject/build-impl.xml
 /nbproject/genfiles.properties
 /nodeConfig.json
-
+/build
+/dist
+/logs
