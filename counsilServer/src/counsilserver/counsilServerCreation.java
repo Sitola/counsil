@@ -101,7 +101,7 @@ public class counsilServerCreation {
 
             JSONObject properties = new JSONObject();
             properties.put("agc", input.getString("agc"));
-            properties.put("distributor", "true");
+            properties.put("distributor", true);
             if(input.has("dummy compress")){
                 if(input.getString("dummy compress").compareTo("") != 0){
                     properties.put("dummy-compress", input.getString("dummy compress"));
