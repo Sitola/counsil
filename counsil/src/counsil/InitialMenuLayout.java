@@ -24,7 +24,9 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,7 +60,8 @@ public class InitialMenuLayout extends JFrame {
    //String ipAddress;
     JTextField errorMessageField;
     JPanel roomPanel;
-    String[] layoutArray;
+   // String[] layoutArray;
+    List<LayoutFile> layoutList;
     ButtonGroup roomGroup;
     
     Position position;
@@ -114,8 +117,9 @@ public class InitialMenuLayout extends JFrame {
         
         errorMessageField = null;
         roomPanel = null;
-        layoutArray = new String[1];
-        layoutArray[0] = "layoutConfigStatic";
+        layoutList = new ArrayList<>();
+//        layoutArray = new String[1];
+//        layoutArray[0] = "layoutConfigStatic";
         roomGroup = new ButtonGroup();
         
         roomName = "none";
@@ -134,7 +138,7 @@ public class InitialMenuLayout extends JFrame {
         //OptionsMainMenuWindow a = new OptionsMainMenuWindow(font, new Font("Tahoma", 0, 13), clientConfigurationFile);
         position = cenerPosition;
         
-        clientConfig = readJsonFile(clientConfigurationFile);
+        loadClientConfigurationFromFile();
         port = 8080; //defoult value change in future
         ipAddress = "";
         nameList = null;
@@ -259,6 +263,7 @@ public class InitialMenuLayout extends JFrame {
         if(settingRoomWindow == null){
             return;
         }
+        settingRoomWindow.getContentPane().removeAll();
         settingRoomWindow.setTitle("CoUnSil");
         settingRoomWindow.setVisible(false);
         
@@ -267,7 +272,7 @@ public class InitialMenuLayout extends JFrame {
         rolePanel = new JPanel();
         rolePanel.setLayout(new GridLayout(3, 1));
         layoutPanel = new JPanel();
-        layoutPanel.setLayout(new GridLayout(layoutArray.length, 1));
+        layoutPanel.setLayout(new GridLayout(layoutList.size(), 1));
         roomPanel = new JPanel();
         //room layout will be set when we know how many room there is
         actionPanel = new JPanel();
@@ -347,8 +352,8 @@ public class InitialMenuLayout extends JFrame {
         actionPanel.add(exitButton);
         actionPanel.add(aboutButton);
         //layout
-        for(int i=0;i<layoutArray.length;i++){
-            JRadioButton layoutButton = new JRadioButton(layoutArray[i]);
+        for(int i=0;i<layoutList.size();i++){
+            JRadioButton layoutButton = new JRadioButton(layoutList.get(i).layoutName);
             layoutButton.setFont(font);
             layoutPanel.add(layoutButton);
             layoutGroup.add(layoutButton);
@@ -602,8 +607,9 @@ public class InitialMenuLayout extends JFrame {
         closeAllWindows();
         try {
             setConfiguration(role, audio, name);
+            int scaleRatio = roomConfiguration.getInt("scale ratio");
             LayoutManagerImpl lm;
-            lm = new LayoutManagerImpl(role, this);
+            lm = new LayoutManagerImpl(role, this, scaleRatio);
             sm = new SessionManagerImpl(lm);
             sm.initCounsil();
         } catch (JSONException | IOException | WDDManException | InterruptedException | NativeHookException ex) {
@@ -709,5 +715,26 @@ public class InitialMenuLayout extends JFrame {
     
     void loadClientConfigurationFromFile(){
         clientConfig = readJsonFile(configurationFile);
+        if(clientConfig.has("layout path")){
+            try {
+                String layoutPath = clientConfig.getString("layout path");
+                File layoutDir = new File(layoutPath);
+                if(layoutDir.isDirectory()){
+                    File[] filesInLayoutDir = layoutDir.listFiles();
+                    for(int i=0;i<filesInLayoutDir.length;i++){
+                        LayoutFile newLayout = new LayoutFile();
+                        newLayout.file = filesInLayoutDir[i];
+                        newLayout.layoutName = filesInLayoutDir[i].getName();
+                    }
+                }
+            } catch (JSONException ex) {
+                Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
+}
+
+class LayoutFile{
+    public String layoutName;
+    public File file;
 }

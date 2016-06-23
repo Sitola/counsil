@@ -70,15 +70,16 @@ public class LayoutManagerImpl implements LayoutManager {
      *
      * @param role of this layout
      * @param iml initialMenuLayout to return when counsil exit
+     * @param setScaleRatio ratio to be scaled
      * @throws org.json.JSONException
      * @throws java.io.FileNotFoundException
      * @throws wddman.WDDManException
      * @throws org.jnativehook.NativeHookException
      */
-    public LayoutManagerImpl(String role, InitialMenuLayout iml) throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
+    public LayoutManagerImpl(String role, InitialMenuLayout iml, int setScaleRatio) throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
 
         calculator = new LayoutCalculator(role);
-        scaleRatio = 100;
+        scaleRatio = setScaleRatio;
 
         try {
             wd = new WDDMan();
