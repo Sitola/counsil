@@ -65,6 +65,7 @@ public class InitialMenuLayout extends JFrame {
     private final Font font;
     private final WebClient webClient;
     int port;
+    String ipAddress;
     
     private final JFrame serverChooseWindow;
     private final JFrame settingRoomWindow;
@@ -134,16 +135,8 @@ public class InitialMenuLayout extends JFrame {
         position = cenerPosition;
         
         clientConfig = readJsonFile(clientConfigurationFile);
-        if(clientConfig.has("server port comunication")){
-            try {
-                port = clientConfig.getInt("server port comunication");
-            } catch (JSONException ex) {
-                port = 8080;
-                Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }else{
-            port = 8080;
-        }
+        port = 8080; //defoult value change in future
+        ipAddress = "";
         nameList = null;
         
         initSettingRoomWindow();
@@ -157,6 +150,7 @@ public class InitialMenuLayout extends JFrame {
         if(serverChooseWindow == null){
             return;
         }
+        serverChooseWindow.getContentPane().removeAll();
         serverChooseWindow.setTitle("CoUnSil");
         serverChooseWindow.setVisible(false);
         
@@ -169,7 +163,9 @@ public class InitialMenuLayout extends JFrame {
                 buttonAdresses = new JButton[ipAddresses.length()];
                 for(int i=0;i<ipAddresses.length();i++){
                     String buttonServerName = ipAddresses.getJSONObject(i).getString("name");
-                    String buttonServerIP = ipAddresses.getJSONObject(i).getString("ip");
+                    String serverIP = ipAddresses.getJSONObject(i).getString("ip");
+                    String serverPortString = ipAddresses.getJSONObject(i).getString("port");
+                    
                     buttonAdresses[i] = new JButton(buttonServerName);
                     buttonAdresses[i].setFont(font);
                     buttonAdresses[i].addActionListener((ActionEvent event) -> {
@@ -177,9 +173,17 @@ public class InitialMenuLayout extends JFrame {
                             optionMainMenuWindow.discardAction();
                             optionMainMenuWindow = null;
                         }
-                        JSONObject roomListNames = getServerRoomList(buttonServerIP);
+                        int serverPort;
+                        try{
+                            serverPort = Integer.valueOf(serverPortString);
+                        }catch(NumberFormatException error){
+                            serverPort = 80; //defout value
+                        }
+                        port = serverPort;
+                        JSONObject roomListNames = getServerRoomList();
                         if(roomListNames != null){
-                            openSettingRoomWindow(buttonServerIP, roomListNames);
+                            ipAddress = serverIP;
+                            openSettingRoomWindow(roomListNames);
                         }else{
                             openErrorWindow("problem to connect to server, check if server is running");
                         }
@@ -208,7 +212,7 @@ public class InitialMenuLayout extends JFrame {
         JButton optionsButton = new JButton("options");
         optionsButton.setFont(font);
         optionsButton.addActionListener((ActionEvent event) -> {
-            optionMainMenuWindow = new OptionsMainMenuWindow(font, new Font("Tahoma", 0, 13), configurationFile);
+            optionMainMenuWindow = new OptionsMainMenuWindow(font, new Font("Tahoma", 0, 13), configurationFile, this);
         });
         JButton exitButton = new JButton("exit");
         exitButton.setFont(font);
@@ -318,9 +322,7 @@ public class InitialMenuLayout extends JFrame {
             String layout = getSelectedRadioButtonText(layoutGroup);
             String room = getSelectedRadioButtonText(roomGroup);
             if(rolePanel.getComponentCount() > 0){
-                String ipAddress = settingRoomWindow.getTitle();
-                System.out.println(ipAddress);
-                startCounsil(ipAddress, role, audioCheckBox.isSelected());
+                startCounsil(role, audioCheckBox.isSelected(), setNameSettingField.getText());
             }else{
                 openErrorWindow("necakana chyba č.1");
             }
@@ -418,9 +420,10 @@ public class InitialMenuLayout extends JFrame {
                 Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
             }
             if(ipFormatCorrect(loadedString)){
-                JSONObject roomNameList = getServerRoomList(loadedString);
+                JSONObject roomNameList = getServerRoomList();
+                ipAddress = loadedString;
                 if(roomNameList != null){
-                    openSettingRoomWindow(loadedString, roomNameList);
+                    openSettingRoomWindow(roomNameList);
                 }else{
                     openErrorWindow("cannot connect to this server " + loadedString);
                 }
@@ -488,7 +491,7 @@ public class InitialMenuLayout extends JFrame {
      * @param room
      * @return list of rooms form server (server address is getIpAddres())
      */
-    private JSONObject getServerRoomList(String ipAddress) {
+    private JSONObject getServerRoomList() {
         try {
             if(ipAddress.compareTo("0.0.0.0") == 0){
                 return null;
@@ -510,7 +513,7 @@ public class InitialMenuLayout extends JFrame {
      * @param room
      * @return room configuration from server (server address is getIpAddres())
      */
-    private JSONObject getRoomConfiguraton(String ipAddress, String room){
+    private JSONObject getRoomConfiguraton(String room){
         try {
             if(ipAddress.compareTo("0.0.0.0") == 0){
                 return null;
@@ -527,24 +530,24 @@ public class InitialMenuLayout extends JFrame {
         return null;
     }
     
-    private void openServerChooseWindow(){
+    void openServerChooseWindow(){
         closeAllWindows();
         serverChooseWindow.setVisible(true);
     }
     
-    private void openIpSettingWindow(){
+    void openIpSettingWindow(){
         closeAllWindows();
         ipSettingWindow.setVisible(true);
     }
     
-    private void openErrorWindow(String message){
+    void openErrorWindow(String message){
         closeAllWindows();
         errorMessageField.setText(message);
         errorWindow.pack();
         errorWindow.setVisible(true);
     }
     
-    private void openSettingRoomWindow(String ipAddress, JSONObject roomNameList){
+    void openSettingRoomWindow(JSONObject roomNameList){
         closeAllWindows();
         JSONArray roomList = null;
         try {
@@ -555,12 +558,8 @@ public class InitialMenuLayout extends JFrame {
         
         
         roomPanel.removeAll();
+        //this.ipAddress = ipAddress;
         settingRoomWindow.setTitle(ipAddress);
-       // JTextField serverAddress = new JTextField(ipAddress);
-       // serverAddress.setFont(font);
-       // serverAddress.setEditable(false);
-       // serverAddress.setBorder(javax.swing.BorderFactory.createEmptyBorder());
-       // roomPanel.add(serverAddress);
         if(roomList != null){
             roomPanel.setLayout(new GridLayout(roomList.length()+1, 1));
             for(int i=0;i<roomList.length();i++){
@@ -599,10 +598,10 @@ public class InitialMenuLayout extends JFrame {
      * start cousil
      * @param role of the user
      */
-    final void startCounsil(String ipAddress, String role, boolean audio){
+    final void startCounsil(String role, boolean audio, String name){
         closeAllWindows();
         try {
-            setConfiguration(ipAddress, role, audio);
+            setConfiguration(role, audio, name);
             LayoutManagerImpl lm;
             lm = new LayoutManagerImpl(role, this);
             sm = new SessionManagerImpl(lm);
@@ -624,9 +623,10 @@ public class InitialMenuLayout extends JFrame {
     /**
      * create nodeConfig.json from others configuration files
      */
-    final void setConfiguration(String ipAddress, String role, boolean audio) throws InterruptedException{
-        JSONObject infoFromServer = getRoomConfiguraton(ipAddress, roomName);
+    final void setConfiguration(String role, boolean audio, String name) throws InterruptedException{
+        JSONObject infoFromServer = getRoomConfiguraton(roomName);
         if(infoFromServer == null){
+            openErrorWindow("cannot get room configuration from server");
             throw new InterruptedException("cannot get room configuration from server");
         }
         roomConfiguration = new JSONObject();
@@ -638,11 +638,11 @@ public class InitialMenuLayout extends JFrame {
             connector.put("serverPort", infoFromServer.getInt("comunication port"));
             connector.put("startServer", "false");
 
-            String name = infoFromServer.getString("name") + "_" + role + "_" + clientConfig.getString("name");
+            String userName = role + "_" + name + "_" + infoFromServer.getString("connect number");
             JSONObject interfaceInside = new JSONObject();
-            interfaceInside.put("name", name);
+            interfaceInside.put("name", userName);
             interfaceInside.put("address", clientConfig.getString("this ip"));
-            interfaceInside.put("subnetName", infoFromServer.getString("name"));
+            interfaceInside.put("subnetName", "world");
             interfaceInside.put("bandwidth", 1000);
             interfaceInside.put("isFullDuplex", true);
             interfaceInside.put("properties", new JSONObject());
@@ -661,24 +661,23 @@ public class InitialMenuLayout extends JFrame {
                 properties.put("presentationProducer", clientConfig.getString("presentation producer"));
             }
 
-            localNode.put("name", name);
+            localNode.put("name", userName);
             localNode.put("interfaces", interfaces);
             localNode.put("properties", properties);
 
             JSONObject templates = new JSONObject();
-            JSONObject JSONproducer = new JSONObject();
-            JSONproducer.put("path", clientConfig.getString("ultragrid path"));
-            System.out.println("path to freedom" + clientConfig.getString("ultragrid path"));
-            JSONproducer.put("arguments", "");
-            JSONObject JSONdistributor = new JSONObject();
-            JSONdistributor.put("path", clientConfig.getString("distributor path"));
-            JSONdistributor.put("arguments", "8M");
-            JSONObject JSONconsumer = new JSONObject();
-            JSONconsumer.put("path", clientConfig.getString("ultragrid path"));
-            JSONconsumer.put("arguments", "");
-            templates.put("producer", JSONproducer);
-            templates.put("distributor", JSONdistributor);
-            templates.put("consumer", JSONconsumer);
+            JSONObject producerJSON = new JSONObject();
+            producerJSON.put("path", clientConfig.getString("ultragrid path"));
+            producerJSON.put("arguments", "");
+            JSONObject distributorJSON = new JSONObject();
+            distributorJSON.put("path", clientConfig.getString("distributor path"));
+            distributorJSON.put("arguments", "8M");
+            JSONObject consumerJSON = new JSONObject();
+            consumerJSON.put("path", clientConfig.getString("ultragrid path"));
+            consumerJSON.put("arguments", "");
+            templates.put("producer", producerJSON);
+            templates.put("distributor", distributorJSON);
+            templates.put("consumer", consumerJSON);
 
             roomConfiguration.put("connector", connector);
             roomConfiguration.put("localNode", localNode);
@@ -686,7 +685,6 @@ public class InitialMenuLayout extends JFrame {
 
             FileWriter file = new FileWriter("nodeConfig.json");
                    
-        System.out.println(roomConfiguration.toString());
             file.write(roomConfiguration.toString());
             file.flush();
             file.close();
@@ -707,5 +705,9 @@ public class InitialMenuLayout extends JFrame {
             Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+    
+    void loadClientConfigurationFromFile(){
+        clientConfig = readJsonFile(configurationFile);
     }
 }

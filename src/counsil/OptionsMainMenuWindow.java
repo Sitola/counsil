@@ -6,6 +6,8 @@
 package counsil;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -18,6 +20,7 @@ import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,12 +35,17 @@ import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.colorchooser.AbstractColorChooserPanel;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -53,29 +61,125 @@ public class OptionsMainMenuWindow extends JFrame{
     List<VideoDevice> videoDevices;
     List<AudioDevice> audioIn;
     List<AudioDevice> audioOut;
+    List<IPServerSaved> ipAddresses;
     boolean correctUv;
+    boolean havePortaudio;
     Process uvProcess;
     JSONObject configuration;
+    String uvPathString;
+    String distributorPathString;
+    String layoutPathString;
+    JTextField verificationText;
+    Color raiseHandColor;
+    Color talkingColor;
+    JColorChooser raiseHandcolorChooser;   
+    JColorChooser talkingColorChooser;
+    JTextField setResizeAmount;
+    File configurationFile;
+    JTextField myIpSetTextField;
+    //need to reload server choosing window
+    InitialMenuLayout imt;
+    
+    //need to be global so they can be set from different tab
+    JComboBox mainCameraBox;
+    JComboBox mainCameraPixelFormatBox;
+    JComboBox mainCameraFrameSizeBox;
+    JComboBox mainCameraFPSBox;
+    JComboBox presentationBox;
+    JComboBox presentationPixelFormatBox;
+    JComboBox presentationFrameSizeBox;
+    JComboBox presentationFPSBox;
+    JComboBox displayBox;
+    JComboBox displaySettingBox;
+    JComboBox audioInComboBox;
+    JComboBox audioOutComboBox;
+    
     // constructor
-    OptionsMainMenuWindow(Font fontButtons, Font fontBoxes, File configurationFile)
+    OptionsMainMenuWindow(Font fontButtons, Font fontBoxes, File configurationFile, InitialMenuLayout initialMenuLayout)
     {
         super( "CoUnSil " + "options" );
         this.fontButtons = fontButtons;
         this.fontBoxes = fontBoxes;
-        videoDevices = null;
-        audioIn = null;
-        audioOut = null;
+        videoDevices = new ArrayList<>();
+        audioIn = new ArrayList<>();
+        audioOut = new ArrayList<>();
+        ipAddresses = new ArrayList<>();
         correctUv = false;
+        havePortaudio = false;
+        uvPathString = "";
+        distributorPathString = "";
+        layoutPathString = "";
+        verificationText = new JTextField();
+        verificationText.setFont(new Font(fontBoxes.getName(), Font.BOLD, fontBoxes.getSize() +3));
+        verificationText.setEditable(false);
+        verificationText.setBorder(BorderFactory.createEmptyBorder());
+        raiseHandcolorChooser = new JColorChooser(new Color(0, 0, 0));
+        talkingColorChooser = new JColorChooser(new Color(0, 0, 0));
+        this.configurationFile = configurationFile;
+        myIpSetTextField = new JTextField();
+        imt = initialMenuLayout;
+        
+        mainCameraBox = new JComboBox();
+        mainCameraPixelFormatBox = new JComboBox();
+        mainCameraFrameSizeBox = new JComboBox();
+        mainCameraFPSBox = new JComboBox();
+        presentationBox = new JComboBox();
+        presentationPixelFormatBox = new JComboBox();
+        presentationFrameSizeBox = new JComboBox();
+        presentationFPSBox = new JComboBox();
+        displayBox = new JComboBox();
+        displaySettingBox = new JComboBox();
+        audioInComboBox = new JComboBox();
+        audioOutComboBox = new JComboBox();
         
         configuration = readJsonFile(configurationFile);
-        //setSize( 150, 100 );
-        //setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+        
+        raiseHandColor = new Color(255, 0, 0);
+        if(configuration.has("raise hand color")){
+            JSONObject raiseHandColorJson;
+            try {
+                raiseHandColorJson = configuration.getJSONObject("raise hand color");
+                if(raiseHandColorJson.has("red") && raiseHandColorJson.has("green") && raiseHandColorJson.has("blue")){
+                int red = raiseHandColorJson.getInt("red");
+                int green = raiseHandColorJson.getInt("green");
+                int blue = raiseHandColorJson.getInt("blue");
+                raiseHandColor = new Color(red, green, blue);
+            }
+            } catch (JSONException ex) {
+                Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+        }
+        talkingColor = new Color(0, 255, 255);
+        if(configuration.has("talking color")){
+            JSONObject raiseHandColorJson;
+            try {
+                raiseHandColorJson = configuration.getJSONObject("talking color");
+                if(raiseHandColorJson.has("red") && raiseHandColorJson.has("green") && raiseHandColorJson.has("blue")){
+                    int red = raiseHandColorJson.getInt("red");
+                    int green = raiseHandColorJson.getInt("green");
+                    int blue = raiseHandColorJson.getInt("blue");
+                    talkingColor = new Color(red, green, blue);
+                }
+            } catch (JSONException ex) {
+                Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+        }
+        if(configuration.has("talking resizing")){
+            try {
+                setResizeAmount = new JTextField(String.valueOf((int)(configuration.getDouble("talking resizing") * 100) - 100));
+            } catch (JSONException ex) {
+                setResizeAmount = new JTextField();
+                Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }else{
+            setResizeAmount = new JTextField();
+        }
         uvProcess = null;
         mainPanel = new JPanel();
-        //mainPanel.setLayout(new GridBagLayout());
         setLayout(new GridBagLayout());
         visualitationPanel = new JPanel();
-        visualitationPanel.setLayout(new GridLayout(8, 1));
         videoAudioPanel = new JPanel();
         videoAudioPanel.setLayout(new GridBagLayout());
         miscsPanel = new JPanel();
@@ -98,6 +202,7 @@ public class OptionsMainMenuWindow extends JFrame{
             if(uvProcess != null){
                 uvProcess.destroy();
             }
+            saveSettingAction();
         });
         JButton discardButton = new JButton("discard");
         discardButton.setFont(fontButtons);
@@ -106,9 +211,37 @@ public class OptionsMainMenuWindow extends JFrame{
                 uvProcess.destroy();
             }
         });
+        setVisualitationPanel();
         setVideoAudioPanel();
         setMiscsPanel();
         
+        //setting fields
+                
+        //try if ultragrid is functional
+        ultragridOK(uvPathString, verificationText);
+        //load posibylities
+        try {
+            videoDevices = loadVideoDevicesAndSettings(uvPathString);
+            audioIn = read_audio_devices_in_or_out(uvPathString, true);
+            audioOut = read_audio_devices_in_or_out(uvPathString, false);
+        } catch (IOException ex) {
+            videoDevices = new ArrayList<>();
+            Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        setAudioJComboBox(audioInComboBox, audioIn);
+        setAudioJComboBox(audioOutComboBox, audioOut);
+        
+        setAllJComboBoxesVideosetting(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
+        setAllJComboBoxesVideosetting(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, videoDevices);
+        
+        setJComboBoxDisplay(displayBox, displaySettingBox);
+        
+        try {
+            String videoSetting = configuration.getString("producer settings");
+            SetVideoSettingFromConfig(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices, videoSetting);
+        } catch (JSONException ex) {
+            Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         GridBagConstraints mainPanelConstraints = new GridBagConstraints();
         mainPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
@@ -142,7 +275,79 @@ public class OptionsMainMenuWindow extends JFrame{
         //zvetsovanie pri vyvolani checkBox
         //farba pri vyvolani ?? textove pole, vyber rgb, byber z predvolenych
         //farba pri hlaseni ?? textove pole, vyber rgb, byber z predvolenych
+        //jazyk
+        JPanel raiseHandColorPanel = new JPanel();
+        JPanel talkingColorPanel = new JPanel();
+        JPanel resazingSizePanel = new JPanel();
         
+        
+        JTextField setResizeAmountTextInfo = new JTextField("pri vyvolani sa okno zvetsi o");
+        JTextField setResizePercentSign = new JTextField("%");
+        setResizeAmount.setFont(fontBoxes);
+        setResizeAmountTextInfo.setFont(fontBoxes);
+        setResizePercentSign.setFont(fontBoxes);
+        setResizeAmount.setEditable(true);
+        setResizeAmountTextInfo.setEditable(false);
+        setResizePercentSign.setEditable(false);   
+        setResizeAmount.setColumns(2);
+        resazingSizePanel.setBorder(new TitledBorder("zvetšovanie"));
+        
+        
+        raiseHandcolorChooser.setPreviewPanel(new CustomPreviewPanel(new Dimension(100, 100)));
+        raiseHandcolorChooser.setLayout(new FlowLayout());
+        //Remove the default chooser panels
+        AbstractColorChooserPanel raiseHandColorPanelsToRemove[] = raiseHandcolorChooser.getChooserPanels();
+        for (int i = 0; i < raiseHandColorPanelsToRemove.length; i ++) {
+            raiseHandcolorChooser.removeChooserPanel(raiseHandColorPanelsToRemove[i]);
+        }
+        raiseHandcolorChooser.addChooserPanel(new RGBChooserPanel());
+        raiseHandcolorChooser.setColor(raiseHandColor);
+        raiseHandColorPanel.setBorder(new TitledBorder("farba pre hlasenie"));
+        raiseHandColorPanel.add(raiseHandcolorChooser);
+        
+        
+        talkingColorChooser.setPreviewPanel(new CustomPreviewPanel(new Dimension(100, 100)));
+        talkingColorChooser.setLayout(new FlowLayout());
+        //Remove the default chooser panels
+        AbstractColorChooserPanel talkingColorPanelsToRemove[] = talkingColorChooser.getChooserPanels();
+        for (int i = 0; i < talkingColorPanelsToRemove.length; i ++) {
+            talkingColorChooser.removeChooserPanel(talkingColorPanelsToRemove[i]);
+        }
+        talkingColorChooser.addChooserPanel(new RGBChooserPanel());
+        talkingColorChooser.setColor(talkingColor);
+        talkingColorPanel.setBorder(new TitledBorder("farba pre vyvolaného"));
+        talkingColorPanel.add(talkingColorChooser);
+        
+        
+        resazingSizePanel.setLayout(new GridBagLayout());
+        GridBagConstraints resazingSizePanelConstrains = new GridBagConstraints();
+        resazingSizePanelConstrains.weightx = 0.5;
+        resazingSizePanelConstrains.gridheight = 1;
+        resazingSizePanelConstrains.gridwidth = 1;
+        resazingSizePanelConstrains.gridx = 0;
+        resazingSizePanelConstrains.gridy = 0;
+        resazingSizePanel.add(setResizeAmountTextInfo, resazingSizePanelConstrains);
+        resazingSizePanelConstrains.gridx = 1;
+        resazingSizePanelConstrains.gridy = 0;
+        resazingSizePanel.add(setResizeAmount, resazingSizePanelConstrains);
+        resazingSizePanelConstrains.gridx = 2;
+        resazingSizePanelConstrains.gridy = 0;
+        resazingSizePanel.add(setResizePercentSign, resazingSizePanelConstrains);
+        
+        visualitationPanel.setLayout(new GridBagLayout());
+        GridBagConstraints visualitationPanelConstrains = new GridBagConstraints();
+        visualitationPanelConstrains.weightx = 0.5;
+        visualitationPanelConstrains.gridheight = 1;
+        visualitationPanelConstrains.gridwidth = 1;
+        visualitationPanelConstrains.gridx = 0;
+        visualitationPanelConstrains.gridy = 0;
+        visualitationPanel.add(resazingSizePanel, visualitationPanelConstrains);
+        visualitationPanelConstrains.gridx = 0;
+        visualitationPanelConstrains.gridy = 1;
+        visualitationPanel.add(raiseHandColorPanel, visualitationPanelConstrains);
+        visualitationPanelConstrains.gridx = 0;
+        visualitationPanelConstrains.gridy = 2;
+        visualitationPanel.add(talkingColorPanel, visualitationPanelConstrains);
     }
     
     private void setVideoAudioPanel(){
@@ -159,19 +364,8 @@ public class OptionsMainMenuWindow extends JFrame{
         
         //setting boxes, buttons and lables
         //boxes
-        //create
-        JComboBox mainCameraBox = new JComboBox();
-        JComboBox mainCameraPixelFormatBox = new JComboBox();
-        JComboBox mainCameraFrameSizeBox = new JComboBox();
-        JComboBox mainCameraFPSBox = new JComboBox();
-        JComboBox presentationBox = new JComboBox();
-        JComboBox presentationPixelFormatBox = new JComboBox();
-        JComboBox presentationFrameSizeBox = new JComboBox();
-        JComboBox presentationFPSBox = new JComboBox();
-        JComboBox displayBox = new JComboBox();
-        JComboBox displaySettingBox = new JComboBox();
-        JComboBox audioInComboBox = new JComboBox();
-        JComboBox audioOutComboBox = new JComboBox();
+        //createt gloabay so they can be change globay
+        
         //set not editable
         mainCameraBox.setEditable(false);
         mainCameraPixelFormatBox.setEditable(false);
@@ -235,52 +429,8 @@ public class OptionsMainMenuWindow extends JFrame{
         audioOutComboBox.addActionListener((ActionEvent event) -> {
             
         });
-        //path fields
-        //creating and setting
-        String uvPathFromConfig = "";
-        String mirrorPathFromConfig = "";
-        if(configuration.has("ultragrid path")){
-            try {
-                uvPathFromConfig = configuration.getString("ultragrid path");
-            } catch (JSONException ex) {
-                Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        if(configuration.has("distributor path")){
-            try {
-                mirrorPathFromConfig = configuration.getString("distributor path");
-            } catch (JSONException ex) {
-                Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        JTextField uvSystemPath = new JTextField(uvPathFromConfig);
-        JTextField mirrorSystemPath = new JTextField(mirrorPathFromConfig);
-        uvSystemPath.setColumns(20);
-        mirrorSystemPath.setColumns(20);
-        uvSystemPath.setFont(fontBoxes);
-        mirrorSystemPath.setFont(fontBoxes);
-        JFileChooser uvFileChooser = new JFileChooser();
-        JFileChooser mirrorFileChooser = new JFileChooser();
-        JButton setUvSystemPathButton = new JButton("...");
-        JButton setMirrorSystemPathButton = new JButton("...");
-        setUvSystemPathButton.setFont(fontBoxes);
-        setMirrorSystemPathButton.setFont(fontBoxes);
-        //setting action path choosing
-        setUvSystemPathButton.addActionListener((ActionEvent event) -> {
-            int returnVal = uvFileChooser.showOpenDialog(this);
-            if(returnVal == JFileChooser.APPROVE_OPTION){
-                uvSystemPath.setText(uvFileChooser.getSelectedFile().getPath());
-            }
-        });
-        setMirrorSystemPathButton.addActionListener((ActionEvent event) -> {
-            int returnVal = mirrorFileChooser.showOpenDialog(this);
-            if(returnVal == JFileChooser.APPROVE_OPTION){
-                mirrorSystemPath.setText(mirrorFileChooser.getSelectedFile().getPath());
-            }
-        });
+
         //info fields
-        JTextField uvPathInfoText = new JTextField("uv path");
-        JTextField mirrorPathInfoText = new JTextField("hd-rum-transcode path");
         JTextField displayDeviceText = new JTextField("zariadenie");
         JTextField displaySettingText = new JTextField("moznosti");
         JTextField cameraDeviceText = new JTextField("kamera");
@@ -291,11 +441,8 @@ public class OptionsMainMenuWindow extends JFrame{
         JTextField presentationPixelFormatText = new JTextField("format");
         JTextField presentationFrameSizeText = new JTextField("velkost");
         JTextField presentationFPSText = new JTextField("fps");
-        JTextField verificationText = new JTextField();
         JTextField audioInText = new JTextField("zvuk in");
         JTextField audioOutText = new JTextField("zvuk out");
-        uvPathInfoText.setFont(fontBoxes);
-        mirrorPathInfoText.setFont(fontBoxes);
         displayDeviceText.setFont(fontBoxes);
         displaySettingText.setFont(fontBoxes);
         cameraDeviceText.setFont(fontBoxes);
@@ -308,9 +455,6 @@ public class OptionsMainMenuWindow extends JFrame{
         presentationFPSText.setFont(fontBoxes);
         audioInText.setFont(fontBoxes);
         audioOutText.setFont(fontBoxes);
-        verificationText.setFont(new Font(fontBoxes.getName(), Font.BOLD, fontBoxes.getSize() +3));
-        uvPathInfoText.setEditable(false);
-        mirrorPathInfoText.setEditable(false);
         displayDeviceText.setEditable(false);
         displaySettingText.setEditable(false);
         cameraDeviceText.setEditable(false);
@@ -321,11 +465,8 @@ public class OptionsMainMenuWindow extends JFrame{
         presentationPixelFormatText.setEditable(false);
         presentationFrameSizeText.setEditable(false);
         presentationFPSText.setEditable(false);
-        verificationText.setEditable(false);
         audioInText.setEditable(false);
         audioOutText.setEditable(false);
-        uvPathInfoText.setBorder(BorderFactory.createEmptyBorder());
-        mirrorPathInfoText.setBorder(BorderFactory.createEmptyBorder());
         displayDeviceText.setBorder(BorderFactory.createEmptyBorder());
         displaySettingText.setBorder(BorderFactory.createEmptyBorder());
         cameraDeviceText.setBorder(BorderFactory.createEmptyBorder());
@@ -336,27 +477,13 @@ public class OptionsMainMenuWindow extends JFrame{
         presentationPixelFormatText.setBorder(BorderFactory.createEmptyBorder());
         presentationFrameSizeText.setBorder(BorderFactory.createEmptyBorder());
         presentationFPSText.setBorder(BorderFactory.createEmptyBorder());
-        verificationText.setBorder(BorderFactory.createEmptyBorder());
         audioInText.setBorder(BorderFactory.createEmptyBorder());
         audioOutText.setBorder(BorderFactory.createEmptyBorder());
         //buttons
-        JButton reloadUltragridButton = new JButton("restart");
         JButton testCameraButton = new JButton("test kamera");
         JButton testPresentationButton = new JButton("test prezentacia");
-        reloadUltragridButton.setFont(fontBoxes);
         testCameraButton.setFont(fontBoxes);
         testPresentationButton.setFont(fontBoxes);
-        reloadUltragridButton.addActionListener((ActionEvent event) -> {
-            ultragridOK(uvSystemPath.getText(), verificationText);
-            try {
-                videoDevices = loadVideoDevicesAndSettings(uvSystemPath.getText());
-            } catch (IOException ex) {
-                videoDevices = new ArrayList<>();
-                Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            setAllJComboBoxesVideosetting(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
-            setAllJComboBoxesVideosetting(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, videoDevices);
-        });
         testCameraButton.addActionListener((ActionEvent event) -> {
             try {
                 String reciveSetting = "";
@@ -369,8 +496,7 @@ public class OptionsMainMenuWindow extends JFrame{
                     }
                 }
                 String outputSetting = getVideoSettings(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
-                System.out.println(outputSetting);
-                startUltragrid("uv", reciveSetting, outputSetting);
+                startUltragrid(uvPathString, reciveSetting, outputSetting);
             } catch (IOException ex) {
                 Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -387,8 +513,7 @@ public class OptionsMainMenuWindow extends JFrame{
                     }
                 }
                 String outputSetting = getVideoSettings(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, videoDevices);
-                System.out.println(outputSetting);
-                startUltragrid("uv", reciveSetting, outputSetting);
+                startUltragrid(uvPathString, reciveSetting, outputSetting);
             } catch (IOException ex) {
                 Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -402,9 +527,6 @@ public class OptionsMainMenuWindow extends JFrame{
             testPresentationButton.setVisible(isSelected);
             this.pack();
         });
-        
-        
-        
         
         //putting boxes to panel
         mainCameraPanel.setLayout(new GridBagLayout());
@@ -541,37 +663,13 @@ public class OptionsMainMenuWindow extends JFrame{
         videoAudioConstrains.gridwidth = 1;
         videoAudioConstrains.gridx = 0;
         videoAudioConstrains.gridy = 0;
-        videoAudioPanel.add(uvPathInfoText, videoAudioConstrains);
-        videoAudioConstrains.anchor = GridBagConstraints.LINE_START;
-        videoAudioConstrains.gridx = 1;
-        videoAudioConstrains.gridy = 0;
-        videoAudioPanel.add(uvSystemPath, videoAudioConstrains);
-        videoAudioConstrains.gridx = 2;
-        videoAudioConstrains.gridy = 0;
-        videoAudioConstrains.ipadx = 0;
-        videoAudioPanel.add(setUvSystemPathButton, videoAudioConstrains);
-        videoAudioConstrains.gridx = 0;
-        videoAudioConstrains.gridy = 1;
-        videoAudioPanel.add(mirrorPathInfoText, videoAudioConstrains);
-        videoAudioConstrains.gridx = 1;
-        videoAudioConstrains.gridy = 1;
-        videoAudioPanel.add(mirrorSystemPath, videoAudioConstrains);
-        videoAudioConstrains.gridx = 2;
-        videoAudioConstrains.gridy = 1;
-        videoAudioConstrains.ipadx = 0;
-        videoAudioPanel.add(setMirrorSystemPathButton, videoAudioConstrains);
+
         videoAudioConstrains.anchor = GridBagConstraints.CENTER;
         videoAudioConstrains.gridx = 0;
         videoAudioConstrains.gridy = 3;
         videoAudioConstrains.gridheight = 1;
         videoAudioConstrains.gridwidth = 2;
         videoAudioPanel.add(verificationText, videoAudioConstrains);
-        videoAudioConstrains.anchor = GridBagConstraints.LINE_START;
-        videoAudioConstrains.gridx = 2;
-        videoAudioConstrains.gridy = 3;
-        videoAudioConstrains.gridheight = 1;
-        videoAudioConstrains.gridwidth = 1;
-        videoAudioPanel.add(reloadUltragridButton, videoAudioConstrains);
         videoAudioConstrains.gridx = 0;
         videoAudioConstrains.gridy = 4;
         videoAudioConstrains.gridheight = 1;
@@ -610,40 +708,9 @@ public class OptionsMainMenuWindow extends JFrame{
         videoAudioConstrains.gridwidth = 1;
         videoAudioPanel.add(testPresentationButton, videoAudioConstrains);
         
-        //start setting
-                
-        //try if ultragrid is functional
-        ultragridOK(uvSystemPath.getText(), verificationText);
-        //load posibylities
-        try {
-            videoDevices = loadVideoDevicesAndSettings(uvSystemPath.getText());
-            audioIn = read_audio_devices_in_or_out(uvPathFromConfig, true);
-            audioOut = read_audio_devices_in_or_out(uvPathFromConfig, false);
-        } catch (IOException ex) {
-            videoDevices = new ArrayList<>();
-            Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        setAudioJComboBox(audioInComboBox, audioIn);
-        setAudioJComboBox(audioOutComboBox, audioOut);
-        
-        setAllJComboBoxesVideosetting(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
-        setAllJComboBoxesVideosetting(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, videoDevices);
-        
-        setJComboBoxDisplay(displayBox, displaySettingBox);
-        
         presetationPanel.setVisible(false);
         testPresentationButton.setVisible(false);
         presentationCheckBox.setSelected(false);
-        
-        try {
-            String videoSetting = configuration.getString("producer settings");
-            SetVideoSettingFromConfig(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices, videoSetting);
-        } catch (JSONException ex) {
-            Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-
     }
     
     private void setMiscsPanel(){
@@ -655,31 +722,267 @@ public class OptionsMainMenuWindow extends JFrame{
         myIpAddressPanel.setBorder(BorderFactory.createTitledBorder("moja ip"));
         JPanel serverIpSettingPanel = new JPanel();
         serverIpSettingPanel.setBorder(BorderFactory.createTitledBorder("server ip setting"));
-        JPanel layoutPanel = new JPanel();
-        layoutPanel.setBorder(BorderFactory.createTitledBorder("rozlozenie"));
+        JPanel addressPanel = new JPanel();
+        addressPanel.setBorder(BorderFactory.createTitledBorder("rozlozenie"));
+        
+        myIpSetTextField.setEditable(true);
+        myIpSetTextField.setColumns(10);
+        myIpSetTextField.setFont(fontBoxes);
+        JTextField myIpSetTextFieldInfoText = new JTextField("moja ip");
+        myIpSetTextFieldInfoText.setEditable(false);
+        myIpSetTextFieldInfoText.setFont(fontBoxes);
+        
+        JTextField serverIpAddresChangeTextField = new JTextField();
+        JTextField serverIpNameChange = new JTextField();
+        JTextField serverIpPortChange = new JTextField();
+        serverIpAddresChangeTextField.setColumns(10);
+        serverIpNameChange.setColumns(13);
+        serverIpPortChange.setColumns(13);
+        //serverIpAddresChangeTextField.setHorizontalAlignment(JTextField.CENTER);
+        serverIpAddresChangeTextField.setFont(fontBoxes);
+        serverIpNameChange.setFont(fontBoxes);
+        serverIpPortChange.setFont(fontBoxes);
+        
+        //text to explane fields
+        JTextField serverIpAddresChangeTextFieldInfoText = new JTextField("ip addresa servera");
+        JTextField serverIpNameChangeInfoText = new JTextField("meno servera");
+        JTextField serverIpPortChangeInfoText = new JTextField("port k serveru");
+        JTextField uvPathInfoText = new JTextField("uv path");
+        JTextField mirrorPathInfoText = new JTextField("hd-rum-transcode path");
+        JTextField layoutPathInfoText = new JTextField("layouts path");
+        serverIpAddresChangeTextFieldInfoText.setEditable(false);
+        serverIpNameChangeInfoText.setEditable(false);
+        serverIpPortChangeInfoText.setEditable(false);
+        uvPathInfoText.setEditable(false);
+        mirrorPathInfoText.setEditable(false);
+        layoutPathInfoText.setEditable(false);
+        serverIpAddresChangeTextFieldInfoText.setHorizontalAlignment(JTextField.RIGHT);
+        serverIpNameChangeInfoText.setHorizontalAlignment(JTextField.RIGHT);
+        serverIpPortChangeInfoText.setHorizontalAlignment(JTextField.RIGHT);
+        uvPathInfoText.setHorizontalAlignment(JTextField.RIGHT);
+        mirrorPathInfoText.setHorizontalAlignment(JTextField.RIGHT);
+        layoutPathInfoText.setHorizontalAlignment(JTextField.RIGHT);
+        serverIpAddresChangeTextFieldInfoText.setFont(fontBoxes);
+        serverIpNameChangeInfoText.setFont(fontBoxes);
+        serverIpPortChangeInfoText.setFont(fontBoxes);
+        uvPathInfoText.setFont(fontBoxes);
+        mirrorPathInfoText.setFont(fontBoxes);
+        layoutPathInfoText.setFont(fontBoxes);
         
         JComboBox serverIpSelect = new JComboBox();
         serverIpSelect.setFont(fontBoxes);
         serverIpSelect.setEditable(false);
+        serverIpSelect.addActionListener((ActionEvent event) -> {
+            if(serverIpSelect.getItemCount() > 0){
+                int selectedIndex = serverIpSelect.getSelectedIndex();
+                serverIpAddresChangeTextField.setText(ipAddresses.get(selectedIndex).address);
+                serverIpNameChange.setText(ipAddresses.get(selectedIndex).name);
+                serverIpPortChange.setText(ipAddresses.get(selectedIndex).port);
+            }
+        });
         
-        JTextField myIpSetTextField = new JTextField();
-        myIpSetTextField.setEditable(true);
-        myIpSetTextField.setFont(fontBoxes);
+        JButton reloadUltragridButton = new JButton("restart");
+        JButton addNewServerButton = new JButton("pridaj");
+        JButton saveChangesInServerButton = new JButton("pouzi");
+        JButton deleteCurrentServerButton = new JButton("zmaz");
+        reloadUltragridButton.setFont(fontBoxes);
+        addNewServerButton.setFont(fontBoxes);
+        saveChangesInServerButton.setFont(fontBoxes);
+        deleteCurrentServerButton.setFont(fontBoxes);
+        reloadUltragridButton.addActionListener((ActionEvent event) -> {
+            ultragridOK(uvPathString, verificationText);
+            try {
+                videoDevices = loadVideoDevicesAndSettings(uvPathString);
+            } catch (IOException ex) {
+                videoDevices = new ArrayList<>();
+                Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            setAllJComboBoxesVideosetting(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
+            setAllJComboBoxesVideosetting(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, videoDevices);
+        });
+        addNewServerButton.addActionListener((ActionEvent event) -> {
+            IPServerSaved newServer = new IPServerSaved();
+            newServer.address = "0.0.0.0";
+            newServer.name = "new server";
+            newServer.port = "80";
+            ipAddresses.add(newServer);
+            setServerIpsComboBox(ipAddresses, serverIpSelect);
+            serverIpSelect.setSelectedIndex(ipAddresses.size() - 1);
+        });
+        saveChangesInServerButton.addActionListener((ActionEvent event) -> {
+            if(serverIpSelect.getItemCount() > 0){
+                int selectedIndex = serverIpSelect.getSelectedIndex();
+                ipAddresses.get(selectedIndex).address = serverIpAddresChangeTextField.getText();
+                ipAddresses.get(selectedIndex).name = serverIpNameChange.getText();
+                ipAddresses.get(selectedIndex).port = serverIpPortChange.getText();
+                setServerIpsComboBox(ipAddresses, serverIpSelect);
+                serverIpSelect.setSelectedIndex(selectedIndex);
+            }
+        });
+        deleteCurrentServerButton.addActionListener((ActionEvent event) -> {
+            if(serverIpSelect.getItemCount() > 0){
+                int selectedIndex = serverIpSelect.getSelectedIndex();
+                ipAddresses.remove(selectedIndex);
+                serverIpAddresChangeTextField.setText("");
+                serverIpNameChange.setText("");
+                serverIpPortChange.setText("");
+                setServerIpsComboBox(ipAddresses, serverIpSelect);
+            }
+        });
         
-        JTextField serverIpAddresChangeTextField = new JTextField();
-        JTextField serverIpNameChange = new JTextField();
-        serverIpAddresChangeTextField.setColumns(20);
-        serverIpNameChange.setColumns(20);
-        serverIpAddresChangeTextField.setFont(fontBoxes);
-        serverIpNameChange.setFont(fontBoxes);
+        //path fields
+        //creating and setting
+        if(configuration.has("ultragrid path")){
+            try {
+                uvPathString = configuration.getString("ultragrid path");
+            } catch (JSONException ex) {
+                Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        if(configuration.has("distributor path")){
+            try {
+                distributorPathString = configuration.getString("distributor path");
+            } catch (JSONException ex) {
+                Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        if(configuration.has("layout path")){
+            try {
+                layoutPathString = configuration.getString("layout path");
+            } catch (JSONException ex) {
+                Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        JTextField uvSystemPath = new JTextField(uvPathString);
+        JTextField mirrorSystemPath = new JTextField(distributorPathString);
+        JTextField layoutSystemPath = new JTextField(layoutPathString);
+        uvSystemPath.setColumns(20);
+        mirrorSystemPath.setColumns(20);
+        layoutSystemPath.setColumns(20);
+        uvSystemPath.setFont(fontBoxes);
+        mirrorSystemPath.setFont(fontBoxes);
+        layoutSystemPath.setFont(fontBoxes);
+        JFileChooser uvFileChooser = new JFileChooser();
+        JFileChooser mirrorFileChooser = new JFileChooser();
+        JFileChooser layoutFileChooser = new JFileChooser();
+        JButton setUvSystemPathButton = new JButton("...");
+        JButton setMirrorSystemPathButton = new JButton("...");
+        JButton setLayoutSystemPathButton = new JButton("...");
+        setUvSystemPathButton.setFont(fontBoxes);
+        setMirrorSystemPathButton.setFont(fontBoxes);
+        setLayoutSystemPathButton.setFont(fontBoxes);
+        //setting action path choosing
+        setUvSystemPathButton.addActionListener((ActionEvent event) -> {
+            int returnVal = uvFileChooser.showOpenDialog(this);
+            if(returnVal == JFileChooser.APPROVE_OPTION){
+                uvSystemPath.setText(uvFileChooser.getSelectedFile().getPath());
+                uvPathString = uvSystemPath.getText();
+            }
+        });
+        setMirrorSystemPathButton.addActionListener((ActionEvent event) -> {
+            int returnVal = mirrorFileChooser.showOpenDialog(this);
+            if(returnVal == JFileChooser.APPROVE_OPTION){
+                mirrorSystemPath.setText(mirrorFileChooser.getSelectedFile().getPath());
+                distributorPathString = mirrorSystemPath.getText();
+            }
+        });
+        setLayoutSystemPathButton.addActionListener((ActionEvent event) -> {
+            int returnVal = mirrorFileChooser.showOpenDialog(this);
+            if(returnVal == JFileChooser.APPROVE_OPTION){
+                layoutSystemPath.setText(mirrorFileChooser.getSelectedFile().getPath());
+                layoutPathString = layoutSystemPath.getText();
+            }
+        });
         
         myIpAddressPanel.setLayout(new GridBagLayout());
         GridBagConstraints myIpAddressConstraints = new GridBagConstraints();
+        myIpAddressConstraints.fill = GridBagConstraints.HORIZONTAL;
+        myIpAddressConstraints.insets = new Insets(5,5,5,5);
+        myIpAddressConstraints.weightx = 0.5;
         myIpAddressConstraints.gridheight = 1;
-        myIpAddressConstraints.gridwidth = 3;
+        myIpAddressConstraints.gridwidth = 1;
         myIpAddressConstraints.gridx = 0;
         myIpAddressConstraints.gridy = 0;
-        videoAudioPanel.add(myIpSetTextField, myIpAddressConstraints);
+        myIpAddressPanel.add(myIpSetTextFieldInfoText, myIpAddressConstraints);
+        myIpAddressConstraints.weightx = 0.5;
+        myIpAddressConstraints.gridheight = 1;
+        myIpAddressConstraints.gridwidth = 1;
+        myIpAddressConstraints.gridx = 1;
+        myIpAddressConstraints.gridy = 0;
+        myIpAddressPanel.add(myIpSetTextField, myIpAddressConstraints);
+        
+        serverIpSettingPanel.setLayout(new GridBagLayout());
+        GridBagConstraints serverIpSettingPanelConstraints = new GridBagConstraints();
+        serverIpSettingPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+        serverIpSettingPanelConstraints.insets = new Insets(5,5,5,5);
+        serverIpSettingPanelConstraints.weightx = 0.5;
+        serverIpSettingPanelConstraints.gridheight = 1;
+        serverIpSettingPanelConstraints.gridwidth = 1;
+        serverIpSettingPanelConstraints.gridx = 1;
+        serverIpSettingPanelConstraints.gridy = 0;
+        serverIpSettingPanel.add(serverIpAddresChangeTextFieldInfoText, serverIpSettingPanelConstraints);
+        serverIpSettingPanelConstraints.gridx = 2;
+        serverIpSettingPanelConstraints.gridy = 0;
+        serverIpSettingPanel.add(serverIpAddresChangeTextField, serverIpSettingPanelConstraints);
+        serverIpSettingPanelConstraints.gridx = 3;
+        serverIpSettingPanelConstraints.gridy = 0;
+        serverIpSettingPanel.add(addNewServerButton, serverIpSettingPanelConstraints);
+        serverIpSettingPanelConstraints.gridx = 0;
+        serverIpSettingPanelConstraints.gridy = 1;
+        serverIpSettingPanel.add(serverIpSelect, serverIpSettingPanelConstraints);
+        serverIpSettingPanelConstraints.gridx = 1;
+        serverIpSettingPanelConstraints.gridy = 1;
+        serverIpSettingPanel.add(serverIpNameChangeInfoText, serverIpSettingPanelConstraints);
+        serverIpSettingPanelConstraints.gridx = 2;
+        serverIpSettingPanelConstraints.gridy = 1;
+        serverIpSettingPanel.add(serverIpNameChange, serverIpSettingPanelConstraints);
+        serverIpSettingPanelConstraints.gridx = 3;
+        serverIpSettingPanelConstraints.gridy = 1;
+        serverIpSettingPanel.add(saveChangesInServerButton, serverIpSettingPanelConstraints);
+        serverIpSettingPanelConstraints.gridx = 1;
+        serverIpSettingPanelConstraints.gridy = 2;
+        serverIpSettingPanel.add(serverIpPortChangeInfoText, serverIpSettingPanelConstraints);
+        serverIpSettingPanelConstraints.gridx = 2;
+        serverIpSettingPanelConstraints.gridy = 2;
+        serverIpSettingPanel.add(serverIpPortChange, serverIpSettingPanelConstraints);
+        serverIpSettingPanelConstraints.gridx = 3;
+        serverIpSettingPanelConstraints.gridy = 2;
+        serverIpSettingPanel.add(deleteCurrentServerButton, serverIpSettingPanelConstraints);
+        
+        addressPanel.setLayout(new GridBagLayout());
+        GridBagConstraints addressPanelConstraints = new GridBagConstraints();
+        addressPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+        addressPanelConstraints.insets = new Insets(5,5,5,5);
+        addressPanelConstraints.weightx = 0.5;
+        addressPanelConstraints.gridheight = 1;
+        addressPanelConstraints.gridwidth = 1;
+        addressPanelConstraints.gridx = 0;
+        addressPanelConstraints.gridy = 0;
+        addressPanel.add(uvPathInfoText, addressPanelConstraints);
+        addressPanelConstraints.gridx = 1;
+        addressPanelConstraints.gridy = 0;
+        addressPanel.add(uvSystemPath, addressPanelConstraints);
+        addressPanelConstraints.gridx = 2;
+        addressPanelConstraints.gridy = 0;
+        addressPanel.add(setUvSystemPathButton, addressPanelConstraints);
+        addressPanelConstraints.gridx = 0;
+        addressPanelConstraints.gridy = 1;
+        addressPanel.add(mirrorPathInfoText, addressPanelConstraints);
+        addressPanelConstraints.gridx = 1;
+        addressPanelConstraints.gridy = 1;
+        addressPanel.add(mirrorSystemPath, addressPanelConstraints);
+        addressPanelConstraints.gridx = 2;
+        addressPanelConstraints.gridy = 1;
+        addressPanel.add(setMirrorSystemPathButton, addressPanelConstraints);
+        addressPanelConstraints.gridx = 0;
+        addressPanelConstraints.gridy = 2;
+        addressPanel.add(layoutPathInfoText, addressPanelConstraints);
+        addressPanelConstraints.gridx = 1;
+        addressPanelConstraints.gridy = 2;
+        addressPanel.add(layoutSystemPath, addressPanelConstraints);
+        addressPanelConstraints.gridx = 2;
+        addressPanelConstraints.gridy = 2;
+        addressPanel.add(setLayoutSystemPathButton, addressPanelConstraints);
         
         miscsPanel.setLayout(new GridBagLayout());
         GridBagConstraints miscsPanelConstraints = new GridBagConstraints();
@@ -693,7 +996,26 @@ public class OptionsMainMenuWindow extends JFrame{
         miscsPanel.add(serverIpSettingPanel, miscsPanelConstraints);
         miscsPanelConstraints.gridx = 0;
         miscsPanelConstraints.gridy = 2;
-        miscsPanel.add(layoutPanel, miscsPanelConstraints);
+        miscsPanel.add(addressPanel, miscsPanelConstraints);
+        miscsPanelConstraints.gridx = 0;
+        miscsPanelConstraints.gridy = 3;
+        miscsPanel.add(verificationText, miscsPanelConstraints);
+        miscsPanelConstraints.anchor = GridBagConstraints.LINE_START;
+        miscsPanelConstraints.gridx = 2;
+        miscsPanelConstraints.gridy = 3;
+        miscsPanelConstraints.gridheight = 1;
+        miscsPanelConstraints.gridwidth = 1;
+        miscsPanel.add(reloadUltragridButton, miscsPanelConstraints);
+        
+        ipAddresses = loadIpAddreses();
+        setServerIpsComboBox(ipAddresses, serverIpSelect);
+        String myIpLoaded = "";
+        try {
+            myIpLoaded = configuration.getString("this ip");
+        } catch (JSONException ex) {
+            Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        myIpSetTextField.setText(myIpLoaded);
     }
     
     private List<VideoDevice> loadVideoDevicesAndSettings(String uvPath) throws IOException{
@@ -708,8 +1030,8 @@ public class OptionsMainMenuWindow extends JFrame{
                 uvVideoSetting = "v4l2";
                 ret = getVideoDevicesAndSettingsLinux(uvPath, uvVideoSetting);
             }else if(osName.contains("Mac")){
-                uvVideoSetting = "macsomethingvideoblablabla";
-                ret = null;
+                uvVideoSetting = "avfoundation";
+                ret = getVideoDevicesAndSettingsMac(uvPath, uvVideoSetting);
             }else{      //probably should log incorrect os system
                 return null;
             }
@@ -721,8 +1043,6 @@ public class OptionsMainMenuWindow extends JFrame{
     
     
     List<VideoDevice> getVideoDevicesAndSettingsLinux(String uvAddress, String uvVideoSetting) throws IOException{
-        
-                
         Process uvProcess = new ProcessBuilder(uvAddress, "-t", uvVideoSetting + ":help").start();
         InputStream is = uvProcess.getInputStream();
         InputStreamReader isr = new InputStreamReader(is);
@@ -817,7 +1137,7 @@ public class OptionsMainMenuWindow extends JFrame{
                 VideoFrameSize vfs = new VideoFrameSize();
                 VideoFPS vfps = new VideoFPS();
                 VideoDevice vd = videoInputs.get(videoInputs.size() - 1);
-                vfps.setting = ":" + vd.device + ":" + modeMatcher.group(1);
+                vfps.setting = uvVideoSetting + ":" + vd.device + ":" + modeMatcher.group(1);
                 vpf.pixelFormat = modeMatcher.group(2);
                 vpf.name = modeMatcher.group(2);
                 vfs.widthXheight = modeMatcher.group(3);
@@ -845,6 +1165,78 @@ public class OptionsMainMenuWindow extends JFrame{
                     vpf.vfs.add(vfs);
                 }
                 vfs.fps.add(vfps);
+            }
+        }
+                        
+        
+        return videoInputs;
+    }
+    
+    List<VideoDevice> getVideoDevicesAndSettingsMac(String uvAddress, String uvVideoSetting) throws IOException{
+        Process uvProcess = new ProcessBuilder(uvAddress, "-t", uvVideoSetting + ":help").start();
+        InputStream is = uvProcess.getInputStream();
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr);
+        String line;
+        
+        List<VideoDevice> videoInputs = new ArrayList<>();
+        while ((line = br.readLine()) != null) {
+            Pattern devicePattern = Pattern.compile("^[\\*]?(\\d*):\\s*(.*)");
+            Matcher deviceMatcher = devicePattern.matcher(line);
+            if(deviceMatcher.find()){
+                VideoDevice vd = new VideoDevice();
+                vd.name = deviceMatcher.group(2);
+                vd.device = deviceMatcher.group(1);
+                vd.vpf = new ArrayList<>();
+                videoInputs.add(vd);
+            }
+            
+            Pattern modePattern = Pattern.compile("(\\d+): (.*?) (\\d+x\\d+) \\(max frame rate (\\d*) FPS\\)");
+            Matcher modeMatcher = modePattern.matcher(line);
+            while(modeMatcher.find()){
+                if(videoInputs.size() == 0){    //something strange happend, stop process
+                    return videoInputs;
+                }
+                VideoPixelFormat vpf = new VideoPixelFormat();
+                VideoFrameSize vfs = new VideoFrameSize();;
+                int max_fps = 0;
+                String partialSetting;
+                List<VideoFPS> listVfps = new ArrayList<>();
+                VideoDevice vd = videoInputs.get(videoInputs.size() - 1);
+                partialSetting = uvVideoSetting + ":device=" + vd.device + ":mode=" + modeMatcher.group(1) ;
+                vpf.pixelFormat = modeMatcher.group(2);
+                vpf.name = modeMatcher.group(2);
+                vfs.widthXheight = modeMatcher.group(3);
+                max_fps = Integer.parseInt(modeMatcher.group(4));
+                for(int i=max_fps;i>0;i--){
+                    VideoFPS vfps = new VideoFPS();
+                    vfps.setting = partialSetting + ":framerate=" + i;
+                    vfps.fps = String.valueOf(i);
+                    listVfps.add(vfps);
+                }
+                boolean found_item = false;             //maybe not most elegant
+                for(int i=0;i<vd.vpf.size();i++){
+                    if(vd.vpf.get(i).pixelFormat.equals(vpf.pixelFormat)){
+                        vpf = vd.vpf.get(i);
+                        found_item = true;
+                    }
+                }
+                if(!found_item){
+                    vpf.vfs = new ArrayList<>();
+                    vd.vpf.add(vpf);
+                }
+                found_item = false;
+                for(int i=0;i<vpf.vfs.size();i++){
+                    if(vpf.vfs.get(i).widthXheight.equals(vfs.widthXheight)){
+                        vfs = vpf.vfs.get(i);
+                        found_item = true;
+                    }
+                }
+                if(!found_item){
+                    vfs.fps = new ArrayList<>();
+                    vpf.vfs.add(vfs);
+                }
+                vfs.fps = listVfps;
             }
         }
                         
@@ -1011,6 +1403,12 @@ public class OptionsMainMenuWindow extends JFrame{
     }
     
     private List<AudioDevice> read_audio_devices_in_or_out(String uvAddress, boolean audio_in) throws IOException{
+        if(!correctUv){
+            return new ArrayList<>();
+        }
+        if(!havePortaudio){
+            return new ArrayList<>();
+        }
         Process uvProcess = new ProcessBuilder(uvAddress, "-s", "portaudio:help").start();
         InputStream is = uvProcess.getInputStream();
         InputStreamReader isr = new InputStreamReader(is);
@@ -1076,7 +1474,9 @@ public class OptionsMainMenuWindow extends JFrame{
         }
             
         try {
-            uvProcess = new ProcessBuilder(uvAddress, "help").start();  //may add output check, maby later, or some other checks
+            // mac return uv help value 10, -v seems be ok
+            uvProcess = new ProcessBuilder(uvAddress, "-v").start();  //may add output check, maby later, or some other checks
+            
             TimeUnit.MILLISECONDS.sleep(300);
             correctUv = (uvProcess.exitValue() == 0);
         } catch (IllegalThreadStateException ex){
@@ -1103,8 +1503,7 @@ public class OptionsMainMenuWindow extends JFrame{
             uvProcess.destroyForcibly();
         }
         if(correctUv){
-            ProcessBuilder pb = new ProcessBuilder("uv", "-d", uvReciveSetting, "-t", uvSendSetting);
-            
+            ProcessBuilder pb = new ProcessBuilder(uvAddress, "-d", uvReciveSetting, "-t", uvSendSetting);
             Process tmpProcess = pb.start();
             uvProcess = tmpProcess;
                     
@@ -1190,8 +1589,118 @@ public class OptionsMainMenuWindow extends JFrame{
     public void discardAction(){
         dispose();
     }
+
+    private void saveSettingAction() {
+        JSONObject newClinetConfiguration = new JSONObject();
+        JSONObject raiseHandColorJson = new JSONObject();
+        JSONObject talkingColorJson = new JSONObject();
+        JSONArray serverIps = new JSONArray();
+        
+        String producerSetting = getVideoSettings(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
+        String presentationSetting = getVideoSettings(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, videoDevices);
+        String displaySetting = "gl";
+        String audioInSetting = "portaudio";
+        String audioOutSetting = "portaudio";
+        
+        int resizeValue;
+        try{
+            resizeValue = Integer.valueOf(setResizeAmount.getText());
+        }catch(NumberFormatException e){
+            resizeValue = 0;
+        }
+        
+        try {
+            for(int i=0;i<ipAddresses.size();i++){
+                JSONObject newIp = new JSONObject();
+                newIp.put("ip", ipAddresses.get(i).address);
+                newIp.put("name", ipAddresses.get(i).name);
+                newIp.put("port", ipAddresses.get(i).port);
+                serverIps.put(newIp);
+            }
+            
+            raiseHandColorJson.put("red", raiseHandcolorChooser.getColor().getRed());
+            raiseHandColorJson.put("blue", raiseHandcolorChooser.getColor().getBlue());
+            raiseHandColorJson.put("green", raiseHandcolorChooser.getColor().getGreen());
+            
+            talkingColorJson.put("red", talkingColorChooser.getColor().getRed());
+            talkingColorJson.put("blue", talkingColorChooser.getColor().getBlue());
+            talkingColorJson.put("green", talkingColorChooser.getColor().getGreen());
+            
+            newClinetConfiguration.put("this ip", myIpSetTextField.getText());
+            newClinetConfiguration.put("ultragrid path", uvPathString);
+            newClinetConfiguration.put("distributor path", distributorPathString);
+            newClinetConfiguration.put("layout path", layoutPathString);
+            newClinetConfiguration.put("producer settings", producerSetting);
+            newClinetConfiguration.put("consumer settings", displaySetting);
+            newClinetConfiguration.put("audio consumer", audioInSetting);
+            newClinetConfiguration.put("audio producer", audioOutSetting);
+            newClinetConfiguration.put("presentation producer", presentationSetting);
+            newClinetConfiguration.put("raise hand color", raiseHandColorJson);
+            newClinetConfiguration.put("talking color", talkingColorJson);
+            newClinetConfiguration.put("server ips", serverIps);
+            newClinetConfiguration.put("talking resizing", (resizeValue / 100) + 1);
+        } catch (JSONException ex) {
+            Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        FileWriter fileWriter;
+        try {
+            fileWriter = new FileWriter(configurationFile);
+            fileWriter.write(newClinetConfiguration.toString());
+            fileWriter.close();
+        } catch (IOException ex) {
+            Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        imt.loadClientConfigurationFromFile();
+        imt.initServerChooseWindow();
+        imt.openServerChooseWindow();
+        dispose();
+    }
+    
+    private List<IPServerSaved> loadIpAddreses(){
+        List<IPServerSaved> ret = new ArrayList<>();
+        JSONArray ipAddreses;
+        try {
+            ipAddreses = configuration.getJSONArray("server ips");
+            for(int i=0;i<ipAddreses.length();i++){
+                IPServerSaved ipAddress = new IPServerSaved();
+                JSONObject loadedIP = ipAddreses.getJSONObject(i);
+                ipAddress.address = loadedIP.getString("ip");
+                ipAddress.name = loadedIP.getString("name");
+                ipAddress.port = loadedIP.getString("port");
+                ret.add(ipAddress);
+            }
+        } catch (JSONException ex) {
+            Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return ret;
+    }
+
+    private void setServerIpsComboBox(List<IPServerSaved> ipAddresses, JComboBox serverIpSelect) {
+        serverIpSelect.removeAllItems();
+        for(int i=0;i<ipAddresses.size();i++){
+            serverIpSelect.addItem(ipAddresses.get(i).address);
+        }
+    }
+    
+    private String getAudioSetting(){
+        
+        return "g";
+    }
+    
+    private String getDisplaySetting(){
+        
+        return "g";
+    }
 }
 
+
+class IPServerSaved{
+    public String name;
+    public String address;
+    public String port;
+}
 
 class VideoDevice{
     public String name;
