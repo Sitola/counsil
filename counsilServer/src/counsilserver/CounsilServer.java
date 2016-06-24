@@ -46,12 +46,15 @@ public class CounsilServer {
             JSONObject input = new JSONObject(entireFileText);     
             
             //TO DO: chack configuration file
+            
+            //start web server
             webServer ws = new webServer(input);
             Thread webServerThread = new Thread(ws);
             webServerThread.start();
             
+            //start counsil server
             counsilServerCreation csc = new counsilServerCreation();
-            csc.startServers(input);
+            csc.startServer(input);
             System.out.println("CoUnSil server started");
             Runtime.getRuntime().addShutdownHook(new Thread(){
                 @Override

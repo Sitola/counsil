@@ -1,14 +1,17 @@
 {
-    "webServerPort": "80",
+    "server name":"my home server",
+    "web server port": 8080,
+    "distributor path":"/Users/Huvart/Documents/MU/GitHub/ultragrid/bin/hd-rum-transcode",
+    "agc":"dummy",
+    "comunication port":9701,
+    "server ip":"192.168.1.105",
+    "dummy compress":"",
+    "dummy distributor compress":"",
     "rooms":[
         {
             "name":"room1",
-            "server ip":"147.251.54.45",
-            "comunication port":9701,
-            "agc":"dummy",
-            "distributor path":"/home/xminarik/Ultragrid/ultragrid/buin/hd-rum-transcode",
-            "dummy compress":"",
-            "dummy distributor compress":""
+            "port start":8701,
+            "port end":8801
         }
     ]
 }

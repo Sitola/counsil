@@ -44,21 +44,21 @@ import org.json.JSONObject;
  */
 public class webServer implements Runnable{
     JSONObject inputJson;
-    int port;
+    int webPort;
     webServer(JSONObject input) throws FileNotFoundException, JSONException, IOException{
         System.out.println("starting web server");
-        if (input == null) {
+        if (input == null) {    //shouldn't ocure
             System.err.println("missing CounsilWebServer.json");
             return;
         }
         
-        port = 80;
-        if(input.isNull("webServerPort")){
-            System.err.println("missing webServerPort");
+        if(!input.has("web server port")){
+            System.err.println("missing \"web server port\"");
             System.exit(1);
         }else{
-            port = input.getInt("webServerPort");
+            webPort = input.getInt("web server port");
         }
+        
         inputJson = input;
 
     }
@@ -73,14 +73,13 @@ public class webServer implements Runnable{
                     .setTcpNoDelay(true)
                     .build();
             final HttpServer server = ServerBootstrap.bootstrap()
-                    .setListenerPort(port)
+                    .setListenerPort(webPort)
                     .setServerInfo("CoUnSil/Configuration/web/Server")
                     .setIOReactorConfig(config)
                     .setSslContext(sslcontext)
                     .setExceptionLogger(ExceptionLogger.STD_ERR)
                     .registerHandler("*", new HttpFileHandler(inputJson))
                     .create();
-
             server.start();
             try{
                 server.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
@@ -96,10 +95,20 @@ public class webServer implements Runnable{
     static class HttpFileHandler implements HttpAsyncRequestHandler<HttpRequest> {
 
         private final JSONObject configuration;
+        private JSONArray rooms;
+        private int connectNumber;
 
         public HttpFileHandler(final JSONObject configuration) {
             super();
             this.configuration = configuration;
+            try {
+                this.rooms = configuration.getJSONArray("rooms");
+            } catch (JSONException ex) {
+                this.rooms = new JSONArray();
+                System.err.println("no room in configuration file");
+                Logger.getLogger(webServer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            connectNumber = 1;
         }
 
         public HttpAsyncRequestConsumer<HttpRequest> processRequest(
@@ -130,11 +139,10 @@ public class webServer implements Runnable{
             }
 
             String target = request.getRequestLine().getUri();
-            JSONArray rooms = configuration.optJSONArray("rooms");
             
             String strURL = URLDecoder.decode(target, "UTF-8");
             String[] parsedURL = strURL.split("/");
-            if(parsedURL.length < 2){
+            if(parsedURL.length < 2){       // sort of url verifying
                 System.out.println(parsedURL[0]);
                 return;
             }
@@ -148,12 +156,13 @@ public class webServer implements Runnable{
                         "{\"error\" : \"none rooms\"}",
                         ContentType.create("text/html", "UTF-8"));
                 response.setEntity(entity);
-                System.out.println("no room in configuration file");
 
             } else
             {
-                JSONObject outJson = null;
-                if(parsedURL[1].compareTo("roomList") == 0){
+                boolean corectRequest = false;
+                JSONObject outJson = new JSONObject();
+                if(parsedURL[1].equals("roomList")){    // enquary on list of rooms
+                    corectRequest = true;
                     JSONArray outArray = new JSONArray();
                     for(int i = 0; i < rooms.length(); i++){
                         JSONObject room;
@@ -170,19 +179,27 @@ public class webServer implements Runnable{
                         }
                     }
                     try {
-                        outJson = new JSONObject();
                         outJson.put("names", outArray);
                     } catch (JSONException ex) {
                         Logger.getLogger(CounsilServer.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                }else if(parsedURL[1].compareTo("room") == 0){
+                }else if(parsedURL[1].equals("room")){
                     for(int i = 0; i < rooms.length(); i++){
                         JSONObject room;
                         try {
                             room = rooms.getJSONObject(i);
                             String name = room.getString("name");
-                            if(name.compareTo(parsedURL[2]) == 0){
-                                outJson = room;
+                            if(name.equals(parsedURL[2])){
+                                corectRequest = true;
+                                outJson.put("name", name);
+                                outJson.put("port start", room.getInt("port start"));
+                                outJson.put("port end", room.getInt("port end"));
+                                outJson.put("server ip", configuration.getString("server ip"));
+                                outJson.put("comunication port", configuration.getInt("comunication port"));
+                                outJson.put("dummy compress", configuration.getString("dummy compress"));
+                                outJson.put("connect number", String.valueOf(connectNumber));
+                                connectNumber = connectNumber % 100000; //loop after 100k connections, simple precosion for overflow
+                                connectNumber++;    //increese for next connection
                             }
                         } catch (JSONException ex) {
                             Logger.getLogger(CounsilServer.class.getName()).log(Level.SEVERE, null, ex);
@@ -190,7 +207,7 @@ public class webServer implements Runnable{
                     }
                 }
 
-                if (outJson == null) {
+                if (!corectRequest) {
                 
                     //enquiry incoretct room
 

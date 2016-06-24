@@ -26,109 +26,86 @@ import org.json.JSONObject;
 public class counsilServerCreation {
     
         
-    private final List<Core> couniverses = new ArrayList<Core>();
-    private final List<ServerConnector> serverConnectors = new ArrayList<ServerConnector>();
-    
-    public void startServers(JSONObject input){
+    private Core couniverse;
+
+    public counsilServerCreation() {
         
-            couniverse.core.utils.MyLogger.setup();
-        JSONArray rooms = input.optJSONArray("rooms");
-        
-        for(int i = 0; i < rooms.length(); i++){
-            JSONObject room;
-            try {
-                room = rooms.getJSONObject(i);
-                createconfiguration(room);
-                startServer(room);
-            } catch (JSONException ex) {
-                Logger.getLogger(counsilServerCreation.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+        this.couniverse = null;
     }
     
     public void startServer(JSONObject input){
-        String name = "error";
-        try {            
-            name = input.getString("name");
-        } catch (JSONException ex) {
-            System.err.println("error missing name from configuration");
-            Logger.getLogger(counsilServerCreation.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        //couniverse.core.utils.MyLogger.setup();
+        createConfiguration(input);
         try{
-            Core core = Main.startCoUniverse("nodeConfig_" + name + ".json");
-            couniverses.add(core);
-            //ServerConnector connector = new ServerConnector(input.getInt("comunication port"));
-            //connector.joinUniverse();
-            //serverConnectors.add(connector);
+            couniverse = Main.startCoUniverse("counsil_server_nodeConfig.json");
         } catch (IOException ex) {
-            System.err.println("error while creationg server " + name);
+            System.err.println("error while creationg server");
             Logger.getLogger(counsilServerCreation.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InterruptedException ex) {
-            System.err.println("server interupted " + name);
+            System.err.println("server interupted");
             Logger.getLogger(counsilServerCreation.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println("starting CoUniverse server " + name);
+        System.out.println("starting CoUniverse server");
     }
     
     public void stopServers(){
         System.out.println("stopping CoUniverse servers");
-        for(int i = 0; i < couniverses.size(); i++){
-            Core core = couniverses.get(i);
-            core.stop();
-        }
+        couniverse.stop();
     }
     
-    public void createconfiguration(JSONObject input){
-        JSONObject roomConfiguration = new JSONObject();
+    public void createConfiguration(JSONObject input){
+        JSONObject serverConfiguration = new JSONObject();
         JSONObject connector = new JSONObject();
         JSONObject localNode = new JSONObject();
-        JSONObject consumer = new JSONObject();
+        JSONObject templates = new JSONObject();
+        
+        
         try {
+            JSONArray roomsArray = input.getJSONArray("rooms");
+            
             connector.put("serverAddress",input.getString("server ip"));
             connector.put("serverPort", input.getInt("comunication port"));
             connector.put("startServer", "true");
 
-            String name = input.getString("name") + "_server";
+            String name = input.getString("server name") + "_server";
             JSONObject interfaceInside = new JSONObject();
             interfaceInside.put("name", name);
             interfaceInside.put("address", input.getString("server ip"));
             interfaceInside.put("bandwidth", 1000);
             interfaceInside.put("isFullDuplex", true);
-            interfaceInside.put("subnetName", input.getString("name"));
+            interfaceInside.put("subnetName", "world");
             interfaceInside.put("properties", new JSONObject());
             JSONArray interfaces = new JSONArray();
             interfaces.put(interfaceInside);
-
+            
             JSONObject properties = new JSONObject();
             properties.put("agc", input.getString("agc"));
             properties.put("distributor", true);
-            if(input.has("dummy compress")){
-                if(input.getString("dummy compress").compareTo("") != 0){
-                    properties.put("dummy-compress", input.getString("dummy compress"));
-                }
-            }
-            if(input.has("dummy distributor compress")){
-                if(input.getString("dummy distributor compress").compareTo("") != 0){
-                    properties.put("dummy-distributor-compress", input.getString("dummy distributor compress"));
-                }
+            properties.put("dummy-compress", input.getString("dummy compress"));
+            properties.put("dummy-distributor-compress", input.getString("dummy distributor compress"));
+            //properties.put("rooms", rooms);
+                
+            for(int i=0;i<roomsArray.length();i++){
+                JSONObject room = roomsArray.getJSONObject(i);
+                properties.put("rooms", room.getString("name"));
             }
             
             localNode.put("name", name);
             localNode.put("interfaces", interfaces);
             localNode.put("properties", properties);
 
-            JSONObject templates = new JSONObject();
-            JSONObject JSONdistributor = new JSONObject();
-            JSONdistributor.put("path", input.getString("distributor path"));
-            JSONdistributor.put("arguments", "8M");
-            templates.put("distributor", JSONdistributor);
+            JSONObject distributorJSON = new JSONObject();
+            distributorJSON.put("path", input.getString("distributor path"));
+            distributorJSON.put("arguments", "8M");
+            
+            templates.put("distributor", distributorJSON);
 
-            roomConfiguration.put("connector", connector);
-            roomConfiguration.put("localNode", localNode);
-            roomConfiguration.put("templates", templates);
+            serverConfiguration.put("connector", connector);
+            serverConfiguration.put("localNode", localNode);
+            serverConfiguration.put("templates", templates);
 
-            FileWriter file = new FileWriter("nodeConfig_" + input.getString("name") + ".json");
-            file.write(roomConfiguration.toString());
+            FileWriter file = new FileWriter("counsil_server_nodeConfig.json");
+            file.write(serverConfiguration.toString());
             file.flush();
             file.close();
         } catch (JSONException | IOException ex) {
