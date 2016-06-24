@@ -327,7 +327,7 @@ public class InitialMenuLayout extends JFrame {
             String layout = getSelectedRadioButtonText(layoutGroup);
             String room = getSelectedRadioButtonText(roomGroup);
             if(rolePanel.getComponentCount() > 0){
-                startCounsil(role, audioCheckBox.isSelected(), setNameSettingField.getText());
+                startCounsil(role, audioCheckBox.isSelected(), setNameSettingField.getText(), layout, room);
             }else{
                 openErrorWindow("necakana chyba č.1");
             }
@@ -603,13 +603,14 @@ public class InitialMenuLayout extends JFrame {
      * start cousil
      * @param role of the user
      */
-    final void startCounsil(String role, boolean audio, String name){
+    final void startCounsil(String role, boolean audio, String name, String layout, String room){
         closeAllWindows();
         try {
-            setConfiguration(role, audio, name);
+            setConfiguration(role, audio, name, room);
             int scaleRatio = roomConfiguration.getInt("scale ratio");
+            File layoutFile = getLayoutFile(layout).file;
             LayoutManagerImpl lm;
-            lm = new LayoutManagerImpl(role, this, scaleRatio);
+            lm = new LayoutManagerImpl(role, this, scaleRatio, layoutFile);
             sm = new SessionManagerImpl(lm);
             sm.initCounsil();
         } catch (JSONException | IOException | WDDManException | InterruptedException | NativeHookException ex) {
@@ -623,13 +624,13 @@ public class InitialMenuLayout extends JFrame {
     final void closeCounsil(){
         sm.stopCounsil();
         sm = null;
-        //startIpSetWindow();
+        openServerChooseWindow();
     }
     
     /**
      * create nodeConfig.json from others configuration files
      */
-    final void setConfiguration(String role, boolean audio, String name) throws InterruptedException{
+    final void setConfiguration(String role, boolean audio, String name, String room) throws InterruptedException{
         JSONObject infoFromServer = getRoomConfiguraton(roomName);
         if(infoFromServer == null){
             openErrorWindow("cannot get room configuration from server");
@@ -662,6 +663,7 @@ public class InitialMenuLayout extends JFrame {
             properties.put("audioConsumer", clientConfig.getString("audio consumer"));
             properties.put("videoConsumer", clientConfig.getString("consumer settings"));
             properties.put("audio", audio);
+            properties.put("room", room);
             
             if(clientConfig.has("presentation producer")){
                 properties.put("presentationProducer", clientConfig.getString("presentation producer"));
@@ -731,6 +733,15 @@ public class InitialMenuLayout extends JFrame {
                 Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+    
+    LayoutFile getLayoutFile(String layoutName){
+        for(int i=0;i<layoutList.size();i++){
+            if(layoutList.get(i).layoutName.equals(layoutName)){
+                return layoutList.get(i);
+            }
+        }
+        return new LayoutFile();    //or throw error
     }
 }
 

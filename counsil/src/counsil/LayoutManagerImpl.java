@@ -2,6 +2,7 @@ package counsil;
 
 import java.awt.EventQueue;
 import java.awt.Point;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -76,9 +77,9 @@ public class LayoutManagerImpl implements LayoutManager {
      * @throws wddman.WDDManException
      * @throws org.jnativehook.NativeHookException
      */
-    public LayoutManagerImpl(String role, InitialMenuLayout iml, int setScaleRatio) throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
+    public LayoutManagerImpl(String role, InitialMenuLayout iml, int setScaleRatio, File layoutFile) throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
 
-        calculator = new LayoutCalculator(role);
+        calculator = new LayoutCalculator(role, layoutFile);
         scaleRatio = setScaleRatio;
 
         try {
