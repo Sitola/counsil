@@ -17,8 +17,11 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -27,6 +30,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,7 +47,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JSeparator;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.MaskFormatter;
@@ -55,12 +62,10 @@ import wddman.WDDManException;
  *
  * @author xminarik
  */
-public class InitialMenuLayout extends JFrame {
+public class InitialMenuLayout{
     
-   //String ipAddress;
     JTextField errorMessageField;
     JPanel roomPanel;
-   // String[] layoutArray;
     List<LayoutFile> layoutList;
     ButtonGroup roomGroup;
     
@@ -77,18 +82,16 @@ public class InitialMenuLayout extends JFrame {
     
     private OptionsMainMenuWindow optionMainMenuWindow;
         
-    //JSONObject roomList;
     JSONObject roomConfiguration;
     JSONObject clientConfig;
 
-    String roomName;
     String nameList[];
     
     JFormattedTextField ipField[];
     Integer ipValue[];
     
     File configurationFile;
-    
+    ResourceBundle lenguageBundle;
     /**
      * to init and end couniverse part of counsil
      */
@@ -118,12 +121,8 @@ public class InitialMenuLayout extends JFrame {
         errorMessageField = null;
         roomPanel = null;
         layoutList = new ArrayList<>();
-//        layoutArray = new String[1];
-//        layoutArray[0] = "layoutConfigStatic";
         roomGroup = new ButtonGroup();
         
-        roomName = "none";
-        //roomList = null;
         font = new Font("Tahoma", 0, 18);
         roomConfiguration = null;
         
@@ -135,7 +134,6 @@ public class InitialMenuLayout extends JFrame {
         optionMainMenuWindow = null;
         configurationFile = clientConfigurationFile;
         
-        //OptionsMainMenuWindow a = new OptionsMainMenuWindow(font, new Font("Tahoma", 0, 13), clientConfigurationFile);
         position = cenerPosition;
         
         loadClientConfigurationFromFile();
@@ -143,6 +141,7 @@ public class InitialMenuLayout extends JFrame {
         ipAddress = "";
         nameList = null;
         
+
         initSettingRoomWindow();
         initServerChooseWindow();
         initIpSettingWindow();
@@ -155,12 +154,21 @@ public class InitialMenuLayout extends JFrame {
             return;
         }
         serverChooseWindow.getContentPane().removeAll();
-        serverChooseWindow.setTitle("CoUnSil");
+        serverChooseWindow.setTitle(lenguageBundle.getString("COUNSIL"));
         serverChooseWindow.setVisible(false);
+        serverChooseWindow.addWindowListener(new WindowAdapter() {//action on close button (x)
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);
+            }
+        });
         
         JSONArray ipAddresses;
         JButton[] buttonAdresses = null;
         JPanel mainPanel;
+        JPanel ipPanel;
+        mainPanel = new JPanel();
+        ipPanel = new JPanel();
+        ipPanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("SERVERS")));
         if(clientConfig.has("server ips")){
             try {
                 ipAddresses = clientConfig.getJSONArray("server ips");
@@ -183,13 +191,13 @@ public class InitialMenuLayout extends JFrame {
                         }catch(NumberFormatException error){
                             serverPort = 80; //defout value
                         }
+                        ipAddress = serverIP;
                         port = serverPort;
                         JSONObject roomListNames = getServerRoomList();
                         if(roomListNames != null){
-                            ipAddress = serverIP;
                             openSettingRoomWindow(roomListNames);
                         }else{
-                            openErrorWindow("problem to connect to server, check if server is running");
+                            openErrorWindow(lenguageBundle.getString("ERROR_CAN_NOT_CONNECT_TO_SERVER"));
                         }
                     });
                 }
@@ -197,35 +205,72 @@ public class InitialMenuLayout extends JFrame {
                 Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        mainPanel = new JPanel();
-        mainPanel.setLayout(new GridLayout(6, 1));
+        ipPanel.setLayout(new GridBagLayout());
+        GridBagConstraints ipPanelConstraints = new GridBagConstraints();
+        ipPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+        ipPanelConstraints.insets = new Insets(2,2,2,2);
+        ipPanelConstraints.weightx = 0.5;
+        ipPanelConstraints.gridx = 0;
+        ipPanelConstraints.gridy = 0;
+        ipPanelConstraints.gridheight = 1;
+        ipPanelConstraints.gridwidth = 1;
         if(buttonAdresses != null){
-            mainPanel.setLayout(new GridLayout(buttonAdresses.length + 3, 1));
             for (JButton buttonAdresse : buttonAdresses) {
-                mainPanel.add(buttonAdresse);
+                ipPanelConstraints.gridy++;
+                ipPanel.add(buttonAdresse, ipPanelConstraints);
             }
         }else{
-            mainPanel.setLayout(new GridLayout(2, 1));
+            //ipPanel.setLayout(new GridLayout(1, 1));
         }
-        JButton differentServerButton = new JButton("different");
+        JButton differentServerButton = new JButton(lenguageBundle.getString("DIFFERENT_SERVER"));
         differentServerButton.setFont(font);
         differentServerButton.addActionListener((ActionEvent event) -> {
+            if(optionMainMenuWindow != null){
+                optionMainMenuWindow.dispose();
+                optionMainMenuWindow = null;
+            }
             openIpSettingWindow();
             //close this window and open window to set own ip addres
         });
-        JButton optionsButton = new JButton("options");
+        JButton optionsButton = new JButton(lenguageBundle.getString("OPTIONS"));
         optionsButton.setFont(font);
         optionsButton.addActionListener((ActionEvent event) -> {
-            optionMainMenuWindow = new OptionsMainMenuWindow(font, new Font("Tahoma", 0, 13), configurationFile, this);
+            if(optionMainMenuWindow != null){
+                optionMainMenuWindow.dispose();
+                optionMainMenuWindow = null;
+            }
+            optionMainMenuWindow = new OptionsMainMenuWindow(font, new Font("Tahoma", 0, 13), configurationFile, this, lenguageBundle);
         });
-        JButton exitButton = new JButton("exit");
+        JButton exitButton = new JButton(lenguageBundle.getString("EXIT"));
         exitButton.setFont(font);
         exitButton.addActionListener((ActionEvent event) -> {
+            if(optionMainMenuWindow != null){
+                optionMainMenuWindow.dispose();
+                optionMainMenuWindow = null;
+            }
             System.exit(0);
         });
-        mainPanel.add(differentServerButton);
-        mainPanel.add(optionsButton);
-        mainPanel.add(exitButton);
+        mainPanel.setLayout(new GridBagLayout());
+        GridBagConstraints mainPanelConstraints = new GridBagConstraints();
+        mainPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+        mainPanelConstraints.insets = new Insets(2,2,2,2);
+        mainPanelConstraints.weightx = 0.5;
+        mainPanelConstraints.gridx = 0;
+        mainPanelConstraints.gridy = 0;
+        mainPanelConstraints.gridheight = 1;
+        mainPanelConstraints.gridwidth = 1;
+        mainPanel.add(ipPanel, mainPanelConstraints);
+        mainPanelConstraints.insets = new Insets(10,2,2,2);
+        mainPanelConstraints.gridx = 0;
+        mainPanelConstraints.gridy = 1;
+        mainPanel.add(differentServerButton, mainPanelConstraints);
+        mainPanelConstraints.insets = new Insets(2,2,2,2);
+        mainPanelConstraints.gridx = 0;
+        mainPanelConstraints.gridy = 2;
+        mainPanel.add(optionsButton, mainPanelConstraints);
+        mainPanelConstraints.gridx = 0;
+        mainPanelConstraints.gridy = 3;
+        mainPanel.add(exitButton, mainPanelConstraints);
         serverChooseWindow.getContentPane().add(mainPanel);
         serverChooseWindow.pack();
         serverChooseWindow.setLocation(position.x - serverChooseWindow.getWidth()/2, position.y - serverChooseWindow.getHeight()/2);
@@ -235,16 +280,23 @@ public class InitialMenuLayout extends JFrame {
         if(errorWindow == null){
             return;
         }
-        errorWindow.setTitle("CoUnSil");
+        errorWindow.getContentPane().removeAll();
+        errorWindow.setTitle(lenguageBundle.getString("COUNSIL"));
         errorWindow.setVisible(false);
+        errorWindow.addWindowListener(new WindowAdapter() {//action on close button (x)
+            public void windowClosing(WindowEvent e) {
+                openServerChooseWindow();
+            }
+        });
         
         JPanel jButtonPanel = new JPanel();
         JPanel jMainPanel = new JPanel();
         jMainPanel.setLayout(new BorderLayout());
-        errorMessageField = new JTextField("nedokumentovana chyba");
+        
+        errorMessageField = new JTextField(lenguageBundle.getString("ERROR_UNDOCUMENTED"));
         errorMessageField.setFont(font);
         errorMessageField.setEditable(false);
-        JButton okButton = new JButton("OK");
+        JButton okButton = new JButton(lenguageBundle.getString("OK_BUTTON"));
         okButton.setFont(font);
         okButton.addActionListener((ActionEvent e) -> {
             openServerChooseWindow();
@@ -264,19 +316,34 @@ public class InitialMenuLayout extends JFrame {
             return;
         }
         settingRoomWindow.getContentPane().removeAll();
-        settingRoomWindow.setTitle("CoUnSil");
+        settingRoomWindow.setTitle(lenguageBundle.getString("COUNSIL"));
         settingRoomWindow.setVisible(false);
+        settingRoomWindow.addWindowListener(new WindowAdapter() {//action on close button (x)
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);
+            }
+        });
         
         //create panels, room panel is declared globaly to be able simply change rooms as download from server
-        JPanel rolePanel, layoutPanel, actionPanel, mainPanel, audioPanel, namePanel;
+        JPanel rolePanel, layoutPanel, actionPanel, mainPanel, audioPanel, namePanel, rightMainPanel, leftMainPanel, aboutPanel, anotherPanel;
+        
+        rightMainPanel = new JPanel();
+        rightMainPanel.setLayout(new GridBagLayout());
+        leftMainPanel = new JPanel();
+        leftMainPanel.setLayout(new GridBagLayout());
+        aboutPanel = new JPanel();
+        aboutPanel.setLayout(new GridLayout(1,1));
+        anotherPanel = new JPanel();
+        anotherPanel.setLayout(new GridBagLayout());
         rolePanel = new JPanel();
-        rolePanel.setLayout(new GridLayout(3, 1));
+        rolePanel.setLayout(new GridLayout(1, 3));
         layoutPanel = new JPanel();
-        layoutPanel.setLayout(new GridLayout(layoutList.size(), 1));
+        layoutPanel.setLayout(new GridBagLayout());
+        //layoutPanel.setLayout(new GridLayout(layoutList.size(), 1));
         roomPanel = new JPanel();
         //room layout will be set when we know how many room there is
         actionPanel = new JPanel();
-        actionPanel.setLayout(new GridLayout(4, 1));
+        actionPanel.setLayout(new GridLayout(3, 1));
         mainPanel = new JPanel();
         mainPanel.setLayout(new GridBagLayout());
         audioPanel = new JPanel();
@@ -290,11 +357,11 @@ public class InitialMenuLayout extends JFrame {
         
         //create buttons
         //role
-        JRadioButton studentButton = new JRadioButton("student");
+        JRadioButton studentButton = new JRadioButton(lenguageBundle.getString("STUDENT"));
         studentButton.setFont(font);
-        JRadioButton teacherButton = new JRadioButton("teacher");
+        JRadioButton teacherButton = new JRadioButton(lenguageBundle.getString("TEACHER"));
         teacherButton.setFont(font);
-        JRadioButton interpreterButton = new JRadioButton("interpreter");
+        JRadioButton interpreterButton = new JRadioButton(lenguageBundle.getString("INTERPRETER"));
         interpreterButton.setFont(font);
         roleGroup.add(studentButton);
         roleGroup.add(teacherButton);
@@ -304,12 +371,12 @@ public class InitialMenuLayout extends JFrame {
         rolePanel.add(teacherButton);
         rolePanel.add(interpreterButton);
         //audio
-        JCheckBox audioCheckBox = new JCheckBox("audio");
+        JCheckBox audioCheckBox = new JCheckBox(lenguageBundle.getString("AUDIO"));
         audioCheckBox.setFont(font);
         audioCheckBox.setSelected(false);
         audioPanel.add(audioCheckBox);
         //set name
-        JTextField setNameInfoField = new JTextField("meno");
+        JTextField setNameInfoField = new JTextField(lenguageBundle.getString("NAME"));
         setNameInfoField.setFont(font);
         setNameInfoField.setEditable(false);
         JTextField setNameSettingField = new JTextField();
@@ -319,11 +386,12 @@ public class InitialMenuLayout extends JFrame {
         //namePanel.add(setNameInfoField);
         namePanel.add(setNameSettingField);
         //action
-        JButton startButton = new JButton("start");
+        JButton startButton = new JButton(lenguageBundle.getString("START"));
         startButton.setFont(font);
         startButton.addActionListener((ActionEvent event) -> {
             //login to room
             String role = getSelectedRadioButtonText(roleGroup);
+            role = getRoleFromLocalization(role);
             String layout = getSelectedRadioButtonText(layoutGroup);
             String room = getSelectedRadioButtonText(roomGroup);
             if(rolePanel.getComponentCount() > 0){
@@ -332,70 +400,100 @@ public class InitialMenuLayout extends JFrame {
                 openErrorWindow("necakana chyba č.1");
             }
         });
-        JButton leaveButton = new JButton("leave server");
-        leaveButton.setFont(font);
-        leaveButton.addActionListener((ActionEvent event) -> {
+        JButton backButton = new JButton(lenguageBundle.getString("BACK"));
+        backButton.setFont(font);
+        backButton.addActionListener((ActionEvent event) -> {
             openServerChooseWindow();
         });
-        JButton exitButton = new JButton("exit");
+        JButton exitButton = new JButton(lenguageBundle.getString("EXIT"));
         exitButton.setFont(font);
         exitButton.addActionListener((ActionEvent event) -> {
             System.exit(0);
         });
-        JButton aboutButton = new JButton("about");
-        aboutButton.setFont(font);
-        aboutButton.addActionListener((ActionEvent event) -> {
-            //start about window
-        });
         actionPanel.add(startButton);
-        actionPanel.add(leaveButton);
+        actionPanel.add(backButton);
         actionPanel.add(exitButton);
-        actionPanel.add(aboutButton);
         //layout
+        GridBagConstraints layoutPanelConstraints = new GridBagConstraints();
+        layoutPanelConstraints.weightx = 0.5;
         for(int i=0;i<layoutList.size();i++){
             JRadioButton layoutButton = new JRadioButton(layoutList.get(i).layoutName);
             layoutButton.setFont(font);
-            layoutPanel.add(layoutButton);
+            layoutPanelConstraints.gridx = i % 2;
+            layoutPanelConstraints.gridy = i / 2;
+            layoutPanel.add(layoutButton, layoutPanelConstraints);
             layoutGroup.add(layoutButton);
             if(i==0){//select first layout
                 layoutGroup.setSelected(layoutButton.getModel(), true);
             }
         }
+        //about
+        JTextArea aboutText = new JTextArea(lenguageBundle.getString("ABOUT_MESSAGE"));
+        aboutText.setFont(new Font(font.getName(), font.getStyle(), font.getSize()-3));
+        aboutText.setColumns(11);
+        aboutText.setRows(7);
+        aboutText.setEditable(false);
+        aboutText.setBackground(settingRoomWindow.getBackground());
+        aboutText.setLineWrap(true);
+        aboutText.setWrapStyleWord(true);
+        aboutPanel.add(aboutText);
+        
+        rolePanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("ROLE")));
+        namePanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("NAME")));
+        roomPanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("ROOM")));
+        anotherPanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("ADVANCED_PANEL")));
         
         //map layouts 
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.weightx = 0.5;
-        constraints.gridx = 0;
-        constraints.gridy = 0;
-        rolePanel.setBorder(BorderFactory.createTitledBorder("role"));
-        mainPanel.add(rolePanel, constraints);
-        constraints.weightx = 0.5;
-        constraints.gridx = 0;
-        constraints.gridy = 1;
-        namePanel.setBorder(BorderFactory.createTitledBorder("meno"));
-        mainPanel.add(namePanel, constraints);
-        constraints.weightx = 0.5;
-        constraints.gridx = 0;
-        constraints.gridy = 2;
-        layoutPanel.setBorder(BorderFactory.createTitledBorder("layout"));
-        mainPanel.add(layoutPanel, constraints);
-        constraints.weightx = 0.5;
-        constraints.gridx = 1;
-        constraints.gridheight = 2;
-        constraints.gridy = 0;
-        roomPanel.setBorder(BorderFactory.createTitledBorder("room"));
-        mainPanel.add(roomPanel, constraints);
-        constraints.weightx = 0.5;
-        constraints.gridx = 2;
-        constraints.gridheight = 1;
-        constraints.gridy = 0;
-        mainPanel.add(actionPanel, constraints);
-        constraints.weightx = 0.5;
-        constraints.gridx = 2;
-        constraints.gridheight = 1;
-        constraints.gridy = 1;
-        audioPanel.setBorder(BorderFactory.createTitledBorder("audio"));
-        mainPanel.add(audioPanel, constraints);
+        GridBagConstraints anotherPanelConstraints = new GridBagConstraints();
+        anotherPanelConstraints.weightx = 0.5;
+        anotherPanelConstraints.gridx = 0;
+        anotherPanelConstraints.gridy = 0;
+        anotherPanel.add(audioPanel, anotherPanelConstraints);
+        anotherPanelConstraints.gridx = 0;
+        anotherPanelConstraints.gridy = 2;
+        anotherPanel.add(layoutPanel, anotherPanelConstraints);
+        anotherPanelConstraints.gridx = 0;
+        anotherPanelConstraints.gridy = 1;
+        JSeparator separator = new JSeparator();
+        separator.setPreferredSize(new Dimension(anotherPanel.getPreferredSize().width, 1));
+        anotherPanel.add(separator, anotherPanelConstraints);
+        
+        GridBagConstraints rightMainPanelConstraints = new GridBagConstraints();
+        rightMainPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+        rightMainPanelConstraints.weightx = 0.5;
+        rightMainPanelConstraints.gridx = 0;
+        rightMainPanelConstraints.gridy = 0;
+        rightMainPanel.add(actionPanel, rightMainPanelConstraints);
+        rightMainPanelConstraints.insets = new Insets(5, 3, 3, 0);
+        rightMainPanelConstraints.gridx = 0;
+        rightMainPanelConstraints.gridy = 1;
+        rightMainPanel.add(aboutPanel, rightMainPanelConstraints);
+        
+        GridBagConstraints leftMainPanelConstraints = new GridBagConstraints();
+        leftMainPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+        leftMainPanelConstraints.weightx = 0.5;
+        leftMainPanelConstraints.gridx = 0;
+        leftMainPanelConstraints.gridy = 0;
+        leftMainPanel.add(namePanel, leftMainPanelConstraints);
+        leftMainPanelConstraints.gridx = 0;
+        leftMainPanelConstraints.gridy = 1;
+        leftMainPanel.add(rolePanel, leftMainPanelConstraints);
+        leftMainPanelConstraints.gridx = 0;
+        leftMainPanelConstraints.gridy = 2;
+        leftMainPanel.add(roomPanel, leftMainPanelConstraints);
+        leftMainPanelConstraints.gridx = 0;
+        leftMainPanelConstraints.gridy = 3;
+        leftMainPanel.add(anotherPanel, leftMainPanelConstraints);
+        
+        GridBagConstraints mainPanelConstraints = new GridBagConstraints();
+        mainPanelConstraints.weightx = 0.5;
+        mainPanelConstraints.gridx = 0;
+        mainPanelConstraints.gridy = 0;
+        mainPanel.add(leftMainPanel, mainPanelConstraints);
+        mainPanelConstraints.anchor = GridBagConstraints.PAGE_START;
+        mainPanelConstraints.gridx = 1;
+        mainPanelConstraints.gridy = 0;
+        mainPanel.add(rightMainPanel, mainPanelConstraints);
         settingRoomWindow.getContentPane().add(mainPanel);
         settingRoomWindow.pack();
         settingRoomWindow.setLocation(position.x - settingRoomWindow.getWidth()/2, position.y - settingRoomWindow.getHeight()/2);
@@ -405,48 +503,102 @@ public class InitialMenuLayout extends JFrame {
         if(ipSettingWindow == null){
             return;
         }
-        ipSettingWindow.setTitle("Counsil");
+        ipSettingWindow.getContentPane().removeAll();
+        ipSettingWindow.setTitle(lenguageBundle.getString("COUNSIL"));
         ipSettingWindow.setVisible(false);
+        ipSettingWindow.addWindowListener(new WindowAdapter() {//action on close button (x)
+            public void windowClosing(WindowEvent e) {
+                openServerChooseWindow();
+            }
+        });
         JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new GridLayout(3, 1));
+        JPanel setPanel = new JPanel();
         
         JTextFieldLimit ipText = new JTextFieldLimit(15);
         JTextField ipField = new JTextField();
+        ipField.setPreferredSize(new Dimension(160, 20));
         ipField.setFont(font);
+        ipField.setEditable(true);
         ipField.setDocument(ipText);
+        ipField.setBorder(BorderFactory.createEmptyBorder());
+        JTextField ipTextInfoField = new JTextField(lenguageBundle.getString("IP"));
+        ipTextInfoField.setFont(font);
+        ipTextInfoField.setEditable(false);
+        ipTextInfoField.setBorder(BorderFactory.createEmptyBorder());
+        JTextField portField = new JTextField();
+        portField.setFont(font);
+        portField.setEditable(true);
+        portField.setBorder(BorderFactory.createEmptyBorder());
+        JTextField portFieldInfoText = new JTextField(lenguageBundle.getString("PORT"));
+        portFieldInfoText.setFont(font);
+        portFieldInfoText.setEditable(false);
+        portFieldInfoText.setBorder(BorderFactory.createEmptyBorder());
         
-        JButton connectButton = new JButton("connect");
+        JButton connectButton = new JButton(lenguageBundle.getString("CONNECT"));
         connectButton.setFont(font);
         connectButton.addActionListener((ActionEvent event) -> {
             String loadedString = null;
             try {
                 loadedString = ipText.getText(0, ipText.getLength());
-            } catch (BadLocationException ex) {
-                Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            if(ipFormatCorrect(loadedString)){
-                JSONObject roomNameList = getServerRoomList();
-                ipAddress = loadedString;
-                if(roomNameList != null){
-                    openSettingRoomWindow(roomNameList);
+                if(ipFormatCorrect(loadedString)){
+                    ipAddress = loadedString;
+                    try{
+                        port = Integer.parseInt(portField.getText());
+                        JSONObject roomNameList = getServerRoomList();
+                        if(roomNameList != null){
+                            openSettingRoomWindow(roomNameList);
+                        }else{
+                            openErrorWindow(lenguageBundle.getString("CANNOT_CONNECT_TO_THIS_SERVER") + loadedString);
+                        }
+                    }catch(NumberFormatException e){
+                        JOptionPane.showMessageDialog(new Frame(),"incorrect port", lenguageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
+                    }
                 }else{
-                    openErrorWindow("cannot connect to this server " + loadedString);
+                    JOptionPane.showMessageDialog(new Frame(), loadedString + lenguageBundle.getString("UNDEFINE_ADDRESS"), lenguageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
                 }
-            }else{
-                JOptionPane.showMessageDialog(new Frame(), loadedString + " nie je spravne definovana adresa", "Chyba", JOptionPane.ERROR_MESSAGE);
+            } catch (BadLocationException ex) {
+                JOptionPane.showMessageDialog(new Frame(), loadedString + lenguageBundle.getString("ERROR_UNDOCUMENTED"), lenguageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
             }
+            
         });
         
-        JButton cancelButton = new JButton("cancel");
+        JButton cancelButton = new JButton(lenguageBundle.getString("CANCEL"));
         cancelButton.setFont(font);
         cancelButton.addActionListener((ActionEvent event) -> {
             openServerChooseWindow();
         });
         
-        ipField.setPreferredSize(new Dimension(160, 20));
-        mainPanel.add(ipField);
-        mainPanel.add(connectButton);
-        mainPanel.add(cancelButton);
+        setPanel.setLayout(new GridBagLayout());
+        GridBagConstraints setPanelConstraints = new GridBagConstraints();
+        setPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+        setPanelConstraints.insets = new Insets(5,5,5,5);
+        setPanelConstraints.weightx = 0.5;
+        setPanelConstraints.gridx = 0;
+        setPanelConstraints.gridy = 0;
+        setPanel.add(ipTextInfoField, setPanelConstraints);
+        setPanelConstraints.gridx = 1;
+        setPanelConstraints.gridy = 0;
+        setPanel.add(ipField, setPanelConstraints);
+        setPanelConstraints.gridx = 0;
+        setPanelConstraints.gridy = 1;
+        setPanel.add(portFieldInfoText, setPanelConstraints);
+        setPanelConstraints.gridx = 1;
+        setPanelConstraints.gridy = 1;
+        setPanel.add(portField, setPanelConstraints);
+                
+        mainPanel.setLayout(new GridBagLayout());
+        GridBagConstraints mainPanelConstraints = new GridBagConstraints();
+        mainPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+        mainPanelConstraints.weightx = 0.5;
+        mainPanelConstraints.gridx = 0;
+        mainPanelConstraints.gridy = 0;
+        mainPanel.add(setPanel, mainPanelConstraints);
+        mainPanelConstraints.gridx = 0;
+        mainPanelConstraints.gridy = 1;
+        mainPanel.add(connectButton, mainPanelConstraints);
+        mainPanelConstraints.gridx = 0;
+        mainPanelConstraints.gridy = 2;
+        mainPanel.add(cancelButton, mainPanelConstraints);
         
         ipSettingWindow.getContentPane().add(mainPanel);
         ipSettingWindow.pack();
@@ -462,6 +614,17 @@ public class InitialMenuLayout extends JFrame {
             }
         }
         return null;
+    }
+    
+    public String getRoleFromLocalization(String localizeRole){
+        if(lenguageBundle.getString("INTERPRETER").equals(localizeRole)){
+            return "interpreter";
+        }else if(lenguageBundle.getString("TEACHER").equals(localizeRole)){
+            return "teacher";
+        }else {
+            return "student";
+        }
+        
     }
     
     private boolean ipFormatCorrect(String ip) {
@@ -566,13 +729,18 @@ public class InitialMenuLayout extends JFrame {
         //this.ipAddress = ipAddress;
         settingRoomWindow.setTitle(ipAddress);
         if(roomList != null){
-            roomPanel.setLayout(new GridLayout(roomList.length()+1, 1));
+            roomPanel.setLayout(new GridBagLayout()); 
+            GridBagConstraints roomPanelConstraints = new GridBagConstraints();
+            roomPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+            roomPanelConstraints.weightx = 0.5;
             for(int i=0;i<roomList.length();i++){
                 try {
                     String roomName = roomList.getJSONObject(i).getString("name");
                     JRadioButton roomButton = new JRadioButton(roomName);
                     roomButton.setFont(font);
-                    roomPanel.add(roomButton);
+                    roomPanelConstraints.gridx = i % 2;
+                    roomPanelConstraints.gridy = i / 2;
+                    roomPanel.add(roomButton, roomPanelConstraints);
                     roomGroup.add(roomButton);
                     if(i==0){
                         roomGroup.setSelected(roomButton.getModel(), true);
@@ -604,14 +772,20 @@ public class InitialMenuLayout extends JFrame {
      * @param role of the user
      */
     final void startCounsil(String role, boolean audio, String name, String layout, String room){
+        
         closeAllWindows();
         try {
             setConfiguration(role, audio, name, room);
-            int scaleRatio = roomConfiguration.getInt("scale ratio");
+            int scaleRatio = clientConfig.getInt("talking resizing");
             File layoutFile = getLayoutFile(layout).file;
+            JSONObject riseHandColorJson = clientConfig.getJSONObject("raise hand color");
+            Color riseHandColor = new Color(riseHandColorJson.getInt("red"), riseHandColorJson.getInt("green"), riseHandColorJson.getInt("blue"));
+            JSONObject talkingColorJson = clientConfig.getJSONObject("talking color");
+            Color talkingColor = new Color(talkingColorJson.getInt("red"), talkingColorJson.getInt("green"), talkingColorJson.getInt("blue"));
+            
             LayoutManagerImpl lm;
             lm = new LayoutManagerImpl(role, this, scaleRatio, layoutFile);
-            sm = new SessionManagerImpl(lm);
+            sm = new SessionManagerImpl(lm, talkingColor, riseHandColor);
             sm.initCounsil();
         } catch (JSONException | IOException | WDDManException | InterruptedException | NativeHookException ex) {
             Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
@@ -631,7 +805,8 @@ public class InitialMenuLayout extends JFrame {
      * create nodeConfig.json from others configuration files
      */
     final void setConfiguration(String role, boolean audio, String name, String room) throws InterruptedException{
-        JSONObject infoFromServer = getRoomConfiguraton(roomName);
+        
+        JSONObject infoFromServer = getRoomConfiguraton(room);
         if(infoFromServer == null){
             openErrorWindow("cannot get room configuration from server");
             throw new InterruptedException("cannot get room configuration from server");
@@ -717,6 +892,7 @@ public class InitialMenuLayout extends JFrame {
     
     void loadClientConfigurationFromFile(){
         clientConfig = readJsonFile(configurationFile);
+        layoutList.clear();
         if(clientConfig.has("layout path")){
             try {
                 String layoutPath = clientConfig.getString("layout path");
@@ -725,14 +901,44 @@ public class InitialMenuLayout extends JFrame {
                     File[] filesInLayoutDir = layoutDir.listFiles();
                     for(int i=0;i<filesInLayoutDir.length;i++){
                         LayoutFile newLayout = new LayoutFile();
-                        newLayout.file = filesInLayoutDir[i];
-                        newLayout.layoutName = filesInLayoutDir[i].getName();
+                        if(filesInLayoutDir[i].isFile()){
+                            newLayout.file = filesInLayoutDir[i];
+                            newLayout.layoutName = filesInLayoutDir[i].getName();
+                            layoutList.add(newLayout);
+                        }
+                    }
+                    if(layoutList.size() == 0){
+                        JOptionPane.showMessageDialog(new Frame(), "no layout found, set correct address to layouts direcory", "error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }else{
+                    if(!layoutDir.exists()){
+                        JOptionPane.showMessageDialog(new Frame(), "incorrect path to layouts", "error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             } catch (JSONException ex) {
                 Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }       
+        String lenguageResourcesName = "resources";
+        if(clientConfig.has("lenguage")){
+            try {
+                switch (clientConfig.getString("lenguage")) {
+                    case "slovensky":
+                        lenguageResourcesName = "resources_sk_SK";
+                        break;
+                    case "cesky":
+                        lenguageResourcesName = "resources_cs_CZ";
+                        break;
+                    default:
+                        lenguageResourcesName = "resources";
+                        break;
+                }
+            } catch (JSONException ex) {
+                Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
+        lenguageBundle = ResourceBundle.getBundle(lenguageResourcesName);
+        
     }
     
     LayoutFile getLayoutFile(String layoutName){

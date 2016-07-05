@@ -48,7 +48,7 @@ public class LayoutCalculator {
      * @throws org.json.JSONException
      */
     public LayoutCalculator(String myRole, File layoutFile) throws FileNotFoundException, JSONException {
-        Scanner scanner = new Scanner(new File("layoutConfigStatic.json"));
+        Scanner scanner = new Scanner(layoutFile);
         String entireFileText = scanner.useDelimiter("\\A").next();
         input = new JSONObject(entireFileText);
         role = myRole;        

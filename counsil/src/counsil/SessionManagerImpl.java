@@ -20,6 +20,7 @@ import couniverse.monitoring.TopologyAggregator;
 import couniverse.ultragrid.UltraGridConsumerApplication;
 import couniverse.ultragrid.UltraGridControllerHandle;
 import couniverse.ultragrid.UltraGridProducerApplication;
+import java.awt.Color;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -106,15 +107,28 @@ public class SessionManagerImpl implements SessionManager {
     Timer alertTimer;
 
     /**
+     * color of boarder when someone is talking
+     */
+    Color talkingColor;
+    
+    /**
+     * color when someone rise hand
+     */
+    Color riseHandColor;
+    
+    /**
      * Constructor to initialize LayoutManager
      *
      * @param layoutManager
      */
-    public SessionManagerImpl(LayoutManager layoutManager) {
+    public SessionManagerImpl(LayoutManager layoutManager, Color talkingColor, Color riseHandColor) {
 
         talkingNode = null;
         canAlert = true;
         alertTimer = new Timer();
+        
+        this.talkingColor = talkingColor;
+        this.riseHandColor = riseHandColor;
 
         if (layoutManager == null) {
             throw new IllegalArgumentException("layoutManager is null");
@@ -312,7 +326,11 @@ public class SessionManagerImpl implements SessionManager {
                             layoutManager.upScale(title);
                             if (handle != null) {
                                 try {
-                                    handle.sendCommand("postprocess border:width=10:color=#0000FF");
+                                    String hexColor = "#";
+                                    hexColor += Integer.toHexString(talkingColor.getRed());
+                                    hexColor += Integer.toHexString(talkingColor.getGreen());
+                                    hexColor += Integer.toHexString(talkingColor.getBlue());
+                                    handle.sendCommand("postprocess border:width=10:color=" + hexColor);
                                 } catch (InterruptedException | TimeoutException ex) {
                                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                                 }
@@ -331,7 +349,11 @@ public class SessionManagerImpl implements SessionManager {
             private void alertConsumerContinuously(UltraGridControllerHandle handle, CounsilTimer counsilTimer, int duration) {
 
                 try {
-                    handle.sendCommand("postprocess border:width=10:color=#ff0000");
+                    String hexColor = "#";
+                    hexColor += Integer.toHexString(riseHandColor.getRed());
+                    hexColor += Integer.toHexString(riseHandColor.getGreen());
+                    hexColor += Integer.toHexString(riseHandColor.getBlue());
+                    handle.sendCommand("postprocess border:width=10:color=" + hexColor);
                 } catch (InterruptedException | TimeoutException ex) {
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }
