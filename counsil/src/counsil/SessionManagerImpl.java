@@ -117,11 +117,16 @@ public class SessionManagerImpl implements SessionManager {
     Color riseHandColor;
     
     /**
+     * actual resources bundlo for lenguages
+     */
+    ResourceBundle lenguageBundle;
+    
+    /**
      * Constructor to initialize LayoutManager
      *
      * @param layoutManager
      */
-    public SessionManagerImpl(LayoutManager layoutManager, Color talkingColor, Color riseHandColor) {
+    public SessionManagerImpl(LayoutManager layoutManager, Color talkingColor, Color riseHandColor, ResourceBundle lenguageBundle) {
 
         talkingNode = null;
         canAlert = true;
@@ -129,6 +134,7 @@ public class SessionManagerImpl implements SessionManager {
         
         this.talkingColor = talkingColor;
         this.riseHandColor = riseHandColor;
+        this.lenguageBundle = lenguageBundle;
 
         if (layoutManager == null) {
             throw new IllegalArgumentException("layoutManager is null");
@@ -674,48 +680,44 @@ public class SessionManagerImpl implements SessionManager {
             }
         }
 
-        status += (getResource().getString("INTERPRETER") + " video: ");       
+        status += (lenguageBundle.getString("INTERPRETER") + " video: ");       
         if (interpreter) {
-            status += (getResource().getString("ONLINE") + "\n");
+            status += (lenguageBundle.getString("ONLINE") + "\n");
         } else {
-            status += (getResource().getString("OFFLINE") + "\n");
+            status += (lenguageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (getResource().getString("INTERPRETER") + " audio: ");       
+        status += (lenguageBundle.getString("INTERPRETER") + " audio: ");       
         if (interpreterAudio) {
-            status += (getResource().getString("ONLINE") + "\n");
+            status += (lenguageBundle.getString("ONLINE") + "\n");
         } else {
-            status += (getResource().getString("OFFLINE") + "\n");
+            status += (lenguageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (getResource().getString("TEACHER") + " video: ");
+        status += (lenguageBundle.getString("TEACHER") + " video: ");
         if (teacher) {
-            status += (getResource().getString("ONLINE") + "\n");
+            status += (lenguageBundle.getString("ONLINE") + "\n");
         } else {
-            status += (getResource().getString("OFFLINE") + "\n");
+            status += (lenguageBundle.getString("OFFLINE") + "\n");
         }
         
-        status += (getResource().getString("TEACHER") + " audio: ");
+        status += (lenguageBundle.getString("TEACHER") + " audio: ");
         if (teacher) {
-            status += (getResource().getString("ONLINE") + "\n");
+            status += (lenguageBundle.getString("ONLINE") + "\n");
         } else {
-            status += (getResource().getString("OFFLINE") + "\n");
+            status += (lenguageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (getResource().getString("PRESENTATION") + ": ");
+        status += (lenguageBundle.getString("PRESENTATION") + ": ");
         if (presentation) {
-            status += (getResource().getString("ONLINE") + "\n");
+            status += (lenguageBundle.getString("ONLINE") + "\n");
         } else {
-            status += (getResource().getString("OFFLINE") + "\n");
+            status += (lenguageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (getResource().getString("STUDENTS") + ": ");
+        status += (lenguageBundle.getString("STUDENTS") + ": ");
         status += studentCount;
 
         return status;
-    }
-
-    static ResourceBundle getResource() {
-        return java.util.ResourceBundle.getBundle("resources");
     }
 }

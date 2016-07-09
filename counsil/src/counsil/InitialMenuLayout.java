@@ -785,7 +785,7 @@ public class InitialMenuLayout{
             
             LayoutManagerImpl lm;
             lm = new LayoutManagerImpl(role, this, scaleRatio, layoutFile);
-            sm = new SessionManagerImpl(lm, talkingColor, riseHandColor);
+            sm = new SessionManagerImpl(lm, talkingColor, riseHandColor, lenguageBundle);
             sm.initCounsil();
         } catch (JSONException | IOException | WDDManException | InterruptedException | NativeHookException ex) {
             Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
