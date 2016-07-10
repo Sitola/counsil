@@ -423,6 +423,9 @@ public class InitialMenuLayout{
             layoutPanelConstraints.gridy = i / 2;
             layoutPanel.add(layoutButton, layoutPanelConstraints);
             layoutGroup.add(layoutButton);
+            if(lenguageBundle.containsKey("ROOM_SETTING_TOOL_TIP_LAYOUT")){
+                layoutButton.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_LAYOUT"));
+            }
             if(i==0){//select first layout
                 layoutGroup.setSelected(layoutButton.getModel(), true);
             }
@@ -437,6 +440,30 @@ public class InitialMenuLayout{
         aboutText.setLineWrap(true);
         aboutText.setWrapStyleWord(true);
         aboutPanel.add(aboutText);
+        
+        //tool tips
+        if(lenguageBundle.containsKey("ROOM_SETTING_TOOL_TIP_NAME")){
+            namePanel.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_NAME"));
+            setNameSettingField.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_NAME"));
+        }
+        if(lenguageBundle.containsKey("ROOM_SETTING_TOOL_TIP_ROLE")){
+            rolePanel.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
+            studentButton.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
+            teacherButton.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
+            interpreterButton.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
+        }
+        if(lenguageBundle.containsKey("ROOM_SETTING_TOOL_TIP_ROOM")){
+            roomPanel.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_ROOM"));
+            //this tool tip also set to all room buttons
+        }
+        if(lenguageBundle.containsKey("ROOM_SETTING_TOOL_TIP_AUDIO")){
+            audioPanel.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_AUDIO"));
+            audioCheckBox.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_AUDIO"));
+        }
+        if(lenguageBundle.containsKey("ROOM_SETTING_TOOL_TIP_LAYOUT")){
+            layoutPanel.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_LAYOUT"));
+            //this tool tip also set to all layouts buttons
+        }
         
         rolePanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("ROLE")));
         namePanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("NAME")));
@@ -742,6 +769,9 @@ public class InitialMenuLayout{
                     roomPanelConstraints.gridy = i / 2;
                     roomPanel.add(roomButton, roomPanelConstraints);
                     roomGroup.add(roomButton);
+                    if(lenguageBundle.containsKey("ROOM_SETTING_TOOL_TIP_ROOM")){
+                        roomButton.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_ROOM"));
+                    }
                     if(i==0){
                         roomGroup.setSelected(roomButton.getModel(), true);
                     }
