@@ -7,7 +7,6 @@ package counsil;
 
 import static counsil.InteractionMenu.getResource;
 import java.awt.event.ActionEvent;
-import java.util.Locale;
 import javax.swing.JButton;
 
 /**

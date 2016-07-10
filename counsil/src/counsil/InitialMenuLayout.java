@@ -956,10 +956,10 @@ public final class InitialMenuLayout{
         if(clientConfig.has("lenguage")){
             try {
                 switch (clientConfig.getString("lenguage")) {
-                    case "Slovensky":
+                    case "Slovenský":
                         languageResourcesName = "resources_sk_SK";
                         break;
-                    case "Česky":
+                    case "Český":
                         languageResourcesName = "resources_cs_CZ";
                         break;
                     case "English":

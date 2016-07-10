@@ -38,12 +38,13 @@ public class LayoutCalculator {
     /**
      * current menu position
      */
-    private Position menuPosition;
+    private final Position menuPosition;
     
     /**
      * Creates layout calculator
      *
      * @param myRole role to create correct layout
+     * @param layoutFile
      * @throws java.io.FileNotFoundException
      * @throws org.json.JSONException
      */
@@ -180,10 +181,7 @@ public class LayoutCalculator {
      */
     public Position getMenuPostion(){
         
-        Position position = new Position();
-        position.x = menuPosition.x;
-        position.y = menuPosition.y;
-        return menuPosition;
+        return new Position(menuPosition.x, menuPosition.y);
     }
     
     /**

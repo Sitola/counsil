@@ -11,7 +11,6 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
@@ -28,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -44,7 +42,6 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.event.DocumentEvent;
@@ -57,7 +54,7 @@ import org.json.JSONObject;
  *
  * @author xminarik
  */
-public class OptionsMainMenuWindow extends JFrame{
+public final class OptionsMainMenuWindow extends JFrame{
     JPanel mainPanel, visualitationPanel, videoAudioPanel, miscsPanel;
     JTabbedPane mainTabPanel;
     Font fontButtons;
@@ -207,6 +204,7 @@ public class OptionsMainMenuWindow extends JFrame{
         mainTabPanel.addTab(lenguageBundle.getString("MISC"), miscsPanel);
         
         addWindowListener(new WindowAdapter() {//action on close button (x)
+            @Override
             public void windowClosing(WindowEvent e) {
                 if(uvProcess != null){
                     uvProcess.destroy();
@@ -1240,7 +1238,7 @@ public class OptionsMainMenuWindow extends JFrame{
         if(!correctUv){
             return new ArrayList<>();
         }
-        List<VideoDevice> ret = null;
+        List<VideoDevice> ret = new ArrayList<>();
         if(correctUv){
             String osName = System.getProperty("os.name");
             String uvVideoSetting;
@@ -1256,8 +1254,6 @@ public class OptionsMainMenuWindow extends JFrame{
             }else{      //probably should log incorrect os system
                 return null;
             }
-        }else{
-            ret = new ArrayList<>();
         }
         return ret;
     }
@@ -1351,7 +1347,7 @@ public class OptionsMainMenuWindow extends JFrame{
             Pattern modePattern = Pattern.compile("Mode\\s+(\\d+):\\s(.*?)\\s*(\\d*x\\d*)\\s*@([0-9\\.])");
             Matcher modeMatcher = modePattern.matcher(line);
             while(modeMatcher.find()){
-                if(videoInputs.size() == 0){    //something strange happend, stop process
+                if(videoInputs.isEmpty()){    //something strange happend, stop process
                     return videoInputs;
                 }
                 VideoPixelFormat vpf = new VideoPixelFormat();
@@ -1415,7 +1411,7 @@ public class OptionsMainMenuWindow extends JFrame{
             Pattern modePattern = Pattern.compile("(\\d+): (.*?) (\\d+x\\d+) \\(max frame rate (\\d*) FPS\\)");
             Matcher modeMatcher = modePattern.matcher(line);
             while(modeMatcher.find()){
-                if(videoInputs.size() == 0){    //something strange happend, stop process
+                if(videoInputs.isEmpty()){    //something strange happend, stop process
                     return videoInputs;
                 }
                 VideoPixelFormat vpf = new VideoPixelFormat();
@@ -1726,11 +1722,7 @@ public class OptionsMainMenuWindow extends JFrame{
                 if(firsLine){
                     Pattern ultragridPattern = Pattern.compile("UltraGrid ");
                     Matcher ultragridMatcher = ultragridPattern.matcher(line);
-                    if(ultragridMatcher.find()){
-                        correctUvOutput = true;
-                    }else{
-                        correctUvOutput = false;
-                    }
+                    correctUvOutput = ultragridMatcher.find();
                     firsLine = false;
                 }
                 
@@ -2018,9 +2010,9 @@ public class OptionsMainMenuWindow extends JFrame{
 
     private void fillLenguageComboBox(JComboBox lenguageCombobox, String setLenguage) {
         lenguageCombobox.removeAllItems();
-        lenguageCombobox.addItem("slovensky");
-        lenguageCombobox.addItem("cesky");
-        lenguageCombobox.addItem("english");
+        lenguageCombobox.addItem("Slovenský");
+        lenguageCombobox.addItem("Český");
+        lenguageCombobox.addItem("English");
         if(!setLenguage.isEmpty()){
             lenguageCombobox.setSelectedItem(setLenguage);
         }

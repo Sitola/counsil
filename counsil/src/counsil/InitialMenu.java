@@ -69,12 +69,14 @@ public class InitialMenu {
             try {
                 position.x = (int) (wd.getScreenWidth() / 2);
                 position.y = (int) (wd.getScreenHeight() / 2);
+                
                 if(position.x > 1600){
                     position.x = 960;
                 }
                 if(position.y > 800){
                     position.y = 540;
                 }
+                
             } catch (WDDManException ex) {
                 Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             }

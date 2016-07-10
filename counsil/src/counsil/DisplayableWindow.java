@@ -41,7 +41,7 @@ class DisplayableWindow{
     /**
      * wddman instance which this window uses
      */
-    private WDDMan wd;     
+    private final WDDMan wd;     
     
     /**
      * wddman window
@@ -131,10 +131,8 @@ class DisplayableWindow{
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
+
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
         final DisplayableWindow other = (DisplayableWindow) obj;

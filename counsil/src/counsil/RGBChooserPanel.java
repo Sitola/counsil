@@ -61,6 +61,7 @@ public class RGBChooserPanel extends AbstractColorChooserPanel{
      *
      * @param e The ChangeEvent.
      */
+    @Override
     public void stateChanged(ChangeEvent e)
     {
       if (updateChange)
@@ -137,6 +138,7 @@ public class RGBChooserPanel extends AbstractColorChooserPanel{
    *
    * @return The name displayed in the JTabbedPane.
    */
+  @Override
   public String getDisplayName()
   {
     return "RGB";
@@ -146,6 +148,7 @@ public class RGBChooserPanel extends AbstractColorChooserPanel{
    * This method updates the chooser panel with the new color chosen in the
    * JColorChooser.
    */
+  @Override
   public void updateChooser()
   {
     Color c = getColorFromModel();
@@ -157,7 +160,7 @@ public class RGBChooserPanel extends AbstractColorChooserPanel{
 
     updateChange = true;
 
-    if (! sliderChange)
+    if (!sliderChange)
       {
 	if (R != null)
 	  R.setValue(red);
@@ -166,14 +169,14 @@ public class RGBChooserPanel extends AbstractColorChooserPanel{
 	if (B != null)
 	  B.setValue(blue);
       }
-    if (! spinnerChange)
+    if (!spinnerChange)
       {
 	if (GSpinner != null)
-	  GSpinner.setValue(new Integer(green));
+	  GSpinner.setValue(green);
 	if (RSpinner != null)
-	  RSpinner.setValue(new Integer(red));
+	  RSpinner.setValue(red);
 	if (BSpinner != null)
-	  BSpinner.setValue(new Integer(blue));
+	  BSpinner.setValue(blue);
       }
 
     updateChange = false;
@@ -185,6 +188,7 @@ public class RGBChooserPanel extends AbstractColorChooserPanel{
   /**
    * This method builds the chooser panel.
    */
+  @Override
   protected void buildChooser()
   {
     setLayout(new GridBagLayout());
@@ -277,6 +281,7 @@ public class RGBChooserPanel extends AbstractColorChooserPanel{
    *
    * @param chooser The JColorChooser to remove this chooser panel from.
    */
+  @Override
   public void uninstallChooserPanel(JColorChooser chooser)
   {
     uninstallListeners();
@@ -336,6 +341,7 @@ public class RGBChooserPanel extends AbstractColorChooserPanel{
    *
    * @return The small display icon.
    */
+  @Override
   public Icon getSmallDisplayIcon()
   {
     return null;
@@ -346,6 +352,7 @@ public class RGBChooserPanel extends AbstractColorChooserPanel{
    *
    * @return The large display icon.
    */
+  @Override
   public Icon getLargeDisplayIcon()
   {
     return null;
@@ -356,6 +363,7 @@ public class RGBChooserPanel extends AbstractColorChooserPanel{
    *
    * @param g The Graphics object to paint with.
    */
+  @Override
   public void paint(Graphics g)
   {
     super.paint(g);
