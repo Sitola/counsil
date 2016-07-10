@@ -11,7 +11,6 @@ import java.awt.Dimension;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
@@ -19,14 +18,12 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -37,23 +34,18 @@ import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
-import javax.swing.InputVerifier;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.MaskFormatter;
 import javax.swing.text.PlainDocument;
 import org.jnativehook.NativeHookException;
 import wddman.WDDManException;
@@ -62,7 +54,7 @@ import wddman.WDDManException;
  *
  * @author xminarik
  */
-public class InitialMenuLayout{
+public final class InitialMenuLayout{
     
     JTextField errorMessageField;
     JPanel roomPanel;
@@ -91,14 +83,16 @@ public class InitialMenuLayout{
     Integer ipValue[];
     
     File configurationFile;
-    ResourceBundle lenguageBundle;
+    ResourceBundle languageBundle;
     /**
      * to init and end couniverse part of counsil
      */
     SessionManager sm;
     
     class JTextFieldLimit extends PlainDocument {
-        private int limit;
+
+        private final int limit;
+        
         JTextFieldLimit(int limit) {
           super();
           this.limit = limit;
@@ -137,10 +131,10 @@ public class InitialMenuLayout{
         position = cenerPosition;
         
         loadClientConfigurationFromFile();
+        
         port = 8080; //defoult value change in future
         ipAddress = "";
-        nameList = null;
-        
+        nameList = null;        
 
         initSettingRoomWindow();
         initServerChooseWindow();
@@ -154,9 +148,11 @@ public class InitialMenuLayout{
             return;
         }
         serverChooseWindow.getContentPane().removeAll();
-        serverChooseWindow.setTitle(lenguageBundle.getString("COUNSIL"));
+        serverChooseWindow.setTitle(languageBundle.getString("COUNSIL"));
         serverChooseWindow.setVisible(false);
         serverChooseWindow.addWindowListener(new WindowAdapter() {//action on close button (x)
+           
+            @Override
             public void windowClosing(WindowEvent e) {
                 System.exit(0);
             }
@@ -168,7 +164,7 @@ public class InitialMenuLayout{
         JPanel ipPanel;
         mainPanel = new JPanel();
         ipPanel = new JPanel();
-        ipPanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("SERVERS")));
+        ipPanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("SERVERS")));
         if(clientConfig.has("server ips")){
             try {
                 ipAddresses = clientConfig.getJSONArray("server ips");
@@ -197,7 +193,7 @@ public class InitialMenuLayout{
                         if(roomListNames != null){
                             openSettingRoomWindow(roomListNames);
                         }else{
-                            openErrorWindow(lenguageBundle.getString("ERROR_CAN_NOT_CONNECT_TO_SERVER"));
+                            openErrorWindow(languageBundle.getString("ERROR_CAN_NOT_CONNECT_TO_SERVER"));
                         }
                     });
                 }
@@ -222,7 +218,7 @@ public class InitialMenuLayout{
         }else{
             //ipPanel.setLayout(new GridLayout(1, 1));
         }
-        JButton differentServerButton = new JButton(lenguageBundle.getString("DIFFERENT_SERVER"));
+        JButton differentServerButton = new JButton(languageBundle.getString("DIFFERENT_SERVER"));
         differentServerButton.setFont(font);
         differentServerButton.addActionListener((ActionEvent event) -> {
             if(optionMainMenuWindow != null){
@@ -232,16 +228,16 @@ public class InitialMenuLayout{
             openIpSettingWindow();
             //close this window and open window to set own ip addres
         });
-        JButton optionsButton = new JButton(lenguageBundle.getString("OPTIONS"));
+        JButton optionsButton = new JButton(languageBundle.getString("OPTIONS"));
         optionsButton.setFont(font);
         optionsButton.addActionListener((ActionEvent event) -> {
             if(optionMainMenuWindow != null){
                 optionMainMenuWindow.dispose();
                 optionMainMenuWindow = null;
             }
-            optionMainMenuWindow = new OptionsMainMenuWindow(font, new Font("Tahoma", 0, 13), configurationFile, this, lenguageBundle);
+            optionMainMenuWindow = new OptionsMainMenuWindow(font, new Font("Tahoma", 0, 13), configurationFile, this, languageBundle);
         });
-        JButton exitButton = new JButton(lenguageBundle.getString("EXIT"));
+        JButton exitButton = new JButton(languageBundle.getString("EXIT"));
         exitButton.setFont(font);
         exitButton.addActionListener((ActionEvent event) -> {
             if(optionMainMenuWindow != null){
@@ -281,9 +277,11 @@ public class InitialMenuLayout{
             return;
         }
         errorWindow.getContentPane().removeAll();
-        errorWindow.setTitle(lenguageBundle.getString("COUNSIL"));
+        errorWindow.setTitle(languageBundle.getString("COUNSIL"));
         errorWindow.setVisible(false);
         errorWindow.addWindowListener(new WindowAdapter() {//action on close button (x)
+          
+            @Override
             public void windowClosing(WindowEvent e) {
                 openServerChooseWindow();
             }
@@ -293,10 +291,10 @@ public class InitialMenuLayout{
         JPanel jMainPanel = new JPanel();
         jMainPanel.setLayout(new BorderLayout());
         
-        errorMessageField = new JTextField(lenguageBundle.getString("ERROR_UNDOCUMENTED"));
+        errorMessageField = new JTextField(languageBundle.getString("ERROR_UNDOCUMENTED"));
         errorMessageField.setFont(font);
         errorMessageField.setEditable(false);
-        JButton okButton = new JButton(lenguageBundle.getString("OK_BUTTON"));
+        JButton okButton = new JButton(languageBundle.getString("OK_BUTTON"));
         okButton.setFont(font);
         okButton.addActionListener((ActionEvent e) -> {
             openServerChooseWindow();
@@ -316,9 +314,11 @@ public class InitialMenuLayout{
             return;
         }
         settingRoomWindow.getContentPane().removeAll();
-        settingRoomWindow.setTitle(lenguageBundle.getString("COUNSIL"));
+        settingRoomWindow.setTitle(languageBundle.getString("COUNSIL"));
         settingRoomWindow.setVisible(false);
         settingRoomWindow.addWindowListener(new WindowAdapter() {//action on close button (x)
+           
+            @Override
             public void windowClosing(WindowEvent e) {
                 System.exit(0);
             }
@@ -357,11 +357,11 @@ public class InitialMenuLayout{
         
         //create buttons
         //role
-        JRadioButton studentButton = new JRadioButton(lenguageBundle.getString("STUDENT"));
+        JRadioButton studentButton = new JRadioButton(languageBundle.getString("STUDENT"));
         studentButton.setFont(font);
-        JRadioButton teacherButton = new JRadioButton(lenguageBundle.getString("TEACHER"));
+        JRadioButton teacherButton = new JRadioButton(languageBundle.getString("TEACHER"));
         teacherButton.setFont(font);
-        JRadioButton interpreterButton = new JRadioButton(lenguageBundle.getString("INTERPRETER"));
+        JRadioButton interpreterButton = new JRadioButton(languageBundle.getString("INTERPRETER"));
         interpreterButton.setFont(font);
         roleGroup.add(studentButton);
         roleGroup.add(teacherButton);
@@ -371,12 +371,12 @@ public class InitialMenuLayout{
         rolePanel.add(teacherButton);
         rolePanel.add(interpreterButton);
         //audio
-        JCheckBox audioCheckBox = new JCheckBox(lenguageBundle.getString("AUDIO"));
+        JCheckBox audioCheckBox = new JCheckBox(languageBundle.getString("AUDIO"));
         audioCheckBox.setFont(font);
         audioCheckBox.setSelected(false);
         audioPanel.add(audioCheckBox);
         //set name
-        JTextField setNameInfoField = new JTextField(lenguageBundle.getString("NAME"));
+        JTextField setNameInfoField = new JTextField(languageBundle.getString("NAME"));
         setNameInfoField.setFont(font);
         setNameInfoField.setEditable(false);
         JTextField setNameSettingField = new JTextField();
@@ -386,7 +386,7 @@ public class InitialMenuLayout{
         //namePanel.add(setNameInfoField);
         namePanel.add(setNameSettingField);
         //action
-        JButton startButton = new JButton(lenguageBundle.getString("START"));
+        JButton startButton = new JButton(languageBundle.getString("START"));
         startButton.setFont(font);
         startButton.addActionListener((ActionEvent event) -> {
             //login to room
@@ -400,12 +400,12 @@ public class InitialMenuLayout{
                 openErrorWindow("necakana chyba č.1");
             }
         });
-        JButton backButton = new JButton(lenguageBundle.getString("BACK"));
+        JButton backButton = new JButton(languageBundle.getString("BACK"));
         backButton.setFont(font);
         backButton.addActionListener((ActionEvent event) -> {
             openServerChooseWindow();
         });
-        JButton exitButton = new JButton(lenguageBundle.getString("EXIT"));
+        JButton exitButton = new JButton(languageBundle.getString("EXIT"));
         exitButton.setFont(font);
         exitButton.addActionListener((ActionEvent event) -> {
             System.exit(0);
@@ -423,15 +423,15 @@ public class InitialMenuLayout{
             layoutPanelConstraints.gridy = i / 2;
             layoutPanel.add(layoutButton, layoutPanelConstraints);
             layoutGroup.add(layoutButton);
-            if(lenguageBundle.containsKey("ROOM_SETTING_TOOL_TIP_LAYOUT")){
-                layoutButton.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_LAYOUT"));
+            if(languageBundle.containsKey("ROOM_SETTING_TOOL_TIP_LAYOUT")){
+                layoutButton.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_LAYOUT"));
             }
             if(i==0){//select first layout
                 layoutGroup.setSelected(layoutButton.getModel(), true);
             }
         }
         //about
-        JTextArea aboutText = new JTextArea(lenguageBundle.getString("ABOUT_MESSAGE"));
+        JTextArea aboutText = new JTextArea(languageBundle.getString("ABOUT_MESSAGE"));
         aboutText.setFont(new Font(font.getName(), font.getStyle(), font.getSize()-3));
         aboutText.setColumns(11);
         aboutText.setRows(7);
@@ -442,33 +442,33 @@ public class InitialMenuLayout{
         aboutPanel.add(aboutText);
         
         //tool tips
-        if(lenguageBundle.containsKey("ROOM_SETTING_TOOL_TIP_NAME")){
-            namePanel.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_NAME"));
-            setNameSettingField.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_NAME"));
+        if(languageBundle.containsKey("ROOM_SETTING_TOOL_TIP_NAME")){
+            namePanel.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_NAME"));
+            setNameSettingField.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_NAME"));
         }
-        if(lenguageBundle.containsKey("ROOM_SETTING_TOOL_TIP_ROLE")){
-            rolePanel.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
-            studentButton.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
-            teacherButton.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
-            interpreterButton.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
+        if(languageBundle.containsKey("ROOM_SETTING_TOOL_TIP_ROLE")){
+            rolePanel.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
+            studentButton.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
+            teacherButton.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
+            interpreterButton.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
         }
-        if(lenguageBundle.containsKey("ROOM_SETTING_TOOL_TIP_ROOM")){
-            roomPanel.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_ROOM"));
+        if(languageBundle.containsKey("ROOM_SETTING_TOOL_TIP_ROOM")){
+            roomPanel.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_ROOM"));
             //this tool tip also set to all room buttons
         }
-        if(lenguageBundle.containsKey("ROOM_SETTING_TOOL_TIP_AUDIO")){
-            audioPanel.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_AUDIO"));
-            audioCheckBox.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_AUDIO"));
+        if(languageBundle.containsKey("ROOM_SETTING_TOOL_TIP_AUDIO")){
+            audioPanel.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_AUDIO"));
+            audioCheckBox.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_AUDIO"));
         }
-        if(lenguageBundle.containsKey("ROOM_SETTING_TOOL_TIP_LAYOUT")){
-            layoutPanel.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_LAYOUT"));
+        if(languageBundle.containsKey("ROOM_SETTING_TOOL_TIP_LAYOUT")){
+            layoutPanel.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_LAYOUT"));
             //this tool tip also set to all layouts buttons
         }
         
-        rolePanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("ROLE")));
-        namePanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("NAME")));
-        roomPanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("ROOM")));
-        anotherPanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("ADVANCED_PANEL")));
+        rolePanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("ROLE")));
+        namePanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("NAME")));
+        roomPanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("ROOM")));
+        anotherPanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("ADVANCED_PANEL")));
         
         //map layouts 
         GridBagConstraints anotherPanelConstraints = new GridBagConstraints();
@@ -531,9 +531,11 @@ public class InitialMenuLayout{
             return;
         }
         ipSettingWindow.getContentPane().removeAll();
-        ipSettingWindow.setTitle(lenguageBundle.getString("COUNSIL"));
+        ipSettingWindow.setTitle(languageBundle.getString("COUNSIL"));
         ipSettingWindow.setVisible(false);
         ipSettingWindow.addWindowListener(new WindowAdapter() {//action on close button (x)
+          
+            @Override
             public void windowClosing(WindowEvent e) {
                 openServerChooseWindow();
             }
@@ -548,7 +550,7 @@ public class InitialMenuLayout{
         ipField.setEditable(true);
         ipField.setDocument(ipText);
         ipField.setBorder(BorderFactory.createEmptyBorder());
-        JTextField ipTextInfoField = new JTextField(lenguageBundle.getString("IP"));
+        JTextField ipTextInfoField = new JTextField(languageBundle.getString("IP"));
         ipTextInfoField.setFont(font);
         ipTextInfoField.setEditable(false);
         ipTextInfoField.setBorder(BorderFactory.createEmptyBorder());
@@ -556,12 +558,12 @@ public class InitialMenuLayout{
         portField.setFont(font);
         portField.setEditable(true);
         portField.setBorder(BorderFactory.createEmptyBorder());
-        JTextField portFieldInfoText = new JTextField(lenguageBundle.getString("PORT"));
+        JTextField portFieldInfoText = new JTextField(languageBundle.getString("PORT"));
         portFieldInfoText.setFont(font);
         portFieldInfoText.setEditable(false);
         portFieldInfoText.setBorder(BorderFactory.createEmptyBorder());
         
-        JButton connectButton = new JButton(lenguageBundle.getString("CONNECT"));
+        JButton connectButton = new JButton(languageBundle.getString("CONNECT"));
         connectButton.setFont(font);
         connectButton.addActionListener((ActionEvent event) -> {
             String loadedString = null;
@@ -575,21 +577,21 @@ public class InitialMenuLayout{
                         if(roomNameList != null){
                             openSettingRoomWindow(roomNameList);
                         }else{
-                            openErrorWindow(lenguageBundle.getString("CANNOT_CONNECT_TO_THIS_SERVER") + loadedString);
+                            openErrorWindow(languageBundle.getString("CANNOT_CONNECT_TO_THIS_SERVER") + loadedString);
                         }
                     }catch(NumberFormatException e){
-                        JOptionPane.showMessageDialog(new Frame(),"incorrect port", lenguageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(new Frame(),"incorrect port", languageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
                     }
                 }else{
-                    JOptionPane.showMessageDialog(new Frame(), loadedString + lenguageBundle.getString("UNDEFINE_ADDRESS"), lenguageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(new Frame(), loadedString + languageBundle.getString("UNDEFINE_ADDRESS"), languageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
                 }
             } catch (BadLocationException ex) {
-                JOptionPane.showMessageDialog(new Frame(), loadedString + lenguageBundle.getString("ERROR_UNDOCUMENTED"), lenguageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(new Frame(), loadedString + languageBundle.getString("ERROR_UNDOCUMENTED"), languageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
             }
             
         });
         
-        JButton cancelButton = new JButton(lenguageBundle.getString("CANCEL"));
+        JButton cancelButton = new JButton(languageBundle.getString("CANCEL"));
         cancelButton.setFont(font);
         cancelButton.addActionListener((ActionEvent event) -> {
             openServerChooseWindow();
@@ -644,9 +646,9 @@ public class InitialMenuLayout{
     }
     
     public String getRoleFromLocalization(String localizeRole){
-        if(lenguageBundle.getString("INTERPRETER").equals(localizeRole)){
+        if(languageBundle.getString("INTERPRETER").equals(localizeRole)){
             return "interpreter";
-        }else if(lenguageBundle.getString("TEACHER").equals(localizeRole)){
+        }else if(languageBundle.getString("TEACHER").equals(localizeRole)){
             return "teacher";
         }else {
             return "student";
@@ -769,8 +771,8 @@ public class InitialMenuLayout{
                     roomPanelConstraints.gridy = i / 2;
                     roomPanel.add(roomButton, roomPanelConstraints);
                     roomGroup.add(roomButton);
-                    if(lenguageBundle.containsKey("ROOM_SETTING_TOOL_TIP_ROOM")){
-                        roomButton.setToolTipText(lenguageBundle.getString("ROOM_SETTING_TOOL_TIP_ROOM"));
+                    if(languageBundle.containsKey("ROOM_SETTING_TOOL_TIP_ROOM")){
+                        roomButton.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_ROOM"));
                     }
                     if(i==0){
                         roomGroup.setSelected(roomButton.getModel(), true);
@@ -815,7 +817,7 @@ public class InitialMenuLayout{
             
             LayoutManagerImpl lm;
             lm = new LayoutManagerImpl(role, this, scaleRatio, layoutFile);
-            sm = new SessionManagerImpl(lm, talkingColor, riseHandColor, lenguageBundle);
+            sm = new SessionManagerImpl(lm, talkingColor, riseHandColor, languageBundle);
             sm.initCounsil();
         } catch (JSONException | IOException | WDDManException | InterruptedException | NativeHookException ex) {
             Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
@@ -901,6 +903,7 @@ public class InitialMenuLayout{
             file.write(roomConfiguration.toString());
             file.flush();
             file.close();
+            
         } catch (JSONException | IOException ex) {
             Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -929,15 +932,15 @@ public class InitialMenuLayout{
                 File layoutDir = new File(layoutPath);
                 if(layoutDir.isDirectory()){
                     File[] filesInLayoutDir = layoutDir.listFiles();
-                    for(int i=0;i<filesInLayoutDir.length;i++){
+                    for (File filesInLayoutDir1 : filesInLayoutDir) {
                         LayoutFile newLayout = new LayoutFile();
-                        if(filesInLayoutDir[i].isFile()){
-                            newLayout.file = filesInLayoutDir[i];
-                            newLayout.layoutName = filesInLayoutDir[i].getName();
+                        if (filesInLayoutDir1.isFile()) {
+                            newLayout.file = filesInLayoutDir1;
+                            newLayout.layoutName = filesInLayoutDir1.getName();
                             layoutList.add(newLayout);
                         }
                     }
-                    if(layoutList.size() == 0){
+                    if(layoutList.isEmpty()){
                         JOptionPane.showMessageDialog(new Frame(), "no layout found, set correct address to layouts direcory", "error", JOptionPane.ERROR_MESSAGE);
                     }
                 }else{
@@ -949,30 +952,31 @@ public class InitialMenuLayout{
                 Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
             }
         }       
-        String lenguageResourcesName = "resources";
+        String languageResourcesName = "resources";
         if(clientConfig.has("lenguage")){
             try {
                 switch (clientConfig.getString("lenguage")) {
-                    case "slovensky":
-                        lenguageResourcesName = "resources_sk_SK";
+                    case "Slovensky":
+                        languageResourcesName = "resources_sk_SK";
                         break;
-                    case "cesky":
-                        lenguageResourcesName = "resources_cs_CZ";
+                    case "Česky":
+                        languageResourcesName = "resources_cs_CZ";
                         break;
+                    case "English":
                     default:
-                        lenguageResourcesName = "resources";
+                        languageResourcesName = "resources_en_EN";
                         break;
                 }
             } catch (JSONException ex) {
                 Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        lenguageBundle = ResourceBundle.getBundle(lenguageResourcesName);
+        languageBundle = ResourceBundle.getBundle(languageResourcesName);
         
     }
     
     LayoutFile getLayoutFile(String layoutName){
-        for(int i=0;i<layoutList.size();i++){
+        for(int i = 0; i < layoutList.size(); i++){
             if(layoutList.get(i).layoutName.equals(layoutName)){
                 return layoutList.get(i);
             }

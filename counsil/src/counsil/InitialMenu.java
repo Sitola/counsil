@@ -7,8 +7,6 @@ package counsil;
 
 import java.awt.EventQueue;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
@@ -64,11 +62,10 @@ public class InitialMenu {
      * @throws JSONException 
      */
     private Position centerPosition() throws JSONException {
-        Position position = new Position();
-        if(wd == null){
-            position.x = 0;
-            position.y = 0;
-        }else{
+        
+        Position position = new Position(0,0);
+        
+        if(wd != null){
             try {
                 position.x = (int) (wd.getScreenWidth() / 2);
                 position.y = (int) (wd.getScreenHeight() / 2);
