@@ -846,13 +846,12 @@ public final class InitialMenuLayout{
         roomConfiguration = new JSONObject();
         JSONObject connector = new JSONObject();
         JSONObject localNode = new JSONObject();
-        JSONObject consumer = new JSONObject();
         try {
             connector.put("serverAddress", ipAddress);
             connector.put("serverPort", infoFromServer.getInt("comunication port"));
-            connector.put("startServer", "false");
+            connector.put("startServer", false);
 
-            String userName = role + "_" + name + "_" + infoFromServer.getString("connect number");
+            String userName = role + "_" + name + "_" /*+ infoFromServer.getString("connect number")*/;
             JSONObject interfaceInside = new JSONObject();
             interfaceInside.put("name", userName);
             interfaceInside.put("address", clientConfig.getString("this ip"));
