@@ -17,11 +17,13 @@ public class CounsilTimer {
     public TimerTask stopper;
     public Timer timer;
     public TimerTask task;
+    public int timesFlashed;
 
     public CounsilTimer() {
         timer = new Timer();
         task = null;
         stopper = null;
+        timesFlashed = 0;
     }
 
     public void killAllTasks() {

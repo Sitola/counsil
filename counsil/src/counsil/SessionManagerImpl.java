@@ -30,9 +30,15 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -348,8 +354,10 @@ public class SessionManagerImpl implements SessionManager {
             }
 
             private void alertConsumer(UltraGridControllerHandle handle, CounsilTimer timer) {
-                alertConsumerByFlashing(handle, timer, 5000);
-                //alertConsumerContinuously(handle, timer, 25000);
+               
+               // alertConsumerByFlashing(handle, timer, 2000);
+                alertConsumerContinuously(handle, timer, 25000);
+               
             }
 
             private void alertConsumerContinuously(UltraGridControllerHandle handle, CounsilTimer counsilTimer, int duration) {
@@ -379,55 +387,54 @@ public class SessionManagerImpl implements SessionManager {
                 counsilTimer.timer.schedule(counsilTimer.task, duration);
             }
 
+
+            class Flasher implements Runnable {
+
+                UltraGridControllerHandle handle;
+                CounsilTimer timer;
+                
+                
+                String[] COMMAND = {
+                    "postprocess border:width=10:color=#ff0000", 
+                    "postprocess flush"
+                };
+
+                public Flasher(UltraGridControllerHandle handle, CounsilTimer timer) {
+
+                    this.handle = handle;
+                    this.timer = timer;
+                }
+
+                @Override
+                public void run() {
+
+                    if (timer.timesFlashed != 10) {
+                        try {
+                            handle.sendCommand(COMMAND[timer.timesFlashed % 2]);
+                        } catch (InterruptedException | TimeoutException ex) {
+                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        timer.timesFlashed++;
+                    } else {
+                        future.cancel(false);                        
+                alertConsumerContinuously(handle, timer, 25000);
+                    }
+                }
+            }
+            
+            ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+            ScheduledFuture<?> future;
+
             private void alertConsumerByFlashing(UltraGridControllerHandle handle, CounsilTimer timer, int duration) {
-
-                timer.stopper = new TimerTask() {
-                    @Override
-                    public void run() {
-                        timer.killAllTasks();
-                    }
-                };
-
-                TimerTask stopFlashing = new TimerTask() {
-                    @Override
-                    public void run() {
-                        try {
-                            handle.sendCommand("postprocess flush");
-                        } catch (InterruptedException | TimeoutException ex) {
-                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-                };
-
-                TimerTask startFlashing = new TimerTask() {
-                    @Override
-                    public void run() {
-                        try {
-                             handle.sendCommand("postprocess border:width=10:color=#ff0000");                           
-                        } catch (InterruptedException | TimeoutException ex) {
-                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-                };
-
-               // timer.timer.scheduleAtFixedRate(stopFlashing, 0, 2000);
-                timer.timer.schedule(startFlashing, 1000, 2000);               
-               // timer.timer.schedule(timer.stopper, duration);
+                
+                timer.timesFlashed = 0;
+                future = executor.scheduleAtFixedRate(new Flasher(handle, timer), 0, duration, TimeUnit.MILLISECONDS);
             }
 
         };
+        
         // define message types
         core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);
-    }
-
-    /**
-     * Starts distributor on local node
-     *
-     * @throws IOException if there is problem during starting Distributor
-     */
-    private void createDistrubutor() throws IOException {
-        ObjectNode distConfig = core.newApplicationTemplate("distributor");
-        core.startApplication(distConfig, "distributor");
     }
 
     /**
@@ -465,7 +472,7 @@ public class SessionManagerImpl implements SessionManager {
     private void createProducer(TypeOfContent type, String settings, String role) throws IOException {
         String PRODUCER = "producer";
         ObjectNode prodConfig = core.newApplicationTemplate(PRODUCER);
-        String identification = local.getName().toString() + "-" + type.toString() + "-" + role;
+        String identification = local.getName() + "-" + type.toString() + "-" + role;
         prodConfig.put("content", identification);
         switch (type) {
             case SOUND:
@@ -652,10 +659,11 @@ public class SessionManagerImpl implements SessionManager {
 
         int studentCount = 0;
         Boolean teacher = false,
-                interpreter = false, 
-                presentation = false,
-                interpreterAudio = false,
-                teacherAudio = false;
+                    interpreter = false, 
+
+                    presentation = false,
+                    interpreterAudio = false,
+                    teacherAudio = false;
 
         for (String name : consumer2name.values()) {
             
@@ -671,6 +679,8 @@ public class SessionManagerImpl implements SessionManager {
             } else if (nameToUpper.contains("TEACHER")) {
                 if (nameToUpper.contains("PRESENTATION")) {
                     presentation = true;
+                } else if (nameToUpper.contains("AUDIO")) {
+                    teacherAudio = true;
                 } else {
                     if (nameToUpper.contains("AUDIO")){
                         teacherAudio = true;
