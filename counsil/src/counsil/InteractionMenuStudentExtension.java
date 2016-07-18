@@ -5,8 +5,8 @@
  */
 package counsil;
 
-import static counsil.InteractionMenu.getResource;
 import java.awt.event.ActionEvent;
+import java.util.ResourceBundle;
 import javax.swing.JButton;
 
 /**
@@ -14,17 +14,21 @@ import javax.swing.JButton;
  * @author Desanka
  */
 public class InteractionMenuStudentExtension extends InteractionMenu {
+
+    private final ResourceBundle languageBundle;
     
     /**
      * 
      * @param role
      * @param position
      * @param iml  
+     * @param languageBundle  
      */
-    public InteractionMenuStudentExtension(String role, Position position, InitialMenuLayout iml) {
-        super(role, position, iml);
+    public InteractionMenuStudentExtension(String role, Position position, InitialMenuLayout iml, ResourceBundle languageBundle) {
+        super(role, position, iml, languageBundle);
 
         buttons.add(createAndInitAlertButton());
+        this.languageBundle = languageBundle;
     }
 
     
@@ -35,7 +39,7 @@ public class InteractionMenuStudentExtension extends InteractionMenu {
     private JButton createAndInitAlertButton() {
 
         JButton button = new JButton();
-        button.setText(getResource().getString("RAISE_HAND"));
+        button.setText(languageBundle.getString("RAISE_HAND"));
         button.addActionListener((ActionEvent evt) -> {
             alertButtonActionPerformed();
         });

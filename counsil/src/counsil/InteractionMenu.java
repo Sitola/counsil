@@ -41,6 +41,7 @@ public class InteractionMenu extends JFrame {
      * List of listeners
      */
     protected final List<InteractionMenuListener> interactionMenuListeners = new ArrayList<>();
+    private final ResourceBundle languageBundle;
     
         
     /**
@@ -50,7 +51,7 @@ public class InteractionMenu extends JFrame {
      * @param position menu position
      * @param iml initial menu to return to
      */
-    InteractionMenu(String role, Position position, InitialMenuLayout iml) {
+    InteractionMenu(String role, Position position, InitialMenuLayout iml, ResourceBundle languageBundle) {
 
         super("CoUnSil");
         
@@ -64,6 +65,7 @@ public class InteractionMenu extends JFrame {
         setLocationRelativeTo(null);
         setLocation(position.x, position.y);
         setDefaultLookAndFeelDecorated(false);    
+        this.languageBundle = languageBundle;
     }
 
     
@@ -99,19 +101,19 @@ public class InteractionMenu extends JFrame {
     private void addBasicButtons() {
 
         JButton refreshButton = new JButton();
-        refreshButton.setText(getResource().getString("REFRESH"));
+        refreshButton.setText(languageBundle.getString("REFRESH"));
         refreshButton.addActionListener((ActionEvent evt) -> {
             refreshButtonActionPerformed();
         });
         
         JButton settingsButton = new JButton();
-        settingsButton.setText(getResource().getString("SETTINGS"));
+        settingsButton.setText(languageBundle.getString("SETTINGS"));
         settingsButton.addActionListener((ActionEvent evt) -> {
             settingsButtonActionPerformed();
         });
 
         JButton exitButton = new JButton();
-        exitButton.setText(getResource().getString("EXIT"));
+        exitButton.setText(languageBundle.getString("EXIT"));
         exitButton.addActionListener((ActionEvent evt) -> {
             exitButtonActionPerformed();
         });
@@ -155,17 +157,12 @@ public class InteractionMenu extends JFrame {
     }
 
     
-    static ResourceBundle getResource() {
-        return java.util.ResourceBundle.getBundle("resources");
-    }
-    
-
     /**
      * Starts exiting program when "Exit" button is clicked
      */
     private void exitButtonActionPerformed() {
-        String message = getResource().getString("EXIT_CONFIRMATION");
-        String title = getResource().getString("EXIT_TITLE");
+        String message = languageBundle.getString("EXIT_CONFIRMATION");
+        String title = languageBundle.getString("EXIT_TITLE");
         int reply = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);        
         if (reply == JOptionPane.YES_OPTION) {
             try {

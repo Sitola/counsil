@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jnativehook.GlobalScreen;
@@ -72,12 +73,14 @@ public class LayoutManagerImpl implements LayoutManager {
      * @param role of this layout
      * @param iml initialMenuLayout to return when counsil exit
      * @param setScaleRatio ratio to be scaled
+     * @param layoutFile
+     * @param languageBundle
      * @throws org.json.JSONException
      * @throws java.io.FileNotFoundException
      * @throws wddman.WDDManException
      * @throws org.jnativehook.NativeHookException
      */
-    public LayoutManagerImpl(String role, InitialMenuLayout iml, int setScaleRatio, File layoutFile) throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
+    public LayoutManagerImpl(String role, InitialMenuLayout iml, int setScaleRatio, File layoutFile, ResourceBundle languageBundle) throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
 
         calculator = new LayoutCalculator(role, layoutFile);
         scaleRatio = setScaleRatio;
@@ -97,10 +100,10 @@ public class LayoutManagerImpl implements LayoutManager {
                 try {
 
                     if (role.toUpperCase().equals("STUDENT")) {
-                        menu = new InteractionMenuStudentExtension(calculator.getMenuRole(), calculator.getMenuPostion(), iml);
+                        menu = new InteractionMenuStudentExtension(calculator.getMenuRole(), calculator.getMenuPostion(), iml, languageBundle);
                     }
                     else {
-                        menu = new InteractionMenu(calculator.getMenuRole(), calculator.getMenuPostion(), iml);
+                        menu = new InteractionMenu(calculator.getMenuRole(), calculator.getMenuPostion(), iml, languageBundle);
                     }
                     menu.publish();
                     menu.addInteractionMenuListener(new InteractionMenuListener() {

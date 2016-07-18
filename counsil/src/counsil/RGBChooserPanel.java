@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.util.ResourceBundle;
 
 import javax.swing.Icon;
 import javax.swing.JColorChooser;
@@ -28,6 +29,8 @@ import javax.swing.event.ChangeListener;
  * @author Huvart
  */
 public class RGBChooserPanel extends AbstractColorChooserPanel{
+
+    private final ResourceBundle languageBundle;
     /**
    * This class handles the slider value changes for all three sliders.
    */
@@ -38,6 +41,7 @@ public class RGBChooserPanel extends AbstractColorChooserPanel{
      *
      * @param e The ChangeEvent.
      */
+    @Override
     public void stateChanged(ChangeEvent e)
     {
       if (updateChange)
@@ -127,10 +131,12 @@ public class RGBChooserPanel extends AbstractColorChooserPanel{
 
   /**
    * Creates a new DefaultRGBChooserPanel object.
+     * @param languageBundle
    */
-  public RGBChooserPanel()
-  {
+  public RGBChooserPanel(ResourceBundle languageBundle)
+  {    
     super();
+    this.languageBundle = languageBundle;
   }
 
   /**
@@ -193,11 +199,11 @@ public class RGBChooserPanel extends AbstractColorChooserPanel{
   {
     setLayout(new GridBagLayout());
 
-    RLabel = new JLabel("Red");
+    RLabel = new JLabel(languageBundle.getString("RED"));
     RLabel.setDisplayedMnemonic('d');
-    GLabel = new JLabel("Green");
+    GLabel = new JLabel(languageBundle.getString("GREEN"));
     GLabel.setDisplayedMnemonic('n');
-    BLabel = new JLabel("Blue");
+    BLabel = new JLabel(languageBundle.getString("BLUE"));
     BLabel.setDisplayedMnemonic('B');
 
     R = new JSlider(SwingConstants.HORIZONTAL, 0, 255, 255);

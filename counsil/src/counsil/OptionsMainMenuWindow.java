@@ -97,7 +97,7 @@ public final class OptionsMainMenuWindow extends JFrame{
     JComboBox audioOutComboBox;
     JComboBox lenguageCombobox;
     
-    ResourceBundle lenguageBundle;
+    ResourceBundle languageBundle;
     
     // constructor
     OptionsMainMenuWindow(Font fontButtons, Font fontBoxes, File configurationFile, InitialMenuLayout initialMenuLayout, ResourceBundle lenguageBundle)
@@ -105,7 +105,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         super(lenguageBundle.getString("COUNSIL_OPTIONS"));
         this.fontButtons = fontButtons;
         this.fontBoxes = fontBoxes;
-        this.lenguageBundle = lenguageBundle;
+        this.languageBundle = lenguageBundle;
         videoDevices = new ArrayList<>();
         audioIn = new ArrayList<>();
         audioOut = new ArrayList<>();
@@ -299,7 +299,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         JPanel resazingSizePanel = new JPanel();
         JPanel lenguagePanel = new JPanel();
         
-        JTextField lenguageInfoTextField = new JTextField(lenguageBundle.getString("LANGUAGE"));
+        JTextField lenguageInfoTextField = new JTextField(languageBundle.getString("LANGUAGE"));
         lenguageInfoTextField.setEditable(false);
         lenguageInfoTextField.setFont(fontBoxes);
         lenguageInfoTextField.setBorder(BorderFactory.createEmptyBorder());
@@ -313,10 +313,10 @@ public final class OptionsMainMenuWindow extends JFrame{
             Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
         fillLenguageComboBox(lenguageCombobox, setLenguage);
-        lenguagePanel.setBorder(new TitledBorder(lenguageBundle.getString("LANGUAGE")));        
+        lenguagePanel.setBorder(new TitledBorder(languageBundle.getString("LANGUAGE")));        
         
-        JTextField setResizeAmountTextInfo = new JTextField(lenguageBundle.getString("RESAZING_INFO_TEXT"));
-        JTextField setResizePixelSign = new JTextField(lenguageBundle.getString("PIXELS"));
+        JTextField setResizeAmountTextInfo = new JTextField(languageBundle.getString("RESAZING_INFO_TEXT"));
+        JTextField setResizePixelSign = new JTextField(languageBundle.getString("PIXELS"));
         setResizeAmount.setFont(fontBoxes);
         setResizeAmountTextInfo.setFont(fontBoxes);
         setResizeAmountTextInfo.setBorder(BorderFactory.createEmptyBorder());
@@ -326,7 +326,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         setResizeAmountTextInfo.setEditable(false);
         setResizePixelSign.setEditable(false);   
         setResizeAmount.setColumns(3);
-        resazingSizePanel.setBorder(new TitledBorder(lenguageBundle.getString("RESAZING")));
+        resazingSizePanel.setBorder(new TitledBorder(languageBundle.getString("RESAZING")));
         
         
         raiseHandcolorChooser.setPreviewPanel(new CustomPreviewPanel(new Dimension(100, 100)));
@@ -336,9 +336,9 @@ public final class OptionsMainMenuWindow extends JFrame{
         for (int i = 0; i < raiseHandColorPanelsToRemove.length; i ++) {
             raiseHandcolorChooser.removeChooserPanel(raiseHandColorPanelsToRemove[i]);
         }
-        raiseHandcolorChooser.addChooserPanel(new RGBChooserPanel());
+        raiseHandcolorChooser.addChooserPanel(new RGBChooserPanel(languageBundle));
         raiseHandcolorChooser.setColor(raiseHandColor);
-        raiseHandColorPanel.setBorder(new TitledBorder(lenguageBundle.getString("COLOR_RISE_HAND")));
+        raiseHandColorPanel.setBorder(new TitledBorder(languageBundle.getString("COLOR_RISE_HAND")));
         raiseHandColorPanel.add(raiseHandcolorChooser);
         
         
@@ -349,24 +349,24 @@ public final class OptionsMainMenuWindow extends JFrame{
         for (int i = 0; i < talkingColorPanelsToRemove.length; i ++) {
             talkingColorChooser.removeChooserPanel(talkingColorPanelsToRemove[i]);
         }
-        talkingColorChooser.addChooserPanel(new RGBChooserPanel());
+        talkingColorChooser.addChooserPanel(new RGBChooserPanel(languageBundle));
         talkingColorChooser.setColor(talkingColor);
-        talkingColorPanel.setBorder(new TitledBorder(lenguageBundle.getString("COLOR_TALKING")));
+        talkingColorPanel.setBorder(new TitledBorder(languageBundle.getString("COLOR_TALKING")));
         talkingColorPanel.add(talkingColorChooser);
         
-        if(lenguageBundle.containsKey("VIS_TOOL_TIP_LENGUAGE")){
-            lenguageCombobox.setToolTipText(lenguageBundle.getString("VIS_TOOL_TIP_LENGUAGE"));
+        if(languageBundle.containsKey("VIS_TOOL_TIP_LENGUAGE")){
+            lenguageCombobox.setToolTipText(languageBundle.getString("VIS_TOOL_TIP_LENGUAGE"));
         }
-        if(lenguageBundle.containsKey("VIS_TOOL_TIP_RESAZING")){
-            setResizeAmountTextInfo.setToolTipText(lenguageBundle.getString("VIS_TOOL_TIP_RESAZING"));
-            setResizeAmount.setToolTipText(lenguageBundle.getString("VIS_TOOL_TIP_RESAZING"));
-            setResizePixelSign.setToolTipText(lenguageBundle.getString("VIS_TOOL_TIP_RESAZING"));
+        if(languageBundle.containsKey("VIS_TOOL_TIP_RESAZING")){
+            setResizeAmountTextInfo.setToolTipText(languageBundle.getString("VIS_TOOL_TIP_RESAZING"));
+            setResizeAmount.setToolTipText(languageBundle.getString("VIS_TOOL_TIP_RESAZING"));
+            setResizePixelSign.setToolTipText(languageBundle.getString("VIS_TOOL_TIP_RESAZING"));
         }
-        if(lenguageBundle.containsKey("VIS_TOOL_TIP_COLOR_RISE_HAND")){
-            raiseHandColorPanel.setToolTipText(lenguageBundle.getString("VIS_TOOL_TIP_COLOR_RISE_HAND"));
+        if(languageBundle.containsKey("VIS_TOOL_TIP_COLOR_RISE_HAND")){
+            raiseHandColorPanel.setToolTipText(languageBundle.getString("VIS_TOOL_TIP_COLOR_RISE_HAND"));
         }
-        if(lenguageBundle.containsKey("VIS_TOOL_TIP_COLOR_TALKING")){
-            talkingColorPanel.setToolTipText(lenguageBundle.getString("VIS_TOOL_TIP_COLOR_TALKING"));
+        if(languageBundle.containsKey("VIS_TOOL_TIP_COLOR_TALKING")){
+            talkingColorPanel.setToolTipText(languageBundle.getString("VIS_TOOL_TIP_COLOR_TALKING"));
         }
         
         lenguagePanel.setLayout(new GridBagLayout());
@@ -421,13 +421,13 @@ public final class OptionsMainMenuWindow extends JFrame{
         
         
         JPanel mainCameraPanel = new JPanel();
-        mainCameraPanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("CAMERA")));
+        mainCameraPanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("CAMERA")));
         JPanel presetationPanel = new JPanel();
-        presetationPanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("PRESENTATION")));
+        presetationPanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("PRESENTATION")));
         JPanel displayPanel = new JPanel();
-        displayPanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("DISPLAY")));
+        displayPanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("DISPLAY")));
         JPanel audioPanel = new JPanel();
-        audioPanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("AUDIO")));
+        audioPanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("AUDIO")));
         
         //setting boxes, buttons and lables
         //boxes
@@ -480,18 +480,18 @@ public final class OptionsMainMenuWindow extends JFrame{
         });
 
         //info fields
-        JTextField displayDeviceText = new JTextField(lenguageBundle.getString("DISPLAY_SETTING"));
-        JTextField displaySettingText = new JTextField(lenguageBundle.getString("DISPLAY_SETTING_ADVANCED"));
-        JTextField cameraDeviceText = new JTextField(lenguageBundle.getString("CAMERA"));
-        JTextField cameraPixelFormatText = new JTextField(lenguageBundle.getString("FORMAT"));
-        JTextField cameraFrameSizeText = new JTextField(lenguageBundle.getString("SIZE"));
-        JTextField cameraFPSText = new JTextField(lenguageBundle.getString("FPS"));
-        JTextField presentationDeviceText = new JTextField(lenguageBundle.getString("DEVICE"));
-        JTextField presentationPixelFormatText = new JTextField(lenguageBundle.getString("FORMAT"));
-        JTextField presentationFrameSizeText = new JTextField(lenguageBundle.getString("SIZE"));
-        JTextField presentationFPSText = new JTextField(lenguageBundle.getString("FPS"));
-        JTextField audioInText = new JTextField(lenguageBundle.getString("AUDIO_IN"));
-        JTextField audioOutText = new JTextField(lenguageBundle.getString("AUDIO_OUT"));
+        JTextField displayDeviceText = new JTextField(languageBundle.getString("DISPLAY_SETTING"));
+        JTextField displaySettingText = new JTextField(languageBundle.getString("DISPLAY_SETTING_ADVANCED"));
+        JTextField cameraDeviceText = new JTextField(languageBundle.getString("CAMERA"));
+        JTextField cameraPixelFormatText = new JTextField(languageBundle.getString("FORMAT"));
+        JTextField cameraFrameSizeText = new JTextField(languageBundle.getString("SIZE"));
+        JTextField cameraFPSText = new JTextField(languageBundle.getString("FPS"));
+        JTextField presentationDeviceText = new JTextField(languageBundle.getString("DEVICE"));
+        JTextField presentationPixelFormatText = new JTextField(languageBundle.getString("FORMAT"));
+        JTextField presentationFrameSizeText = new JTextField(languageBundle.getString("SIZE"));
+        JTextField presentationFPSText = new JTextField(languageBundle.getString("FPS"));
+        JTextField audioInText = new JTextField(languageBundle.getString("AUDIO_IN"));
+        JTextField audioOutText = new JTextField(languageBundle.getString("AUDIO_OUT"));
         displayDeviceText.setFont(fontBoxes);
         displaySettingText.setFont(fontBoxes);
         cameraDeviceText.setFont(fontBoxes);
@@ -528,64 +528,64 @@ public final class OptionsMainMenuWindow extends JFrame{
         presentationFPSText.setBorder(BorderFactory.createEmptyBorder());
         audioInText.setBorder(BorderFactory.createEmptyBorder());
         audioOutText.setBorder(BorderFactory.createEmptyBorder());
-        if(lenguageBundle.containsKey("AV_TOOL_TIP_DISPLAY_DEVICE")){
-            displayDeviceText.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_DISPLAY_DEVICE"));
-            displayBox.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_DISPLAY_DEVICE"));
+        if(languageBundle.containsKey("AV_TOOL_TIP_DISPLAY_DEVICE")){
+            displayDeviceText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_DISPLAY_DEVICE"));
+            displayBox.setToolTipText(languageBundle.getString("AV_TOOL_TIP_DISPLAY_DEVICE"));
         }
-        if(lenguageBundle.containsKey("AV_TOOL_TIP_DISPLAY_SETTING")){
-            displaySettingText.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_DISPLAY_SETTING"));
-            displaySettingBox.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_DISPLAY_SETTING"));
+        if(languageBundle.containsKey("AV_TOOL_TIP_DISPLAY_SETTING")){
+            displaySettingText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_DISPLAY_SETTING"));
+            displaySettingBox.setToolTipText(languageBundle.getString("AV_TOOL_TIP_DISPLAY_SETTING"));
         }
-        if(lenguageBundle.containsKey("AV_TOOL_TIP_CAMERA_DEVICE")){
-            cameraDeviceText.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_CAMERA_DEVICE"));
-            mainCameraBox.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_CAMERA_DEVICE"));
+        if(languageBundle.containsKey("AV_TOOL_TIP_CAMERA_DEVICE")){
+            cameraDeviceText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_CAMERA_DEVICE"));
+            mainCameraBox.setToolTipText(languageBundle.getString("AV_TOOL_TIP_CAMERA_DEVICE"));
         }
-        if(lenguageBundle.containsKey("AV_TOOL_TIP_CAMERA_PIXEL_FORMAT")){
-            cameraPixelFormatText.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_CAMERA_PIXEL_FORMAT"));
-            mainCameraPixelFormatBox.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_CAMERA_PIXEL_FORMAT"));
+        if(languageBundle.containsKey("AV_TOOL_TIP_CAMERA_PIXEL_FORMAT")){
+            cameraPixelFormatText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_CAMERA_PIXEL_FORMAT"));
+            mainCameraPixelFormatBox.setToolTipText(languageBundle.getString("AV_TOOL_TIP_CAMERA_PIXEL_FORMAT"));
         }
-        if(lenguageBundle.containsKey("AV_TOOL_TIP_CAMERA_SIZE")){
-            cameraFrameSizeText.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_CAMERA_SIZE"));
-            mainCameraFrameSizeBox.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_CAMERA_SIZE"));
+        if(languageBundle.containsKey("AV_TOOL_TIP_CAMERA_SIZE")){
+            cameraFrameSizeText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_CAMERA_SIZE"));
+            mainCameraFrameSizeBox.setToolTipText(languageBundle.getString("AV_TOOL_TIP_CAMERA_SIZE"));
         }
-        if(lenguageBundle.containsKey("AV_TOOL_TIP_CAMERA_FPS")){
-            cameraFPSText.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_CAMERA_FPS"));
-            mainCameraFPSBox.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_CAMERA_FPS"));
+        if(languageBundle.containsKey("AV_TOOL_TIP_CAMERA_FPS")){
+            cameraFPSText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_CAMERA_FPS"));
+            mainCameraFPSBox.setToolTipText(languageBundle.getString("AV_TOOL_TIP_CAMERA_FPS"));
         }
-        if(lenguageBundle.containsKey("AV_TOOL_TIP_PRESENTATION_DEVICE")){
-            presentationDeviceText.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_PRESENTATION_DEVICE"));
-            presentationBox.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_PRESENTATION_DEVICE"));
+        if(languageBundle.containsKey("AV_TOOL_TIP_PRESENTATION_DEVICE")){
+            presentationDeviceText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_PRESENTATION_DEVICE"));
+            presentationBox.setToolTipText(languageBundle.getString("AV_TOOL_TIP_PRESENTATION_DEVICE"));
         }
-        if(lenguageBundle.containsKey("AV_TOOL_TIP_PRESENTATION_PIXEL_FORMAT")){
-            presentationPixelFormatText.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_PRESENTATION_PIXEL_FORMAT"));
-            presentationPixelFormatBox.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_PRESENTATION_PIXEL_FORMAT"));
+        if(languageBundle.containsKey("AV_TOOL_TIP_PRESENTATION_PIXEL_FORMAT")){
+            presentationPixelFormatText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_PRESENTATION_PIXEL_FORMAT"));
+            presentationPixelFormatBox.setToolTipText(languageBundle.getString("AV_TOOL_TIP_PRESENTATION_PIXEL_FORMAT"));
         }
-        if(lenguageBundle.containsKey("AV_TOOL_TIP_PRESENTATION_SIZE")){
-            presentationFrameSizeText.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_PRESENTATION_SIZE"));
-            presentationFrameSizeBox.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_PRESENTATION_SIZE"));
+        if(languageBundle.containsKey("AV_TOOL_TIP_PRESENTATION_SIZE")){
+            presentationFrameSizeText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_PRESENTATION_SIZE"));
+            presentationFrameSizeBox.setToolTipText(languageBundle.getString("AV_TOOL_TIP_PRESENTATION_SIZE"));
         }
-        if(lenguageBundle.containsKey("AV_TOOL_TIP_PRESENTATION_FPS")){
-            presentationFPSText.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_PRESENTATION_FPS"));
-            presentationFPSBox.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_PRESENTATION_FPS"));
+        if(languageBundle.containsKey("AV_TOOL_TIP_PRESENTATION_FPS")){
+            presentationFPSText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_PRESENTATION_FPS"));
+            presentationFPSBox.setToolTipText(languageBundle.getString("AV_TOOL_TIP_PRESENTATION_FPS"));
         }
-        if(lenguageBundle.containsKey("AV_TOOL_TIP_AUDIO_IN")){
-            audioInText.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_AUDIO_IN"));
-            audioInComboBox.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_AUDIO_IN"));
+        if(languageBundle.containsKey("AV_TOOL_TIP_AUDIO_IN")){
+            audioInText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_AUDIO_IN"));
+            audioInComboBox.setToolTipText(languageBundle.getString("AV_TOOL_TIP_AUDIO_IN"));
         }
-        if(lenguageBundle.containsKey("AV_TOOL_TIP_AUDIO_OUT")){
-            audioOutText.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_AUDIO_OUT"));
-            audioOutComboBox.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_AUDIO_OUT"));
+        if(languageBundle.containsKey("AV_TOOL_TIP_AUDIO_OUT")){
+            audioOutText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_AUDIO_OUT"));
+            audioOutComboBox.setToolTipText(languageBundle.getString("AV_TOOL_TIP_AUDIO_OUT"));
         }
         //buttons
-        JButton testCameraButton = new JButton(lenguageBundle.getString("TEST_CAMERA"));
-        JButton testPresentationButton = new JButton(lenguageBundle.getString("TEST_PRESENTATION"));
+        JButton testCameraButton = new JButton(languageBundle.getString("TEST_CAMERA"));
+        JButton testPresentationButton = new JButton(languageBundle.getString("TEST_PRESENTATION"));
         testCameraButton.setFont(fontBoxes);
         testPresentationButton.setFont(fontBoxes);
-        if(lenguageBundle.containsKey("AV_TOOL_TIP_TEST_CAMERA")){
-            testCameraButton.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_TEST_CAMERA"));
+        if(languageBundle.containsKey("AV_TOOL_TIP_TEST_CAMERA")){
+            testCameraButton.setToolTipText(languageBundle.getString("AV_TOOL_TIP_TEST_CAMERA"));
         }
-        if(lenguageBundle.containsKey("AV_TOOL_TIP_TEST_PRESENTATION")){
-            testPresentationButton.setToolTipText(lenguageBundle.getString("AV_TOOL_TIP_TEST_PRESENTATION"));
+        if(languageBundle.containsKey("AV_TOOL_TIP_TEST_PRESENTATION")){
+            testPresentationButton.setToolTipText(languageBundle.getString("AV_TOOL_TIP_TEST_PRESENTATION"));
         }
         testCameraButton.addActionListener((ActionEvent event) -> {
             try {
@@ -622,7 +622,7 @@ public final class OptionsMainMenuWindow extends JFrame{
             }
         });
         //check box
-        JCheckBox presentationCheckBox = new JCheckBox(lenguageBundle.getString("PRESENTATION"));
+        JCheckBox presentationCheckBox = new JCheckBox(languageBundle.getString("PRESENTATION"));
         presentationCheckBox.setFont(fontBoxes);
         presentationCheckBox.addItemListener((ItemEvent e) -> {
             boolean isSelected = e.getStateChange() == ItemEvent.SELECTED;
@@ -820,17 +820,17 @@ public final class OptionsMainMenuWindow extends JFrame{
     private void setMiscsPanel(){
         
         JPanel myIpAddressPanel = new JPanel();
-        myIpAddressPanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("MY_IP")));
+        myIpAddressPanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("MY_IP")));
         JPanel serverIpSettingPanel = new JPanel();
-        serverIpSettingPanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("SERVER_IP_SETTING")));
+        serverIpSettingPanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("SERVER_IP_SETTING")));
         JPanel addressPanel = new JPanel();
-        addressPanel.setBorder(BorderFactory.createTitledBorder(lenguageBundle.getString("PATHS")));
+        addressPanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("PATHS")));
         
         myIpSetTextField.setEditable(true);
         myIpSetTextField.setColumns(10);
         myIpSetTextField.setFont(fontBoxes);
         myIpSetTextField.setBorder(BorderFactory.createEmptyBorder());
-        JTextField myIpSetTextFieldInfoText = new JTextField(lenguageBundle.getString("MY_IP"));
+        JTextField myIpSetTextFieldInfoText = new JTextField(languageBundle.getString("MY_IP"));
         myIpSetTextFieldInfoText.setEditable(false);
         myIpSetTextFieldInfoText.setFont(fontBoxes);
         myIpSetTextFieldInfoText.setBorder(BorderFactory.createEmptyBorder());
@@ -849,12 +849,12 @@ public final class OptionsMainMenuWindow extends JFrame{
         serverIpPortChange.setBorder(BorderFactory.createEmptyBorder());
         
         //text to explane fields
-        JTextField serverIpAddresChangeTextFieldInfoText = new JTextField(lenguageBundle.getString("IP_ADDRESS_SERVER"));
-        JTextField serverIpNameChangeInfoText = new JTextField(lenguageBundle.getString("SERVER_NAME"));
-        JTextField serverIpPortChangeInfoText = new JTextField(lenguageBundle.getString("SERVER_PORT"));
-        JTextField uvPathInfoText = new JTextField(lenguageBundle.getString("UV_PATH"));
-        JTextField mirrorPathInfoText = new JTextField(lenguageBundle.getString("HD_RUM_TRANSCODE_PATH"));
-        JTextField layoutPathInfoText = new JTextField(lenguageBundle.getString("LAYOUT_PATH"));
+        JTextField serverIpAddresChangeTextFieldInfoText = new JTextField(languageBundle.getString("IP_ADDRESS_SERVER"));
+        JTextField serverIpNameChangeInfoText = new JTextField(languageBundle.getString("SERVER_NAME"));
+        JTextField serverIpPortChangeInfoText = new JTextField(languageBundle.getString("SERVER_PORT"));
+        JTextField uvPathInfoText = new JTextField(languageBundle.getString("UV_PATH"));
+        JTextField mirrorPathInfoText = new JTextField(languageBundle.getString("HD_RUM_TRANSCODE_PATH"));
+        JTextField layoutPathInfoText = new JTextField(languageBundle.getString("LAYOUT_PATH"));
         serverIpAddresChangeTextFieldInfoText.setEditable(false);
         serverIpNameChangeInfoText.setEditable(false);
         serverIpPortChangeInfoText.setEditable(false);
@@ -892,10 +892,10 @@ public final class OptionsMainMenuWindow extends JFrame{
             }
         });
         
-        JButton reloadUltragridButton = new JButton(lenguageBundle.getString("RESCAN_ULTRAGRID"));
-        JButton addNewServerButton = new JButton(lenguageBundle.getString("ADD"));
-        JButton saveChangesInServerButton = new JButton(lenguageBundle.getString("USE"));
-        JButton deleteCurrentServerButton = new JButton(lenguageBundle.getString("DELETE"));
+        JButton reloadUltragridButton = new JButton(languageBundle.getString("RESCAN_ULTRAGRID"));
+        JButton addNewServerButton = new JButton(languageBundle.getString("ADD"));
+        JButton saveChangesInServerButton = new JButton(languageBundle.getString("USE"));
+        JButton deleteCurrentServerButton = new JButton(languageBundle.getString("DELETE"));
         reloadUltragridButton.setFont(fontBoxes);
         addNewServerButton.setFont(fontBoxes);
         saveChangesInServerButton.setFont(fontBoxes);
@@ -1073,47 +1073,47 @@ public final class OptionsMainMenuWindow extends JFrame{
         });
         
         
-        if(lenguageBundle.containsKey("MISC_TOOL_TIP_MY_IP")){
-            myIpSetTextField.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_MY_IP"));
+        if(languageBundle.containsKey("MISC_TOOL_TIP_MY_IP")){
+            myIpSetTextField.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_MY_IP"));
         }
-        if(lenguageBundle.containsKey("MISC_TOOL_TIP_SERVER_IP_ADDRESS")){
-            serverIpAddresChangeTextFieldInfoText.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_SERVER_IP_ADDRESS"));
-            serverIpAddresChangeTextField.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_SERVER_IP_ADDRESS"));
+        if(languageBundle.containsKey("MISC_TOOL_TIP_SERVER_IP_ADDRESS")){
+            serverIpAddresChangeTextFieldInfoText.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_SERVER_IP_ADDRESS"));
+            serverIpAddresChangeTextField.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_SERVER_IP_ADDRESS"));
         }
-        if(lenguageBundle.containsKey("MISC_TOOL_TIP_SERVER_NAME")){
-            serverIpNameChangeInfoText.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_SERVER_NAME"));
-            serverIpNameChange.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_SERVER_NAME"));
+        if(languageBundle.containsKey("MISC_TOOL_TIP_SERVER_NAME")){
+            serverIpNameChangeInfoText.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_SERVER_NAME"));
+            serverIpNameChange.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_SERVER_NAME"));
         }
-        if(lenguageBundle.containsKey("MISC_TOOL_TIP_SERVER_PORT")){
-            serverIpPortChangeInfoText.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_SERVER_PORT"));
-            serverIpPortChange.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_SERVER_PORT"));
+        if(languageBundle.containsKey("MISC_TOOL_TIP_SERVER_PORT")){
+            serverIpPortChangeInfoText.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_SERVER_PORT"));
+            serverIpPortChange.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_SERVER_PORT"));
         }
-        if(lenguageBundle.containsKey("MISC_TOOL_TIP_SERVER_ADD_NEW")){
-            addNewServerButton.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_SERVER_ADD_NEW"));
+        if(languageBundle.containsKey("MISC_TOOL_TIP_SERVER_ADD_NEW")){
+            addNewServerButton.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_SERVER_ADD_NEW"));
         }
-        if(lenguageBundle.containsKey("MISC_TOOL_TIP_SERVER_USE")){
-            saveChangesInServerButton.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_SERVER_USE"));
+        if(languageBundle.containsKey("MISC_TOOL_TIP_SERVER_USE")){
+            saveChangesInServerButton.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_SERVER_USE"));
         }
-        if(lenguageBundle.containsKey("MISC_TOOL_TIP_SERVER_DELETE")){
-            deleteCurrentServerButton.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_SERVER_DELETE"));
+        if(languageBundle.containsKey("MISC_TOOL_TIP_SERVER_DELETE")){
+            deleteCurrentServerButton.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_SERVER_DELETE"));
         }
-        if(lenguageBundle.containsKey("MISC_TOOL_TIP_UV_PATH")){
-            uvPathInfoText.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_UV_PATH"));
-            uvSystemPath.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_UV_PATH"));
+        if(languageBundle.containsKey("MISC_TOOL_TIP_UV_PATH")){
+            uvPathInfoText.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_UV_PATH"));
+            uvSystemPath.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_UV_PATH"));
         }
-        if(lenguageBundle.containsKey("MISC_TOOL_TIP_HD_RUM_TRANSCODE_PATH")){
-            mirrorPathInfoText.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_HD_RUM_TRANSCODE_PATH"));
-            mirrorSystemPath.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_HD_RUM_TRANSCODE_PATH"));
+        if(languageBundle.containsKey("MISC_TOOL_TIP_HD_RUM_TRANSCODE_PATH")){
+            mirrorPathInfoText.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_HD_RUM_TRANSCODE_PATH"));
+            mirrorSystemPath.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_HD_RUM_TRANSCODE_PATH"));
         }
-        if(lenguageBundle.containsKey("MISC_TOOL_TIP_LAYOUT_PATH")){
-            layoutPathInfoText.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_LAYOUT_PATH"));
-            layoutSystemPath.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_LAYOUT_PATH"));
+        if(languageBundle.containsKey("MISC_TOOL_TIP_LAYOUT_PATH")){
+            layoutPathInfoText.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_LAYOUT_PATH"));
+            layoutSystemPath.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_LAYOUT_PATH"));
         }
-        if(lenguageBundle.containsKey("MISC_TOOL_TIP_RELOAD_UV")){
-            reloadUltragridButton.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_RELOAD_UV"));
+        if(languageBundle.containsKey("MISC_TOOL_TIP_RELOAD_UV")){
+            reloadUltragridButton.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_RELOAD_UV"));
         }
-        if(lenguageBundle.containsKey("MISC_TOOL_TIP_UV_STATUS_TEXT")){
-            verificationText.setToolTipText(lenguageBundle.getString("MISC_TOOL_TIP_UV_STATUS_TEXT"));
+        if(languageBundle.containsKey("MISC_TOOL_TIP_UV_STATUS_TEXT")){
+            verificationText.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_UV_STATUS_TEXT"));
         }
         
         myIpAddressPanel.setLayout(new GridBagLayout());

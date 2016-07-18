@@ -816,7 +816,7 @@ public final class InitialMenuLayout{
             Color talkingColor = new Color(talkingColorJson.getInt("red"), talkingColorJson.getInt("green"), talkingColorJson.getInt("blue"));
             
             LayoutManagerImpl lm;
-            lm = new LayoutManagerImpl(role, this, scaleRatio, layoutFile);
+            lm = new LayoutManagerImpl(role, this, scaleRatio, layoutFile, languageBundle);
             sm = new SessionManagerImpl(lm, talkingColor, riseHandColor, languageBundle);
             sm.initCounsil();
         } catch (JSONException | IOException | WDDManException | InterruptedException | NativeHookException ex) {
@@ -953,9 +953,9 @@ public final class InitialMenuLayout{
             }
         }       
         String languageResourcesName = "resources";
-        if(clientConfig.has("lenguage")){
+        if(clientConfig.has("language")){
             try {
-                switch (clientConfig.getString("lenguage")) {
+                switch (clientConfig.getString("language")) {
                     case "Slovenský":
                         languageResourcesName = "resources_sk_SK";
                         break;
