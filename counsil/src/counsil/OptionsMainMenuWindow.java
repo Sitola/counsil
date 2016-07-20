@@ -308,7 +308,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         lenguageCombobox.setFont(fontBoxes);
         String setLenguage = "";
         try {
-            setLenguage = configuration.getString("lenguage");
+            setLenguage = configuration.getString("language");
         } catch (JSONException ex) {
             Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
         }

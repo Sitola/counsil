@@ -951,7 +951,7 @@ public final class InitialMenuLayout{
                 Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
             }
         }       
-        String languageResourcesName = "resources";
+        String languageResourcesName = "resources_en_EN";
         if(clientConfig.has("language")){
             try {
                 switch (clientConfig.getString("language")) {

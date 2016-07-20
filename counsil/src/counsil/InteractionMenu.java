@@ -18,6 +18,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.LayoutStyle;
+import javax.swing.UIManager;
 
 /**
  *
@@ -66,6 +67,7 @@ public class InteractionMenu extends JFrame {
         setLocation(position.x, position.y);
         setDefaultLookAndFeelDecorated(false);    
         this.languageBundle = languageBundle;
+        overrideJOptionPaneBundle();
     }
 
     
@@ -173,5 +175,12 @@ public class InteractionMenu extends JFrame {
             initialMenu.closeCounsil();
             this.dispose();
         }
+    }
+
+    private void overrideJOptionPaneBundle() {
+        UIManager.put("OptionPane.yesButtonText", languageBundle.getString("YES"));
+        UIManager.put("OptionPane.noButtonText", languageBundle.getString("NO"));
+        UIManager.put("OptionPane.cancelButtonText", languageBundle.getString("CANCEL"));
+        //UIManager.put("OptionPane.titleText", languageBundle.getString("Title"));
     }
 }
