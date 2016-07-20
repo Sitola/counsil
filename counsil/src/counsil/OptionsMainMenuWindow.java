@@ -1947,7 +1947,7 @@ public final class OptionsMainMenuWindow extends JFrame{
             }else{
                 newClinetConfiguration.put("presentation", presentationUsed);
             }
-            newClinetConfiguration.put("lenguage", getLenguage());
+            newClinetConfiguration.put("language", getLanguage());
             newClinetConfiguration.put("raise hand color", raiseHandColorJson);
             newClinetConfiguration.put("talking color", talkingColorJson);
             newClinetConfiguration.put("server ips", serverIps);
@@ -2018,7 +2018,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
     }
     
-    private String getLenguage(){
+    private String getLanguage(){
         if(lenguageCombobox.getItemCount() > 0){
             return lenguageCombobox.getSelectedItem().toString();
         }else{
