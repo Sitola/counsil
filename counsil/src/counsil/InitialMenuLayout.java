@@ -117,7 +117,7 @@ public final class InitialMenuLayout{
         layoutList = new ArrayList<>();
         roomGroup = new ButtonGroup();
         
-        font = new Font("Tahoma", 0, 18);
+        font = null;//new Font("Tahoma", 0, 18);
         roomConfiguration = null;
         
         serverChooseWindow = new JFrame();
@@ -219,7 +219,7 @@ public final class InitialMenuLayout{
             //ipPanel.setLayout(new GridLayout(1, 1));
         }
         JButton differentServerButton = new JButton(languageBundle.getString("DIFFERENT_SERVER"));
-        differentServerButton.setFont(font);
+        //differentServerButton.setFont(font);
         differentServerButton.addActionListener((ActionEvent event) -> {
             if(optionMainMenuWindow != null){
                 optionMainMenuWindow.dispose();
@@ -229,7 +229,7 @@ public final class InitialMenuLayout{
             //close this window and open window to set own ip addres
         });
         JButton optionsButton = new JButton(languageBundle.getString("OPTIONS"));
-        optionsButton.setFont(font);
+        //optionsButton.setFont(font);
         optionsButton.addActionListener((ActionEvent event) -> {
             if(optionMainMenuWindow != null){
                 optionMainMenuWindow.dispose();
@@ -238,7 +238,7 @@ public final class InitialMenuLayout{
             optionMainMenuWindow = new OptionsMainMenuWindow(font, new Font("Tahoma", 0, 13), configurationFile, this, languageBundle);
         });
         JButton exitButton = new JButton(languageBundle.getString("EXIT"));
-        exitButton.setFont(font);
+       // exitButton.setFont(font);
         exitButton.addActionListener((ActionEvent event) -> {
             if(optionMainMenuWindow != null){
                 optionMainMenuWindow.dispose();
@@ -292,10 +292,10 @@ public final class InitialMenuLayout{
         jMainPanel.setLayout(new BorderLayout());
         
         errorMessageField = new JTextField(languageBundle.getString("ERROR_UNDOCUMENTED"));
-        errorMessageField.setFont(font);
+       // errorMessageField.setFont(font);
         errorMessageField.setEditable(false);
         JButton okButton = new JButton(languageBundle.getString("OK_BUTTON"));
-        okButton.setFont(font);
+       // okButton.setFont(font);
         okButton.addActionListener((ActionEvent e) -> {
             openServerChooseWindow();
             //go to choose server window
@@ -358,11 +358,11 @@ public final class InitialMenuLayout{
         //create buttons
         //role
         JRadioButton studentButton = new JRadioButton(languageBundle.getString("STUDENT"));
-        studentButton.setFont(font);
+       // studentButton.setFont(font);
         JRadioButton teacherButton = new JRadioButton(languageBundle.getString("TEACHER"));
-        teacherButton.setFont(font);
+        //teacherButton.setFont(font);
         JRadioButton interpreterButton = new JRadioButton(languageBundle.getString("INTERPRETER"));
-        interpreterButton.setFont(font);
+       // interpreterButton.setFont(font);
         roleGroup.add(studentButton);
         roleGroup.add(teacherButton);
         roleGroup.add(interpreterButton);
@@ -372,22 +372,22 @@ public final class InitialMenuLayout{
         rolePanel.add(interpreterButton);
         //audio
         JCheckBox audioCheckBox = new JCheckBox(languageBundle.getString("AUDIO"));
-        audioCheckBox.setFont(font);
+        //audioCheckBox.setFont(font);
         audioCheckBox.setSelected(false);
         audioPanel.add(audioCheckBox);
         //set name
         JTextField setNameInfoField = new JTextField(languageBundle.getString("NAME"));
-        setNameInfoField.setFont(font);
+       // setNameInfoField.setFont(font);
         setNameInfoField.setEditable(false);
         JTextField setNameSettingField = new JTextField();
-        setNameSettingField.setFont(font);
+       // setNameSettingField.setFont(font);
         setNameSettingField.setEditable(true);
         setNameSettingField.setColumns(10);
         //namePanel.add(setNameInfoField);
         namePanel.add(setNameSettingField);
         //action
         JButton startButton = new JButton(languageBundle.getString("START"));
-        startButton.setFont(font);
+      //  startButton.setFont(font);
         startButton.addActionListener((ActionEvent event) -> {
             //login to room
             String role = getSelectedRadioButtonText(roleGroup);
@@ -397,16 +397,16 @@ public final class InitialMenuLayout{
             if(rolePanel.getComponentCount() > 0){
                 startCounsil(role, audioCheckBox.isSelected(), setNameSettingField.getText(), layout, room);
             }else{
-                openErrorWindow("necakana chyba č.1");
+                openErrorWindow(languageBundle.getString("STARTUP_ERROR"));
             }
         });
         JButton backButton = new JButton(languageBundle.getString("BACK"));
-        backButton.setFont(font);
+        //backButton.setFont(font);
         backButton.addActionListener((ActionEvent event) -> {
             openServerChooseWindow();
         });
         JButton exitButton = new JButton(languageBundle.getString("EXIT"));
-        exitButton.setFont(font);
+        //exitButton.setFont(font);
         exitButton.addActionListener((ActionEvent event) -> {
             System.exit(0);
         });
@@ -418,7 +418,7 @@ public final class InitialMenuLayout{
         layoutPanelConstraints.weightx = 0.5;
         for(int i=0;i<layoutList.size();i++){
             JRadioButton layoutButton = new JRadioButton(layoutList.get(i).layoutName);
-            layoutButton.setFont(font);
+            //layoutButton.setFont(font);
             layoutPanelConstraints.gridx = i % 2;
             layoutPanelConstraints.gridy = i / 2;
             layoutPanel.add(layoutButton, layoutPanelConstraints);
@@ -432,7 +432,7 @@ public final class InitialMenuLayout{
         }
         //about
         JTextArea aboutText = new JTextArea(languageBundle.getString("ABOUT_MESSAGE"));
-        aboutText.setFont(new Font(font.getName(), font.getStyle(), font.getSize()-3));
+        //aboutText.setFont(new Font(font.getName(), font.getStyle(), font.getSize()-3));
         aboutText.setColumns(11);
         aboutText.setRows(7);
         aboutText.setEditable(false);
@@ -546,25 +546,25 @@ public final class InitialMenuLayout{
         JTextFieldLimit ipText = new JTextFieldLimit(15);
         JTextField ipField = new JTextField();
         ipField.setPreferredSize(new Dimension(160, 20));
-        ipField.setFont(font);
+        //ipField.setFont(font);
         ipField.setEditable(true);
         ipField.setDocument(ipText);
         ipField.setBorder(BorderFactory.createEmptyBorder());
         JTextField ipTextInfoField = new JTextField(languageBundle.getString("IP"));
-        ipTextInfoField.setFont(font);
+        //ipTextInfoField.setFont(font);
         ipTextInfoField.setEditable(false);
         ipTextInfoField.setBorder(BorderFactory.createEmptyBorder());
         JTextField portField = new JTextField();
-        portField.setFont(font);
+        //portField.setFont(font);
         portField.setEditable(true);
         portField.setBorder(BorderFactory.createEmptyBorder());
         JTextField portFieldInfoText = new JTextField(languageBundle.getString("PORT"));
-        portFieldInfoText.setFont(font);
+        //portFieldInfoText.setFont(font);
         portFieldInfoText.setEditable(false);
         portFieldInfoText.setBorder(BorderFactory.createEmptyBorder());
         
         JButton connectButton = new JButton(languageBundle.getString("CONNECT"));
-        connectButton.setFont(font);
+        //connectButton.setFont(font);
         connectButton.addActionListener((ActionEvent event) -> {
             String loadedString = null;
             try {
@@ -592,7 +592,7 @@ public final class InitialMenuLayout{
         });
         
         JButton cancelButton = new JButton(languageBundle.getString("CANCEL"));
-        cancelButton.setFont(font);
+        //cancelButton.setFont(font);
         cancelButton.addActionListener((ActionEvent event) -> {
             openServerChooseWindow();
         });
@@ -766,7 +766,7 @@ public final class InitialMenuLayout{
                 try {
                     String roomName = roomList.getJSONObject(i).getString("name");
                     JRadioButton roomButton = new JRadioButton(roomName);
-                    roomButton.setFont(font);
+                   // roomButton.setFont(font);
                     roomPanelConstraints.gridx = i % 2;
                     roomPanelConstraints.gridy = i / 2;
                     roomPanel.add(roomButton, roomPanelConstraints);
@@ -840,8 +840,8 @@ public final class InitialMenuLayout{
         
         JSONObject infoFromServer = getRoomConfiguraton(room);
         if(infoFromServer == null){
-            openErrorWindow("cannot get room configuration from server");
-            throw new InterruptedException("cannot get room configuration from server");
+            openErrorWindow(languageBundle.getString("NO_ROOM_CONFIG_ERROR"));
+            throw new InterruptedException(languageBundle.getString("NO_ROOM_CONFIG_ERROR"));
         }
         roomConfiguration = new JSONObject();
         JSONObject connector = new JSONObject();
@@ -851,7 +851,7 @@ public final class InitialMenuLayout{
             connector.put("serverPort", infoFromServer.getInt("comunication port"));
             connector.put("startServer", false);
 
-            String userName = role + "_" + name + "_" /*+ infoFromServer.getString("connect number")*/;
+            String userName = role + "_" + name + "_" + infoFromServer.getString("connect number");
             JSONObject interfaceInside = new JSONObject();
             interfaceInside.put("name", userName);
             interfaceInside.put("address", clientConfig.getString("this ip"));
@@ -940,11 +940,11 @@ public final class InitialMenuLayout{
                         }
                     }
                     if(layoutList.isEmpty()){
-                        JOptionPane.showMessageDialog(new Frame(), "no layout found, set correct address to layouts direcory", "error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(new Frame(), languageBundle.getString("ERROR_LAYOUT_NOT_FOUND"), languageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
                     }
                 }else{
                     if(!layoutDir.exists()){
-                        JOptionPane.showMessageDialog(new Frame(), "incorrect path to layouts", "error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(new Frame(), languageBundle.getString("ERROR_DIRECTORY_DOES_NOT_EXIST"), languageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
                     }
                 }
             } catch (JSONException ex) {

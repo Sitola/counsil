@@ -139,7 +139,7 @@ public class InteractionMenu extends JFrame {
         
         buttons.stream().forEach((button) -> {
             
-            button.setFont(new java.awt.Font("Tahoma", 0, 18));
+            //button.setFont(new java.awt.Font("Tahoma", 0, 18));
             button.setPreferredSize(new java.awt.Dimension(130, 31));
             
             verticalGroup
