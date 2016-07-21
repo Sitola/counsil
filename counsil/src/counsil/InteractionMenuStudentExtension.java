@@ -26,9 +26,9 @@ public class InteractionMenuStudentExtension extends InteractionMenu {
      */
     public InteractionMenuStudentExtension(String role, Position position, InitialMenuLayout iml, ResourceBundle languageBundle) {
       
-        super(role, position, iml, languageBundle);
-        buttons.add(createAndInitAlertButton());
+        super(role, position, iml, languageBundle);        
         this.languageBundle = languageBundle;
+        buttons.add(createAndInitAlertButton());
     }
 
     

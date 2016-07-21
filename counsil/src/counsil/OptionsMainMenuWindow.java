@@ -1344,9 +1344,11 @@ public final class OptionsMainMenuWindow extends JFrame{
                 videoInputs.add(vd);
             }
             
-            Pattern modePattern = Pattern.compile("Mode\\s+(\\d+):\\s(.*?)\\s*(\\d*x\\d*)\\s*@([0-9\\.])");
+            Pattern modePattern = Pattern.compile("Mode\\s+(\\d+):\\s(.*?)\\s*(\\d*x\\d*)\\s*@([0-9\\.]*)"/*
+            + "\\s*"+ "Mode\\s+(\\d+):\\s(.*?)\\s*(\\d*x\\d*)\\s*@([0-9\\.]*)"*/);
             Matcher modeMatcher = modePattern.matcher(line);
             while(modeMatcher.find()){
+                System.out.println(modeMatcher.group(1));
                 if(videoInputs.isEmpty()){    //something strange happend, stop process
                     return videoInputs;
                 }
@@ -1425,11 +1427,23 @@ public final class OptionsMainMenuWindow extends JFrame{
                 vpf.name = modeMatcher.group(2);
                 vfs.widthXheight = modeMatcher.group(3);
                 max_fps = Integer.parseInt(modeMatcher.group(4));
-                for(int i=max_fps;i>0;i--){
+                for(int i = max_fps; i > 0; i--) {
                     VideoFPS vfps = new VideoFPS();
                     vfps.setting = partialSetting + ":framerate=" + i;
                     vfps.fps = String.valueOf(i);
-                    listVfps.add(vfps);
+
+                    boolean wasNotFound = true;
+                    for (VideoFPS currentFps : listVfps) {
+                        System.out.println(currentFps.fps + " vs " + vfps.fps);
+                        if (currentFps.fps.equals(vfps.fps)) {
+                            wasNotFound = false;
+                        }
+                    }
+
+                    if (wasNotFound) {
+                        listVfps.add(vfps);
+                    }
+
                 }
                 boolean found_item = false;             //maybe not most elegant
                 for(int i=0;i<vd.vpf.size();i++){
@@ -1728,26 +1742,26 @@ public final class OptionsMainMenuWindow extends JFrame{
                 
                 if(glMatcher.find()){
                     if(glMatcher.group(1).equals("yes")){
-                        outMessage += "gl found\n";
+                        outMessage += "gl " + languageBundle.getString("FOUND") + "\n";
                     }else{
-                        outMessage += "gl not found\n";
+                        outMessage += "gl " + languageBundle.getString("NOT_FOUND") + "\n";
                     }
                 }
                 
                 if(sdlMatcher.find()){
                     if(sdlMatcher.group(1).equals("yes")){
-                        outMessage += "sld found\n";
+                        outMessage += "sdl " + languageBundle.getString("FOUND") + "\n";
                     }else{
-                        outMessage += "sdl not found\n";
+                        outMessage += "sdl " + languageBundle.getString("NOT_FOUND") + "\n";
                     }
                 }
                 
                 if(portaudioMatcher.find()){
                     if(portaudioMatcher.group(1).equals("yes")){
-                        outMessage += "portaudio found\n";
+                        outMessage += "portaudio " + languageBundle.getString("FOUND") + "\n";
                         havePortaudio = true;
                     }else{
-                        outMessage += "portaudio not found\n`";
+                        outMessage += "portaudio " + languageBundle.getString("NOT_FOUND") + "\n";
                         havePortaudio = false;
                     }
                 }
@@ -1769,7 +1783,7 @@ public final class OptionsMainMenuWindow extends JFrame{
             if(correctUvreturnValue){
                 verificationTextField.setForeground(Color.red);
                 verificationTextField.setRows(1);
-                verificationTextField.setText("toto nie je ultragrid");
+                verificationTextField.setText("toto nie je ultragrid"); //!
             }else{
                 verificationTextField.setForeground(Color.red);
                 verificationTextField.setRows(1);
