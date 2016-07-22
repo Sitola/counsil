@@ -31,6 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.scene.layout.Border;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -313,8 +314,8 @@ public final class OptionsMainMenuWindow extends JFrame{
             Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
         fillLanguageComboBox(languageCombobox, setLenguage);
-        lenguagePanel.setBorder(new TitledBorder(languageBundle.getString("LANGUAGE")));        
-        
+        lenguagePanel.setBorder(new TitledBorder(languageBundle.getString("LANGUAGE")));     
+               
         JTextField setResizeAmountTextInfo = new JTextField(languageBundle.getString("RESAZING_INFO_TEXT"));
         JTextField setResizePixelSign = new JTextField(languageBundle.getString("PIXELS"));
       //  setResizeAmount.setFont(fontBoxes);
@@ -375,11 +376,13 @@ public final class OptionsMainMenuWindow extends JFrame{
         lenguagePanelConstrains.weightx = 0.5;
         lenguagePanelConstrains.gridheight = 1;
         lenguagePanelConstrains.gridwidth = 1;
-        lenguagePanelConstrains.gridx = 0;
-        lenguagePanelConstrains.gridy = 0;
-        //lenguagePanel.add(lenguageInfoTextField, lenguagePanelConstrains);
         lenguagePanelConstrains.gridx = 1;
         lenguagePanelConstrains.gridy = 0;
+        /*lenguagePanel.add(lenguageInfoTextField, lenguagePanelConstrains);
+        lenguagePanelConstrains.gridx = 1;
+        lenguagePanelConstrains.gridy = 0;*/
+        
+        lenguagePanelConstrains.anchor = GridBagConstraints.LINE_END;
         lenguagePanel.add(languageCombobox, lenguagePanelConstrains);
         
         resazingSizePanel.setLayout(new GridBagLayout());
@@ -637,10 +640,10 @@ public final class OptionsMainMenuWindow extends JFrame{
         GridBagConstraints mainCameraPanelConstrains = new GridBagConstraints();
         mainCameraPanelConstrains.insets = new Insets(5,5,5,5);
         mainCameraPanelConstrains.weightx = 0.5;
-        mainCameraPanelConstrains.gridx = 0;
-        mainCameraPanelConstrains.gridy = 0;
         mainCameraPanelConstrains.gridheight = 1;
         mainCameraPanelConstrains.gridwidth = 1;
+        mainCameraPanelConstrains.gridx = 0;
+        mainCameraPanelConstrains.gridy = 0;
         mainCameraPanelConstrains.anchor = GridBagConstraints.LINE_END;
         mainCameraPanel.add(cameraDeviceText, mainCameraPanelConstrains);
         mainCameraPanelConstrains.gridx = 1;
@@ -673,7 +676,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         mainCameraPanel.add(mainCameraFPSBox, mainCameraPanelConstrains);
         
         presetationPanel.setLayout(new GridBagLayout());        
-        GridBagConstraints presetationPanelConstrains = new GridBagConstraints();
+        GridBagConstraints presetationPanelConstrains = new GridBagConstraints();        
         presetationPanelConstrains.insets = new Insets(5,5,5,5);
         presetationPanelConstrains.weightx = 0.5;
         presetationPanelConstrains.gridx = 0;
@@ -1344,8 +1347,8 @@ public final class OptionsMainMenuWindow extends JFrame{
                 videoInputs.add(vd);
             }
             
-            Pattern modePattern = Pattern.compile("Mode\\s+(\\d+):\\s(.*?)\\s*(\\d*x\\d*)\\s*@([0-9\\.]*)"/*
-            + "\\s*"+ "Mode\\s+(\\d+):\\s(.*?)\\s*(\\d*x\\d*)\\s*@([0-9\\.]*)"*/);
+            Pattern modePattern = Pattern.compile("Mode\\s+(\\d+):\\s(.*?)\\s*(\\d*x\\d*)\\s*@([0-9\\.]*)"
+            + "\\s*"+ "Mode\\s+(\\d+):\\s(.*?)\\s*(\\d*x\\d*)\\s*@([0-9\\.]*)");
             Matcher modeMatcher = modePattern.matcher(line);
             while(modeMatcher.find()){
                 System.out.println(modeMatcher.group(1));
@@ -1681,26 +1684,26 @@ public final class OptionsMainMenuWindow extends JFrame{
         //initiial tests if it can be ultragrid
         if(uvAddress.isEmpty()){
             verificationTextField.setForeground(Color.red);
-            verificationTextField.setText("prazdna adresa");
+            verificationTextField.setText("prazdna adresa"); //!
             correctUv = false;
             return;
         }
         File uvFile = new File(uvAddress);
         if(!uvFile.exists()){
             verificationTextField.setForeground(Color.red);
-            verificationTextField.setText("cesta k suboru je neplatna");
+            verificationTextField.setText("cesta k suboru je neplatna"); //!
             correctUv = false;
             return;
         }
         if(uvFile.isDirectory()){
             verificationTextField.setForeground(Color.red);
-            verificationTextField.setText("casta je adresar");
+            verificationTextField.setText("casta je adresar");//!
             correctUv = false;
             return;
         }
         if(!uvFile.canExecute()){
             verificationTextField.setForeground(Color.red);
-            verificationTextField.setText("subor nie je spustitelny");
+            verificationTextField.setText("subor nie je spustitelny");//!
             correctUv = false;
             return;
         }
@@ -1903,7 +1906,7 @@ public final class OptionsMainMenuWindow extends JFrame{
             String entireFileText = new Scanner(jsonFile).useDelimiter("\\A").next();
             return new JSONObject(entireFileText);
         } catch (JSONException | FileNotFoundException ex) {
-            Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }

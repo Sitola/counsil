@@ -31,20 +31,17 @@ public class InteractionMenu extends JFrame {
      */
     protected final List<JButton> buttons = new ArrayList<>();
 
-    
     /**
      * Instance of initial menu to return after counsil session end
      */
     private final InitialMenuLayout initialMenu;
-    
-    
+
     /**
      * List of listeners
      */
     protected final List<InteractionMenuListener> interactionMenuListeners = new ArrayList<>();
     private final ResourceBundle languageBundle;
-    
-        
+
     /**
      * Creates menu and sets its parameters
      *
@@ -55,7 +52,7 @@ public class InteractionMenu extends JFrame {
     InteractionMenu(String role, Position position, InitialMenuLayout iml, ResourceBundle languageBundle) {
 
         super("CoUnSil");
-        
+
         initialMenu = iml;
 
         setLayout(new GridBagLayout());
@@ -65,39 +62,36 @@ public class InteractionMenu extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);
         setLocation(position.x, position.y);
-        setDefaultLookAndFeelDecorated(false);    
+        setDefaultLookAndFeelDecorated(false);
         this.languageBundle = languageBundle;
         overrideJOptionPaneBundle();
     }
 
-    
     /**
      * Initializes buttons and sets menu as visible
      */
     public void publish() {
-        
+
         addBasicButtons();
         initComponents();
         setVisible(true);
     }
 
-    
     public void addInteractionMenuListener(InteractionMenuListener listener) {
-       
+
         interactionMenuListeners.add(listener);
     }
-    
-    
+
     private void refreshButtonActionPerformed() {
-        
+
         interactionMenuListeners.stream().forEach((listener) -> {
             listener.refreshActionPerformed();
         });
     }
-    
 
     private void settingsButtonActionPerformed() {
-        throw new UnsupportedOperationException("NOT SUPPORTED YET."); //To change body of generated methods, choose Tools | Templates.
+
+        initialMenu.optionMainMenuWindow = new OptionsMainMenuWindow(null, null, initialMenu.configurationFile, initialMenu, languageBundle);
     }
 
     private void addBasicButtons() {
@@ -107,9 +101,9 @@ public class InteractionMenu extends JFrame {
         refreshButton.addActionListener((ActionEvent evt) -> {
             refreshButtonActionPerformed();
         });
-        
+
         JButton settingsButton = new JButton();
-        settingsButton.setText(languageBundle.getString("SETTINGS"));
+        settingsButton.setText(languageBundle.getString("OPTIONS"));
         settingsButton.addActionListener((ActionEvent evt) -> {
             settingsButtonActionPerformed();
         });
@@ -120,12 +114,11 @@ public class InteractionMenu extends JFrame {
             exitButtonActionPerformed();
         });
 
-        buttons.add(refreshButton);        
+        buttons.add(refreshButton);
         buttons.add(settingsButton);
         buttons.add(exitButton);
     }
-    
-    
+
     /**
      * Creates buttons for menu, according to button types
      *
@@ -136,15 +129,14 @@ public class InteractionMenu extends JFrame {
         GroupLayout layout = new GroupLayout(getContentPane());
         GroupLayout.SequentialGroup horizontalGroup = layout.createSequentialGroup();
         GroupLayout.ParallelGroup verticalGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
-        
+
         buttons.stream().forEach((button) -> {
-            
-            //button.setFont(new java.awt.Font("Tahoma", 0, 18));
+
             button.setPreferredSize(new java.awt.Dimension(130, 31));
-            
+
             verticalGroup
                     .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
-            
+
             horizontalGroup
                     .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
@@ -158,14 +150,13 @@ public class InteractionMenu extends JFrame {
 
     }
 
-    
     /**
      * Starts exiting program when "Exit" button is clicked
      */
     private void exitButtonActionPerformed() {
         String message = languageBundle.getString("EXIT_CONFIRMATION");
         String title = languageBundle.getString("EXIT_TITLE");
-        int reply = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);        
+        int reply = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
         if (reply == JOptionPane.YES_OPTION) {
             try {
                 Thread.sleep(1000);
@@ -180,7 +171,6 @@ public class InteractionMenu extends JFrame {
     private void overrideJOptionPaneBundle() {
         UIManager.put("OptionPane.yesButtonText", languageBundle.getString("YES"));
         UIManager.put("OptionPane.noButtonText", languageBundle.getString("NO"));
-        UIManager.put("OptionPane.cancelButtonText", languageBundle.getString("CANCEL"));
-        //UIManager.put("OptionPane.titleText", languageBundle.getString("Title"));
+        UIManager.put("OptionPane.cancelButtonText", languageBundle.getString("CANCEL"));        
     }
 }

@@ -72,7 +72,7 @@ public final class InitialMenuLayout{
     private final JFrame errorWindow;
     private final JFrame ipSettingWindow;
     
-    private OptionsMainMenuWindow optionMainMenuWindow;
+    public OptionsMainMenuWindow optionMainMenuWindow;
         
     JSONObject roomConfiguration;
     JSONObject clientConfig;
@@ -226,7 +226,7 @@ public final class InitialMenuLayout{
                 optionMainMenuWindow = null;
             }
             openIpSettingWindow();
-            //close this window and open window to set own ip addres
+            //close this window and open window to set own ip address
         });
         JButton optionsButton = new JButton(languageBundle.getString("OPTIONS"));
         //optionsButton.setFont(font);
@@ -580,7 +580,7 @@ public final class InitialMenuLayout{
                             openErrorWindow(languageBundle.getString("CANNOT_CONNECT_TO_THIS_SERVER") + loadedString);
                         }
                     }catch(NumberFormatException e){
-                        JOptionPane.showMessageDialog(new Frame(),"incorrect port", languageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(new Frame(),"incorrect port", languageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE); //!
                     }
                 }else{
                     JOptionPane.showMessageDialog(new Frame(), loadedString + languageBundle.getString("UNDEFINE_ADDRESS"), languageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
