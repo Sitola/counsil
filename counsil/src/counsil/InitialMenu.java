@@ -37,7 +37,7 @@ public class InitialMenu {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        File clientConfigurationFile = new File("clientConfig.json");
+        File clientConfigurationFile = new File("configs/clientConfig.json");
         
         // create menu
         EventQueue.invokeLater(new Runnable() {

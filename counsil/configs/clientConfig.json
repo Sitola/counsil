@@ -1,12 +1,1 @@
-{
-    "name":"computer_name",
-    "this ip":"147.251.0.1",
-    "ultragrid path":"C:\\ultragrid\\ultragrid\\uv.exe",
-    "producer settings":"dshow:1",
-    "distributor path":"C:\\ultragrid\\ultragrid\\hd-rum-transcode.exe",
-    "consumer settings":"gl",
-    "audio consumer":"portaudio",
-    "audio producer":"portaudio",
-    "presentation producer":"",
-    "audio":"false"
-}
+{"raise hand color":{"red":255,"green":0,"blue":0},"language":"English","talking color":{"red":0,"green":255,"blue":255},"audio consumer":"","this ip":"147.251.0.1","presentation":false,"producer settings":"avfoundation:device=0:mode=4:framerate=25","consumer settings":"gl","audio producer":"","ultragrid path":"/Users/Huvart/Documents/MU/GitHub/ultragrid/bin/uv","layout path":"configs/layout","distributor path":"/Users/Huvart/Documents/MU/GitHub/ultragrid/bin/hd-rum-transcode","server ips":[{"port":"80","ip":"142.15.3.2","name":"my server"}],"talking resizing":10}

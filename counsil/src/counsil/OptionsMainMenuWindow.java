@@ -325,7 +325,10 @@ public final class OptionsMainMenuWindow extends JFrame{
        // setResizePixelSign.setFont(fontBoxes);
         setResizeAmount.setEditable(true);
         setResizeAmountTextInfo.setEditable(false);
-        setResizePixelSign.setEditable(false);   
+        setResizePixelSign.setEditable(false); 
+        setResizeAmountTextInfo.setHorizontalAlignment(JTextField.RIGHT);
+        setResizeAmount.setHorizontalAlignment(JTextField.CENTER);
+        setResizePixelSign.setHorizontalAlignment(JTextField.LEFT);
         setResizeAmount.setColumns(3);
         resazingSizePanel.setBorder(new TitledBorder(languageBundle.getString("RESAZING")));
         
@@ -382,13 +385,13 @@ public final class OptionsMainMenuWindow extends JFrame{
         lenguagePanelConstrains.gridx = 1;
         lenguagePanelConstrains.gridy = 0;*/
         
-        lenguagePanelConstrains.anchor = GridBagConstraints.LINE_END;
+        lenguagePanelConstrains.anchor = GridBagConstraints.CENTER;
         lenguagePanel.add(languageCombobox, lenguagePanelConstrains);
         
         resazingSizePanel.setLayout(new GridBagLayout());
         GridBagConstraints resazingSizePanelConstrains = new GridBagConstraints();
         resazingSizePanelConstrains.insets = new Insets(5,5,5,5);
-        resazingSizePanelConstrains.weightx = 0.5;
+        //resazingSizePanelConstrains.weightx = 0.5;
         resazingSizePanelConstrains.gridheight = 1;
         resazingSizePanelConstrains.gridwidth = 1;
         resazingSizePanelConstrains.gridx = 0;
@@ -403,6 +406,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         
         visualitationPanel.setLayout(new GridBagLayout());
         GridBagConstraints visualitationPanelConstrains = new GridBagConstraints();
+        visualitationPanelConstrains.fill = GridBagConstraints.HORIZONTAL;
         visualitationPanelConstrains.weightx = 0.5;
         visualitationPanelConstrains.gridheight = 1;
         visualitationPanelConstrains.gridwidth = 1;
@@ -1121,7 +1125,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         
         myIpAddressPanel.setLayout(new GridBagLayout());
         GridBagConstraints myIpAddressConstraints = new GridBagConstraints();
-        myIpAddressConstraints.fill = GridBagConstraints.HORIZONTAL;
+        //myIpAddressConstraints.fill = GridBagConstraints.HORIZONTAL;
         myIpAddressConstraints.insets = new Insets(5,5,5,5);
         myIpAddressConstraints.weightx = 0.5;
         myIpAddressConstraints.gridheight = 1;
@@ -1205,6 +1209,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         
         miscsPanel.setLayout(new GridBagLayout());
         GridBagConstraints miscsPanelConstraints = new GridBagConstraints();
+        miscsPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
         miscsPanelConstraints.gridheight = 1;
         miscsPanelConstraints.gridwidth = 3;
         miscsPanelConstraints.gridx = 0;
@@ -1216,10 +1221,15 @@ public final class OptionsMainMenuWindow extends JFrame{
         miscsPanelConstraints.gridx = 0;
         miscsPanelConstraints.gridy = 2;
         miscsPanel.add(addressPanel, miscsPanelConstraints);
+        miscsPanelConstraints.fill = GridBagConstraints.NONE;
+        miscsPanelConstraints.anchor = GridBagConstraints.CENTER;
+        miscsPanelConstraints.weightx = 0.5;
         miscsPanelConstraints.gridx = 0;
         miscsPanelConstraints.gridy = 3;
+        miscsPanelConstraints.gridheight = 1;
+        miscsPanelConstraints.gridwidth = 2;
         miscsPanel.add(verificationText, miscsPanelConstraints);
-        miscsPanelConstraints.anchor = GridBagConstraints.LINE_START;
+        miscsPanelConstraints.anchor = GridBagConstraints.LINE_END;
         miscsPanelConstraints.gridx = 2;
         miscsPanelConstraints.gridy = 3;
         miscsPanelConstraints.gridheight = 1;
@@ -1347,50 +1357,47 @@ public final class OptionsMainMenuWindow extends JFrame{
                 videoInputs.add(vd);
             }
             
-            Pattern modePattern = Pattern.compile("Mode\\s+(\\d+):\\s(.*?)\\s*(\\d*x\\d*)\\s*@([0-9\\.]*)"
-            + "\\s*"+ "Mode\\s+(\\d+):\\s(.*?)\\s*(\\d*x\\d*)\\s*@([0-9\\.]*)");
+            Pattern modePattern = Pattern.compile("Mode\\s+(\\d+):\\s(.*?)\\s*(\\d*x\\d*)\\s*@([0-9\\.]*)");
             Matcher modeMatcher = modePattern.matcher(line);
             while(modeMatcher.find()){
-                System.out.println(modeMatcher.group(1));
-                if(videoInputs.isEmpty()){    //something strange happend, stop process
-                    return videoInputs;
-                }
-                VideoPixelFormat vpf = new VideoPixelFormat();
-                VideoFrameSize vfs = new VideoFrameSize();
-                VideoFPS vfps = new VideoFPS();
                 VideoDevice vd = videoInputs.get(videoInputs.size() - 1);
-                vfps.setting = uvVideoSetting + ":" + vd.device + ":" + modeMatcher.group(1);
-                vpf.pixelFormat = modeMatcher.group(2);
-                vpf.name = modeMatcher.group(2);
-                vfs.widthXheight = modeMatcher.group(3);
-                vfps.fps = modeMatcher.group(4);
+                int pixelFormatPosition = 0;
+                int widthXheightPosition = 0;
                 boolean found_item = false;             //maybe not most elegant
                 for(int i=0;i<vd.vpf.size();i++){
-                    if(vd.vpf.get(i).pixelFormat.equals(vpf.pixelFormat)){
-                        vpf = vd.vpf.get(i);
+                    if(vd.vpf.get(i).pixelFormat.equals(modeMatcher.group(2))){
+                        pixelFormatPosition = i;
                         found_item = true;
                     }
                 }
                 if(!found_item){
+                    VideoPixelFormat vpf = new VideoPixelFormat();
+                    vpf.pixelFormat = modeMatcher.group(2);
+                    vpf.name = modeMatcher.group(2);
                     vpf.vfs = new ArrayList<>();
                     vd.vpf.add(vpf);
+                    pixelFormatPosition = vd.vpf.size() - 1;
                 }
                 found_item = false;
-                for(int i=0;i<vpf.vfs.size();i++){
-                    if(vpf.vfs.get(i).widthXheight.equals(vfs.widthXheight)){
-                        vfs = vpf.vfs.get(i);
+                for(int i=0;i<vd.vpf.get(pixelFormatPosition).vfs.size();i++){
+                    if(vd.vpf.get(pixelFormatPosition).vfs.get(i).widthXheight.equals(modeMatcher.group(3))){
+                        widthXheightPosition = i;
                         found_item = true;
                     }
                 }
                 if(!found_item){
+                    VideoFrameSize vfs = new VideoFrameSize();
+                    vfs.widthXheight = modeMatcher.group(3);
                     vfs.fps = new ArrayList<>();
-                    vpf.vfs.add(vfs);
+                    vd.vpf.get(pixelFormatPosition).vfs.add(vfs);
+                    widthXheightPosition = vd.vpf.get(pixelFormatPosition).vfs.size() - 1;
                 }
-                vfs.fps.add(vfps);
+                VideoFPS vfps = new VideoFPS();
+                vfps.fps = modeMatcher.group(4) + " mode:" + modeMatcher.group(1);
+                vfps.setting = "dshow" + ":" + vd.device + ":" + modeMatcher.group(1);
+                vd.vpf.get(pixelFormatPosition).vfs.get(widthXheightPosition).fps.add(vfps);
             }
         }
-                        
-        
         return videoInputs;
     }
     
@@ -1437,7 +1444,6 @@ public final class OptionsMainMenuWindow extends JFrame{
 
                     boolean wasNotFound = true;
                     for (VideoFPS currentFps : listVfps) {
-                        System.out.println(currentFps.fps + " vs " + vfps.fps);
                         if (currentFps.fps.equals(vfps.fps)) {
                             wasNotFound = false;
                         }
