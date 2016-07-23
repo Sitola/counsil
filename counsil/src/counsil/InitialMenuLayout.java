@@ -873,14 +873,10 @@ public final class InitialMenuLayout{
             JSONObject producerJSON = new JSONObject();
             producerJSON.put("path", clientConfig.getString("ultragrid path"));
             producerJSON.put("arguments", "");
-            JSONObject distributorJSON = new JSONObject();
-            distributorJSON.put("path", clientConfig.getString("distributor path"));
-            distributorJSON.put("arguments", "8M");
             JSONObject consumerJSON = new JSONObject();
             consumerJSON.put("path", clientConfig.getString("ultragrid path"));
             consumerJSON.put("arguments", "");
             templates.put("producer", producerJSON);
-            templates.put("distributor", distributorJSON);
             templates.put("consumer", consumerJSON);
 
             roomConfiguration.put("connector", connector);

@@ -67,7 +67,6 @@ public final class OptionsMainMenuWindow extends JFrame{
     Process uvProcess;
     JSONObject configuration;
     String uvPathString;
-    String distributorPathString;
     String layoutPathString;
     JTextArea verificationText;
     Color raiseHandColor;
@@ -111,7 +110,6 @@ public final class OptionsMainMenuWindow extends JFrame{
         correctUv = false;
         havePortaudio = false;
         uvPathString = "";
-        distributorPathString = "";
         layoutPathString = "";
         verificationText = new JTextArea();
         verificationText.setBackground(this.getBackground());
@@ -822,26 +820,22 @@ public final class OptionsMainMenuWindow extends JFrame{
         JTextField serverIpNameChangeInfoText = new JTextField(languageBundle.getString("SERVER_NAME"));
         JTextField serverIpPortChangeInfoText = new JTextField(languageBundle.getString("SERVER_PORT"));
         JTextField uvPathInfoText = new JTextField(languageBundle.getString("UV_PATH"));
-        JTextField mirrorPathInfoText = new JTextField(languageBundle.getString("HD_RUM_TRANSCODE_PATH"));
         JTextField layoutPathInfoText = new JTextField(languageBundle.getString("LAYOUT_PATH"));
         serverIpAddresChangeTextFieldInfoText.setEditable(false);
         serverIpNameChangeInfoText.setEditable(false);
         serverIpPortChangeInfoText.setEditable(false);
         uvPathInfoText.setEditable(false);
-        mirrorPathInfoText.setEditable(false);
         layoutPathInfoText.setEditable(false);
         serverIpAddresChangeTextFieldInfoText.setHorizontalAlignment(JTextField.RIGHT);
         serverIpNameChangeInfoText.setHorizontalAlignment(JTextField.RIGHT);
         serverIpPortChangeInfoText.setHorizontalAlignment(JTextField.RIGHT);
         uvPathInfoText.setHorizontalAlignment(JTextField.RIGHT);
-        mirrorPathInfoText.setHorizontalAlignment(JTextField.RIGHT);
         layoutPathInfoText.setHorizontalAlignment(JTextField.RIGHT);
        
         serverIpAddresChangeTextFieldInfoText.setBorder(BorderFactory.createEmptyBorder());
         serverIpNameChangeInfoText.setBorder(BorderFactory.createEmptyBorder());
         serverIpPortChangeInfoText.setBorder(BorderFactory.createEmptyBorder());
         uvPathInfoText.setBorder(BorderFactory.createEmptyBorder());
-        mirrorPathInfoText.setBorder(BorderFactory.createEmptyBorder());
         layoutPathInfoText.setBorder(BorderFactory.createEmptyBorder());
         
         JComboBox serverIpSelect = new JComboBox();
@@ -919,13 +913,7 @@ public final class OptionsMainMenuWindow extends JFrame{
                 Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        if(configuration.has("distributor path")){
-            try {
-                distributorPathString = configuration.getString("distributor path");
-            } catch (JSONException ex) {
-                Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+       
         if(configuration.has("layout path")){
             try {
                 layoutPathString = configuration.getString("layout path");
@@ -934,13 +922,10 @@ public final class OptionsMainMenuWindow extends JFrame{
             }
         }
         JTextField uvSystemPath = new JTextField(uvPathString);
-        JTextField mirrorSystemPath = new JTextField(distributorPathString);
         JTextField layoutSystemPath = new JTextField(layoutPathString);
         uvSystemPath.setColumns(20);
-        mirrorSystemPath.setColumns(20);
         layoutSystemPath.setColumns(20);
         uvSystemPath.setBorder(BorderFactory.createEmptyBorder());
-        mirrorSystemPath.setBorder(BorderFactory.createEmptyBorder());
         layoutSystemPath.setBorder(BorderFactory.createEmptyBorder());
         uvSystemPath.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -962,26 +947,7 @@ public final class OptionsMainMenuWindow extends JFrame{
                 uvPathString = uvSystemPath.getText();
             }
         });
-        mirrorSystemPath.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                propagateText();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                propagateText();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                propagateText();
-            }
-            
-            public void propagateText(){
-                distributorPathString = mirrorSystemPath.getText();
-            }
-        });
+        
         layoutSystemPath.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -1003,14 +969,11 @@ public final class OptionsMainMenuWindow extends JFrame{
             }
         });
         JFileChooser uvFileChooser = new JFileChooser();
-        JFileChooser mirrorFileChooser = new JFileChooser();
         JFileChooser layoutFileChooser = new JFileChooser();
         layoutFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         JButton setUvSystemPathButton = new JButton("...");
-        JButton setMirrorSystemPathButton = new JButton("...");
         JButton setLayoutSystemPathButton = new JButton("...");
         setUvSystemPathButton.setFont(fontButtons);
-        setMirrorSystemPathButton.setFont(fontButtons);
         setLayoutSystemPathButton.setFont(fontButtons);
         //setting action path choosing
         setUvSystemPathButton.addActionListener((ActionEvent event) -> {
@@ -1019,12 +982,7 @@ public final class OptionsMainMenuWindow extends JFrame{
                 uvSystemPath.setText(uvFileChooser.getSelectedFile().getPath());
             }
         });
-        setMirrorSystemPathButton.addActionListener((ActionEvent event) -> {
-            int returnVal = mirrorFileChooser.showOpenDialog(this);
-            if(returnVal == JFileChooser.APPROVE_OPTION){
-                mirrorSystemPath.setText(mirrorFileChooser.getSelectedFile().getPath());
-            }
-        });
+        
         setLayoutSystemPathButton.addActionListener((ActionEvent event) -> {
             int returnVal = layoutFileChooser.showOpenDialog(this);
             if(returnVal == JFileChooser.APPROVE_OPTION){
@@ -1060,10 +1018,6 @@ public final class OptionsMainMenuWindow extends JFrame{
         if(languageBundle.containsKey("MISC_TOOL_TIP_UV_PATH")){
             uvPathInfoText.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_UV_PATH"));
             uvSystemPath.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_UV_PATH"));
-        }
-        if(languageBundle.containsKey("MISC_TOOL_TIP_HD_RUM_TRANSCODE_PATH")){
-            mirrorPathInfoText.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_HD_RUM_TRANSCODE_PATH"));
-            mirrorSystemPath.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_HD_RUM_TRANSCODE_PATH"));
         }
         if(languageBundle.containsKey("MISC_TOOL_TIP_LAYOUT_PATH")){
             layoutPathInfoText.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_LAYOUT_PATH"));
@@ -1140,16 +1094,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         addressPanel.add(uvSystemPath, addressPanelConstraints);
         addressPanelConstraints.gridx = 2;
         addressPanelConstraints.gridy = 0;
-        addressPanel.add(setUvSystemPathButton, addressPanelConstraints);
-        addressPanelConstraints.gridx = 0;
-        addressPanelConstraints.gridy = 1;
-        addressPanel.add(mirrorPathInfoText, addressPanelConstraints);
-        addressPanelConstraints.gridx = 1;
-        addressPanelConstraints.gridy = 1;
-        addressPanel.add(mirrorSystemPath, addressPanelConstraints);
-        addressPanelConstraints.gridx = 2;
-        addressPanelConstraints.gridy = 1;
-        addressPanel.add(setMirrorSystemPathButton, addressPanelConstraints);
+        addressPanel.add(setUvSystemPathButton, addressPanelConstraints);        
         addressPanelConstraints.gridx = 0;
         addressPanelConstraints.gridy = 2;
         addressPanel.add(layoutPathInfoText, addressPanelConstraints);
@@ -1913,7 +1858,6 @@ public final class OptionsMainMenuWindow extends JFrame{
             
             newClinetConfiguration.put("this ip", myIpSetTextField.getText());
             newClinetConfiguration.put("ultragrid path", uvPathString);
-            newClinetConfiguration.put("distributor path", distributorPathString);
             newClinetConfiguration.put("layout path", layoutPathString);
             newClinetConfiguration.put("producer settings", producerSetting);
             newClinetConfiguration.put("consumer settings", displaySetting);
