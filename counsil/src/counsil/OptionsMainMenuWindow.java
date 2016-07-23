@@ -31,7 +31,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javafx.scene.layout.Border;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -59,7 +58,6 @@ public final class OptionsMainMenuWindow extends JFrame{
     JPanel mainPanel, visualitationPanel, videoAudioPanel, miscsPanel;
     JTabbedPane mainTabPanel;
     Font fontButtons;
-    Font fontBoxes;
     List<VideoDevice> videoDevices;
     List<AudioDevice> audioIn;
     List<AudioDevice> audioOut;
@@ -101,11 +99,10 @@ public final class OptionsMainMenuWindow extends JFrame{
     ResourceBundle languageBundle;
     
     // constructor
-    OptionsMainMenuWindow(Font fontButtons, Font fontBoxes, File configurationFile, InitialMenuLayout initialMenuLayout, ResourceBundle lenguageBundle)
+    OptionsMainMenuWindow(Font fontButtons, File configurationFile, InitialMenuLayout initialMenuLayout, ResourceBundle lenguageBundle)
     {
         super(lenguageBundle.getString("COUNSIL_OPTIONS"));
-        //this.fontButtons = fontButtons;
-       // this.fontBoxes = fontBoxes;
+        this.fontButtons = fontButtons;
         this.languageBundle = lenguageBundle;
         videoDevices = new ArrayList<>();
         audioIn = new ArrayList<>();
@@ -117,7 +114,6 @@ public final class OptionsMainMenuWindow extends JFrame{
         distributorPathString = "";
         layoutPathString = "";
         verificationText = new JTextArea();
-        //verificationText.setFont(new Font(fontBoxes.getName(), Font.BOLD, fontBoxes.getSize() +3));
         verificationText.setBackground(this.getBackground());
         verificationText.setEditable(false);
         verificationText.setBorder(BorderFactory.createEmptyBorder());
@@ -215,7 +211,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         });
         
         JButton saveButton = new JButton(lenguageBundle.getString("SAVE"));
-       // saveButton.setFont(fontButtons);
+        saveButton.setFont(fontButtons);
         saveButton.addActionListener((ActionEvent event) -> {
             if(uvProcess != null){
                 uvProcess.destroy();
@@ -223,7 +219,7 @@ public final class OptionsMainMenuWindow extends JFrame{
             saveSettingAction();
         });
         JButton discardButton = new JButton(lenguageBundle.getString("DISCARD"));
-       // discardButton.setFont(fontButtons);
+        discardButton.setFont(fontButtons);
         discardButton.addActionListener((ActionEvent event) -> {
             if(uvProcess != null){
                 uvProcess.destroy();
@@ -302,11 +298,9 @@ public final class OptionsMainMenuWindow extends JFrame{
         
         JTextField lenguageInfoTextField = new JTextField(languageBundle.getString("LANGUAGE"));
         lenguageInfoTextField.setEditable(false);
-       // lenguageInfoTextField.setFont(fontBoxes);
         lenguageInfoTextField.setBorder(BorderFactory.createEmptyBorder());
         languageCombobox.setEditable(false);
         languageCombobox.setLightWeightPopupEnabled(true);
-       // languageCombobox.setFont(fontBoxes);
         String setLenguage = "";
         try {
             setLenguage = configuration.getString("language");
@@ -317,12 +311,9 @@ public final class OptionsMainMenuWindow extends JFrame{
         lenguagePanel.setBorder(new TitledBorder(languageBundle.getString("LANGUAGE")));     
                
         JTextField setResizeAmountTextInfo = new JTextField(languageBundle.getString("RESAZING_INFO_TEXT"));
-        JTextField setResizePixelSign = new JTextField(languageBundle.getString("PIXELS"));
-      //  setResizeAmount.setFont(fontBoxes);
-        //setResizeAmountTextInfo.setFont(fontBoxes);
+        JTextField setResizePixelSign = new JTextField(languageBundle.getString("PIXELS")); 
         setResizeAmountTextInfo.setBorder(BorderFactory.createEmptyBorder());
         setResizePixelSign.setBorder(BorderFactory.createEmptyBorder());
-       // setResizePixelSign.setFont(fontBoxes);
         setResizeAmount.setEditable(true);
         setResizeAmountTextInfo.setEditable(false);
         setResizePixelSign.setEditable(false); 
@@ -453,19 +444,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         displaySettingBox.setEditable(false);
         audioInComboBox.setEditable(false);
         audioOutComboBox.setEditable(false);
-        //set font
-       /* mainCameraBox.setFont(fontBoxes);
-        mainCameraPixelFormatBox.setFont(fontBoxes);
-        mainCameraFrameSizeBox.setFont(fontBoxes);
-        mainCameraFPSBox.setFont(fontBoxes);
-        presentationBox.setFont(fontBoxes);
-        presentationPixelFormatBox.setFont(fontBoxes);
-        presentationFrameSizeBox.setFont(fontBoxes);
-        presentationFPSBox.setFont(fontBoxes);
-        displayBox.setFont(fontBoxes);
-        displaySettingBox.setFont(fontBoxes);
-        audioInComboBox.setFont(fontBoxes);
-        audioOutComboBox.setFont(fontBoxes);*/
+       
         //set action
         mainCameraBox.addActionListener((ActionEvent event) -> {
             actionSetCameraDeviceBox(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
@@ -499,18 +478,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         JTextField presentationFPSText = new JTextField(languageBundle.getString("FPS"));
         JTextField audioInText = new JTextField(languageBundle.getString("AUDIO_IN"));
         JTextField audioOutText = new JTextField(languageBundle.getString("AUDIO_OUT"));
-       /* displayDeviceText.setFont(fontBoxes);
-        displaySettingText.setFont(fontBoxes);
-        cameraDeviceText.setFont(fontBoxes);
-        cameraPixelFormatText.setFont(fontBoxes);
-        cameraFrameSizeText.setFont(fontBoxes);
-        cameraFPSText.setFont(fontBoxes);
-        presentationDeviceText.setFont(fontBoxes);
-        presentationPixelFormatText.setFont(fontBoxes);
-        presentationFrameSizeText.setFont(fontBoxes);
-        presentationFPSText.setFont(fontBoxes);
-        audioInText.setFont(fontBoxes);
-        audioOutText.setFont(fontBoxes);*/
+      
         displayDeviceText.setEditable(false);
         displaySettingText.setEditable(false);
         cameraDeviceText.setEditable(false);
@@ -586,8 +554,8 @@ public final class OptionsMainMenuWindow extends JFrame{
         //buttons
         JButton testCameraButton = new JButton(languageBundle.getString("TEST_CAMERA"));
         JButton testPresentationButton = new JButton(languageBundle.getString("TEST_PRESENTATION"));
-       // testCameraButton.setFont(fontBoxes);
-       // testPresentationButton.setFont(fontBoxes);
+        testCameraButton.setFont(fontButtons);
+        testPresentationButton.setFont(fontButtons);
         if(languageBundle.containsKey("AV_TOOL_TIP_TEST_CAMERA")){
             testCameraButton.setToolTipText(languageBundle.getString("AV_TOOL_TIP_TEST_CAMERA"));
         }
@@ -630,7 +598,6 @@ public final class OptionsMainMenuWindow extends JFrame{
         });
         //check box
         JCheckBox presentationCheckBox = new JCheckBox(languageBundle.getString("PRESENTATION"));
-      //  presentationCheckBox.setFont(fontBoxes);
         presentationCheckBox.addItemListener((ItemEvent e) -> {
             boolean isSelected = e.getStateChange() == ItemEvent.SELECTED;
             presetationPanel.setVisible(isSelected);
@@ -835,11 +802,9 @@ public final class OptionsMainMenuWindow extends JFrame{
         
         myIpSetTextField.setEditable(true);
         myIpSetTextField.setColumns(10);
-       // myIpSetTextField.setFont(fontBoxes);
         myIpSetTextField.setBorder(BorderFactory.createEmptyBorder());
         JTextField myIpSetTextFieldInfoText = new JTextField(languageBundle.getString("MY_IP"));
         myIpSetTextFieldInfoText.setEditable(false);
-       // myIpSetTextFieldInfoText.setFont(fontBoxes);
         myIpSetTextFieldInfoText.setBorder(BorderFactory.createEmptyBorder());
         
         JTextField serverIpAddresChangeTextField = new JTextField();
@@ -848,9 +813,6 @@ public final class OptionsMainMenuWindow extends JFrame{
         serverIpAddresChangeTextField.setColumns(10);
         serverIpNameChange.setColumns(13);
         serverIpPortChange.setColumns(13);
-        //serverIpAddresChangeTextField.setFont(fontBoxes);
-       // serverIpNameChange.setFont(fontBoxes);
-       // serverIpPortChange.setFont(fontBoxes);
         serverIpAddresChangeTextField.setBorder(BorderFactory.createEmptyBorder());
         serverIpNameChange.setBorder(BorderFactory.createEmptyBorder());
         serverIpPortChange.setBorder(BorderFactory.createEmptyBorder());
@@ -874,12 +836,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         uvPathInfoText.setHorizontalAlignment(JTextField.RIGHT);
         mirrorPathInfoText.setHorizontalAlignment(JTextField.RIGHT);
         layoutPathInfoText.setHorizontalAlignment(JTextField.RIGHT);
-       /* serverIpAddresChangeTextFieldInfoText.setFont(fontBoxes);
-        serverIpNameChangeInfoText.setFont(fontBoxes);
-        serverIpPortChangeInfoText.setFont(fontBoxes);
-        uvPathInfoText.setFont(fontBoxes);
-        mirrorPathInfoText.setFont(fontBoxes);
-        layoutPathInfoText.setFont(fontBoxes);*/
+       
         serverIpAddresChangeTextFieldInfoText.setBorder(BorderFactory.createEmptyBorder());
         serverIpNameChangeInfoText.setBorder(BorderFactory.createEmptyBorder());
         serverIpPortChangeInfoText.setBorder(BorderFactory.createEmptyBorder());
@@ -888,7 +845,6 @@ public final class OptionsMainMenuWindow extends JFrame{
         layoutPathInfoText.setBorder(BorderFactory.createEmptyBorder());
         
         JComboBox serverIpSelect = new JComboBox();
-        //serverIpSelect.setFont(fontBoxes);
         serverIpSelect.setEditable(false);
         serverIpSelect.addActionListener((ActionEvent event) -> {
             if(serverIpSelect.getItemCount() > 0){
@@ -903,10 +859,10 @@ public final class OptionsMainMenuWindow extends JFrame{
         JButton addNewServerButton = new JButton(languageBundle.getString("ADD"));
         JButton saveChangesInServerButton = new JButton(languageBundle.getString("USE"));
         JButton deleteCurrentServerButton = new JButton(languageBundle.getString("DELETE"));
-        /*reloadUltragridButton.setFont(fontBoxes);
-        addNewServerButton.setFont(fontBoxes);
-        saveChangesInServerButton.setFont(fontBoxes);
-        deleteCurrentServerButton.setFont(fontBoxes);*/
+        reloadUltragridButton.setFont(fontButtons);
+        addNewServerButton.setFont(fontButtons);
+        saveChangesInServerButton.setFont(fontButtons);
+        deleteCurrentServerButton.setFont(fontButtons);
         reloadUltragridButton.addActionListener((ActionEvent event) -> {
             ultragridOK(uvPathString, verificationText);
             try {
@@ -983,9 +939,6 @@ public final class OptionsMainMenuWindow extends JFrame{
         uvSystemPath.setColumns(20);
         mirrorSystemPath.setColumns(20);
         layoutSystemPath.setColumns(20);
-        /*uvSystemPath.setFont(fontBoxes);
-        mirrorSystemPath.setFont(fontBoxes);
-        layoutSystemPath.setFont(fontBoxes);*/
         uvSystemPath.setBorder(BorderFactory.createEmptyBorder());
         mirrorSystemPath.setBorder(BorderFactory.createEmptyBorder());
         layoutSystemPath.setBorder(BorderFactory.createEmptyBorder());
@@ -1056,9 +1009,9 @@ public final class OptionsMainMenuWindow extends JFrame{
         JButton setUvSystemPathButton = new JButton("...");
         JButton setMirrorSystemPathButton = new JButton("...");
         JButton setLayoutSystemPathButton = new JButton("...");
-        /*setUvSystemPathButton.setFont(fontBoxes);
-        setMirrorSystemPathButton.setFont(fontBoxes);
-        setLayoutSystemPathButton.setFont(fontBoxes);*/
+        setUvSystemPathButton.setFont(fontButtons);
+        setMirrorSystemPathButton.setFont(fontButtons);
+        setLayoutSystemPathButton.setFont(fontButtons);
         //setting action path choosing
         setUvSystemPathButton.addActionListener((ActionEvent event) -> {
             int returnVal = uvFileChooser.showOpenDialog(this);
@@ -1296,6 +1249,7 @@ public final class OptionsMainMenuWindow extends JFrame{
                             String pixelFormatString = pixelFormatMatcher.group(2);
                             pf.pixelFormat = pixelFormatString.replaceAll("\\s+","");
                         }
+                        
                         pf.name = line.substring(line.indexOf("Pixel format")+12, line.indexOf('.'));
                         lastVideoDevice.vpf.add(pf);
                     }else{                              //line with frame size
@@ -1690,26 +1644,26 @@ public final class OptionsMainMenuWindow extends JFrame{
         //initiial tests if it can be ultragrid
         if(uvAddress.isEmpty()){
             verificationTextField.setForeground(Color.red);
-            verificationTextField.setText("prazdna adresa"); //!
+            verificationTextField.setText(languageBundle.getString("EMPTY_PATH"));
             correctUv = false;
             return;
         }
         File uvFile = new File(uvAddress);
         if(!uvFile.exists()){
             verificationTextField.setForeground(Color.red);
-            verificationTextField.setText("cesta k suboru je neplatna"); //!
+            verificationTextField.setText(languageBundle.getString("INVALID_PATH")+ " " + uvFile.getName() + ".");
             correctUv = false;
             return;
         }
         if(uvFile.isDirectory()){
             verificationTextField.setForeground(Color.red);
-            verificationTextField.setText("casta je adresar");//!
+            verificationTextField.setText(languageBundle.getString("FILE")+ " " + uvFile.getName() + " " + languageBundle.getString("IS_DIRECTORY"));
             correctUv = false;
             return;
         }
         if(!uvFile.canExecute()){
             verificationTextField.setForeground(Color.red);
-            verificationTextField.setText("subor nie je spustitelny");//!
+            verificationTextField.setText(languageBundle.getString("FILE")+ " " + uvFile.getName() + " " + languageBundle.getString("CAN_NOT_BE_EXECUTED"));
             correctUv = false;
             return;
         }
@@ -1785,18 +1739,19 @@ public final class OptionsMainMenuWindow extends JFrame{
         if(correctUvreturnValue && correctUvOutput){
             verificationTextField.setForeground(Color.getHSBColor((float)0.39, (float)1, (float)0.8));
             verificationTextField.setRows(4);
-            outMessage += "ultragid je ok";
+            outMessage += "UltraGid ";
+            outMessage += languageBundle.getString("FOUND");
             verificationTextField.setText(outMessage);
             correctUv = true;
         }else{
             if(correctUvreturnValue){
                 verificationTextField.setForeground(Color.red);
                 verificationTextField.setRows(1);
-                verificationTextField.setText("toto nie je ultragrid"); //!
+                verificationTextField.setText(languageBundle.getString("ERROR"));
             }else{
                 verificationTextField.setForeground(Color.red);
                 verificationTextField.setRows(1);
-                verificationTextField.setText("ultragrid sa neda spustit");
+                verificationTextField.setText("UltraGid " + languageBundle.getString("CAN_NOT_BE_EXECUTED"));
             }
         }        
     }
