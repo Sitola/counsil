@@ -1,6 +1,7 @@
 package counsil;
 
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.Point;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -75,12 +76,13 @@ public class LayoutManagerImpl implements LayoutManager {
      * @param setScaleRatio ratio to be scaled
      * @param layoutFile
      * @param languageBundle
+     * @param font
      * @throws org.json.JSONException
      * @throws java.io.FileNotFoundException
      * @throws wddman.WDDManException
      * @throws org.jnativehook.NativeHookException
      */
-    public LayoutManagerImpl(String role, InitialMenuLayout iml, int setScaleRatio, File layoutFile, ResourceBundle languageBundle) throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
+    public LayoutManagerImpl(String role, InitialMenuLayout iml, int setScaleRatio, File layoutFile, ResourceBundle languageBundle, Font font) throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
 
         calculator = new LayoutCalculator(role, layoutFile);
         scaleRatio = setScaleRatio;
@@ -100,10 +102,10 @@ public class LayoutManagerImpl implements LayoutManager {
                 try {
 
                     if (role.toUpperCase().equals("STUDENT")) {
-                        menu = new InteractionMenuStudentExtension(calculator.getMenuRole(), calculator.getMenuPostion(), iml, languageBundle);
+                        menu = new InteractionMenuStudentExtension(calculator.getMenuRole(), calculator.getMenuPostion(), iml, languageBundle, font);
                     }
                     else {
-                        menu = new InteractionMenu(calculator.getMenuRole(), calculator.getMenuPostion(), iml, languageBundle);
+                        menu = new InteractionMenu(calculator.getMenuRole(), calculator.getMenuPostion(), iml, languageBundle, font);
                     }
                     menu.publish();
                     menu.addInteractionMenuListener(new InteractionMenuListener() {
