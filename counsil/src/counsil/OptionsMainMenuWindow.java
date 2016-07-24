@@ -462,19 +462,6 @@ public final class OptionsMainMenuWindow extends JFrame{
         displaySettingBox.setEditable(false);
         audioInComboBox.setEditable(false);
         audioOutComboBox.setEditable(false);
-        //set font
-       /* mainCameraBox.setFont(fontBoxes);
-        mainCameraPixelFormatBox.setFont(fontBoxes);
-        mainCameraFrameSizeBox.setFont(fontBoxes);
-        mainCameraFPSBox.setFont(fontBoxes);
-        presentationBox.setFont(fontBoxes);
-        presentationPixelFormatBox.setFont(fontBoxes);
-        presentationFrameSizeBox.setFont(fontBoxes);
-        presentationFPSBox.setFont(fontBoxes);
-        displayBox.setFont(fontBoxes);
-        displaySettingBox.setFont(fontBoxes);
-        audioInComboBox.setFont(fontBoxes);
-        audioOutComboBox.setFont(fontBoxes);*/
         //set action
         mainCameraBox.addActionListener((ActionEvent event) -> {
             actionSetCameraDeviceBox(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, cameraSettingText, videoDevices);
@@ -754,14 +741,14 @@ public final class OptionsMainMenuWindow extends JFrame{
         presetationPanelConstrains.gridy = 3;
         presetationPanelConstrains.anchor = GridBagConstraints.LINE_START;
         presetationPanel.add(presentationFPSBox, presetationPanelConstrains);
-        mainCameraPanelConstrains.gridx = 0;
-        mainCameraPanelConstrains.gridy = 4;
-        mainCameraPanelConstrains.anchor = GridBagConstraints.LINE_END;
-        mainCameraPanel.add(presentationSettingInfoText, mainCameraPanelConstrains);
-        mainCameraPanelConstrains.gridx = 1;
-        mainCameraPanelConstrains.gridy = 4;
-        mainCameraPanelConstrains.anchor = GridBagConstraints.LINE_START;
-        mainCameraPanel.add(presentationSettingText, mainCameraPanelConstrains);
+        presetationPanelConstrains.gridx = 0;
+        presetationPanelConstrains.gridy = 4;
+        presetationPanelConstrains.anchor = GridBagConstraints.LINE_END;
+        presetationPanel.add(presentationSettingInfoText, presetationPanelConstrains);
+        presetationPanelConstrains.gridx = 1;
+        presetationPanelConstrains.gridy = 4;
+        presetationPanelConstrains.anchor = GridBagConstraints.LINE_START;
+        presetationPanel.add(presentationSettingText, presetationPanelConstrains);
         
         displayPanel.setLayout(new GridBagLayout());        
         GridBagConstraints displayPanelConstrains = new GridBagConstraints();
