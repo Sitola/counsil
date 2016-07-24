@@ -107,12 +107,6 @@ public class InteractionMenu extends JFrame {
             refreshButtonActionPerformed();
         });
 
-        JButton settingsButton = new JButton();
-        settingsButton.setText(languageBundle.getString("OPTIONS"));
-        settingsButton.addActionListener((ActionEvent evt) -> {
-            settingsButtonActionPerformed();
-        });
-
         JButton exitButton = new JButton();
         exitButton.setText(languageBundle.getString("EXIT"));
         exitButton.addActionListener((ActionEvent evt) -> {
@@ -120,7 +114,6 @@ public class InteractionMenu extends JFrame {
         });
 
         buttons.add(refreshButton);
-        buttons.add(settingsButton);
         buttons.add(exitButton);
     }
 
