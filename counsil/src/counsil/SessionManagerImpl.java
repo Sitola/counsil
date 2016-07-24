@@ -30,15 +30,12 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingWorker;
 
 /**
  *
@@ -111,36 +108,42 @@ public class SessionManagerImpl implements SessionManager {
      */
     private Boolean canAlert;
     Timer alertTimer;
-
-    /**
-     * color of boarder when someone is talking
-     */
-    Color talkingColor;
-    
-    /**
-     * color when someone rise hand
-     */
-    Color riseHandColor;
     
     /**
      * actual resources bundlo for lenguages
      */
     ResourceBundle lenguageBundle;
     
+     String alertColor;
+     
+     String talkColor;
+    
     /**
      * Constructor to initialize LayoutManager
      *
      * @param layoutManager
+     * @param talkingColor
+     * @param riseHandColor
+     * @param languageBundle
      */
-    public SessionManagerImpl(LayoutManager layoutManager, Color talkingColor, Color riseHandColor, ResourceBundle lenguageBundle) {
+    public SessionManagerImpl(LayoutManager layoutManager, Color talkingColor, Color riseHandColor, ResourceBundle languageBundle) {
+
+        alertColor = "#";
+        alertColor += Integer.toHexString(riseHandColor.getRed());
+        alertColor += Integer.toHexString(riseHandColor.getGreen());
+        alertColor += Integer.toHexString(riseHandColor.getBlue());
+        
+        talkColor = "#";
+        talkColor += Integer.toHexString(talkingColor.getRed());
+        talkColor += Integer.toHexString(talkingColor.getGreen());
+        talkColor += Integer.toHexString(talkingColor.getBlue());
+        
 
         talkingNode = null;
         canAlert = true;
         alertTimer = new Timer();
         
-        this.talkingColor = talkingColor;
-        this.riseHandColor = riseHandColor;
-        this.lenguageBundle = lenguageBundle;
+        this.lenguageBundle = languageBundle;
 
         if (layoutManager == null) {
             throw new IllegalArgumentException("layoutManager is null");
@@ -337,12 +340,8 @@ public class SessionManagerImpl implements SessionManager {
                             talkingNode = talker;
                             layoutManager.upScale(title);
                             if (handle != null) {
-                                try {
-                                    String hexColor = "#";
-                                    hexColor += Integer.toHexString(talkingColor.getRed());
-                                    hexColor += Integer.toHexString(talkingColor.getGreen());
-                                    hexColor += Integer.toHexString(talkingColor.getBlue());
-                                    handle.sendCommand("postprocess border:width=10:color=" + hexColor);
+                                try {                                    
+                                    handle.sendCommand("postprocess border:width=10:color=" + talkColor);
                                 } catch (InterruptedException | TimeoutException ex) {
                                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                                 }
@@ -362,12 +361,8 @@ public class SessionManagerImpl implements SessionManager {
 
             private void alertConsumerContinuously(UltraGridControllerHandle handle, CounsilTimer counsilTimer, int duration) {
 
-                try {
-                    String hexColor = "#";
-                    hexColor += Integer.toHexString(riseHandColor.getRed());
-                    hexColor += Integer.toHexString(riseHandColor.getGreen());
-                    hexColor += Integer.toHexString(riseHandColor.getBlue());
-                    handle.sendCommand("postprocess border:width=10:color=" + hexColor);
+                try {                    
+                    handle.sendCommand("postprocess border:width=10:color=" + alertColor);
                 } catch (InterruptedException | TimeoutException ex) {
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }

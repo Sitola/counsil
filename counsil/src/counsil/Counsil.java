@@ -15,7 +15,7 @@ import wddman.WDDManException;
  *
  * @author xminarik
  */
-public class CoUnSil {
+public class Counsil {
 
     /**
      * @param args the command line arguments

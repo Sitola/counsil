@@ -5,6 +5,7 @@
  */
 package counsil;
 
+import java.awt.Font;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -35,6 +36,9 @@ public class InteractionMenu extends JFrame {
      * Instance of initial menu to return after counsil session end
      */
     private final InitialMenuLayout initialMenu;
+    
+    
+    public Font font;
 
     /**
      * List of listeners
@@ -49,7 +53,7 @@ public class InteractionMenu extends JFrame {
      * @param position menu position
      * @param iml initial menu to return to
      */
-    InteractionMenu(String role, Position position, InitialMenuLayout iml, ResourceBundle languageBundle) {
+    InteractionMenu(String role, Position position, InitialMenuLayout iml, ResourceBundle languageBundle, Font font) {
 
         super("CoUnSil");
 
@@ -64,6 +68,7 @@ public class InteractionMenu extends JFrame {
         setLocation(position.x, position.y);
         setDefaultLookAndFeelDecorated(false);
         this.languageBundle = languageBundle;
+        this.font = font;
         overrideJOptionPaneBundle();
     }
 
@@ -91,7 +96,7 @@ public class InteractionMenu extends JFrame {
 
     private void settingsButtonActionPerformed() {
 
-        initialMenu.optionMainMenuWindow = new OptionsMainMenuWindow(null, null, initialMenu.configurationFile, initialMenu, languageBundle);
+        initialMenu.optionMainMenuWindow = new OptionsMainMenuWindow(font, initialMenu.configurationFile, initialMenu, languageBundle);
     }
 
     private void addBasicButtons() {
@@ -102,12 +107,6 @@ public class InteractionMenu extends JFrame {
             refreshButtonActionPerformed();
         });
 
-        JButton settingsButton = new JButton();
-        settingsButton.setText(languageBundle.getString("OPTIONS"));
-        settingsButton.addActionListener((ActionEvent evt) -> {
-            settingsButtonActionPerformed();
-        });
-
         JButton exitButton = new JButton();
         exitButton.setText(languageBundle.getString("EXIT"));
         exitButton.addActionListener((ActionEvent evt) -> {
@@ -115,7 +114,6 @@ public class InteractionMenu extends JFrame {
         });
 
         buttons.add(refreshButton);
-        buttons.add(settingsButton);
         buttons.add(exitButton);
     }
 
@@ -133,6 +131,7 @@ public class InteractionMenu extends JFrame {
         buttons.stream().forEach((button) -> {
 
             button.setPreferredSize(new java.awt.Dimension(130, 31));
+            button.setFont(font);
 
             verticalGroup
                     .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);

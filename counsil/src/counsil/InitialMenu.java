@@ -6,11 +6,13 @@
 package counsil;
 
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+import wddman.OperatingSystem;
 import wddman.UnsupportedOperatingSystemException;
 import wddman.WDDMan;
 import wddman.WDDManException;
@@ -36,7 +38,22 @@ public class InitialMenu {
         } catch (UnsupportedOperatingSystemException ex) {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
+         
+        OperatingSystem os = wd.getRunningOperatingSystem();
         
+        Font font;
+        
+        switch(os){            
+            case WINDOWS:
+            case MACOS:
+                font =  new Font("Arial", 0, 16);
+                break;
+            case LINUX:
+                font = new Font("Sans", 0, 16);
+                break;
+            default: 
+                font = null;
+        }
         File clientConfigurationFile = new File("configs/clientConfig.json");
         
         // create menu
@@ -44,7 +61,7 @@ public class InitialMenu {
             @Override
             public void run() {
                 try {
-                    menu = new InitialMenuLayout(centerPosition(), clientConfigurationFile);
+                    menu = new InitialMenuLayout(centerPosition(), clientConfigurationFile, font);
                 } catch (JSONException ex) {
                     Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }

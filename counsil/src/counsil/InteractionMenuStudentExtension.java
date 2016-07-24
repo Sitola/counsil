@@ -5,6 +5,7 @@
  */
 package counsil;
 
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
@@ -23,10 +24,11 @@ public class InteractionMenuStudentExtension extends InteractionMenu {
      * @param position
      * @param iml  
      * @param languageBundle  
+     * @param font  
      */
-    public InteractionMenuStudentExtension(String role, Position position, InitialMenuLayout iml, ResourceBundle languageBundle) {
+    public InteractionMenuStudentExtension(String role, Position position, InitialMenuLayout iml, ResourceBundle languageBundle, Font font) {
       
-        super(role, position, iml, languageBundle);        
+        super(role, position, iml, languageBundle, font);        
         this.languageBundle = languageBundle;
         buttons.add(createAndInitAlertButton());
     }
