@@ -97,6 +97,8 @@ public final class OptionsMainMenuWindow extends JFrame{
     JComboBox audioInComboBox;
     JComboBox audioOutComboBox;
     JComboBox languageCombobox;
+    JTextField cameraSettingText;
+    JTextField presentationSettingText;
     
     ResourceBundle languageBundle;
     
@@ -140,6 +142,13 @@ public final class OptionsMainMenuWindow extends JFrame{
         audioInComboBox = new JComboBox();
         audioOutComboBox = new JComboBox();
         languageCombobox = new JComboBox();
+        
+        cameraSettingText = new JTextField();
+        presentationSettingText = new JTextField();
+        cameraSettingText.setEditable(false);
+        presentationSettingText.setEditable(false);
+        cameraSettingText.setBorder(BorderFactory.createEmptyBorder());
+        presentationSettingText.setBorder(BorderFactory.createEmptyBorder());
         
         configuration = readJsonFile(configurationFile);
         
@@ -250,8 +259,8 @@ public final class OptionsMainMenuWindow extends JFrame{
         setAudioJComboBox(audioInComboBox, audioIn);
         setAudioJComboBox(audioOutComboBox, audioOut);
         
-        setAllJComboBoxesVideosetting(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
-        setAllJComboBoxesVideosetting(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, videoDevices);
+        setAllJComboBoxesVideosetting(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, cameraSettingText, videoDevices);
+        setAllJComboBoxesVideosetting(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, presentationSettingText, videoDevices);
         
         setJComboBoxDisplay(displayBox, displaySettingBox);
         
@@ -468,22 +477,28 @@ public final class OptionsMainMenuWindow extends JFrame{
         audioOutComboBox.setFont(fontBoxes);*/
         //set action
         mainCameraBox.addActionListener((ActionEvent event) -> {
-            actionSetCameraDeviceBox(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
+            actionSetCameraDeviceBox(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, cameraSettingText, videoDevices);
         });
         mainCameraPixelFormatBox.addActionListener((ActionEvent event) -> {
-            actionSetCameraPixelFormatBox(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
+            actionSetCameraPixelFormatBox(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, cameraSettingText, videoDevices);
         });
         mainCameraFrameSizeBox.addActionListener((ActionEvent event) -> {
-            actionSetCameraFrameSizeBox(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
+            actionSetCameraFrameSizeBox(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, cameraSettingText, videoDevices);
+        });
+        mainCameraFPSBox.addActionListener((ActionEvent event) -> {
+            actionSetFPSBox(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, cameraSettingText, videoDevices);
         });
         presentationBox.addActionListener((ActionEvent event) -> {
-            actionSetCameraDeviceBox(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, videoDevices);
+            actionSetCameraDeviceBox(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, presentationSettingText, videoDevices);
         });
         presentationPixelFormatBox.addActionListener((ActionEvent event) -> {
-            actionSetCameraPixelFormatBox(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, videoDevices);
+            actionSetCameraPixelFormatBox(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, presentationSettingText, videoDevices);
         });
         presentationFrameSizeBox.addActionListener((ActionEvent event) -> {
-            actionSetCameraFrameSizeBox(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, videoDevices);
+            actionSetCameraFrameSizeBox(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, presentationSettingText, videoDevices);
+        });
+        presentationFPSBox.addActionListener((ActionEvent event) -> {
+            actionSetFPSBox(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, presentationSettingText, videoDevices);
         });
 
         //info fields
@@ -499,6 +514,8 @@ public final class OptionsMainMenuWindow extends JFrame{
         JTextField presentationFPSText = new JTextField(languageBundle.getString("FPS"));
         JTextField audioInText = new JTextField(languageBundle.getString("AUDIO_IN"));
         JTextField audioOutText = new JTextField(languageBundle.getString("AUDIO_OUT"));
+        JTextField cameraSettingInfoText = new JTextField(languageBundle.getString("DEVICE_SETTING"));
+        JTextField presentationSettingInfoText = new JTextField(languageBundle.getString("DEVICE_SETTING"));
        /* displayDeviceText.setFont(fontBoxes);
         displaySettingText.setFont(fontBoxes);
         cameraDeviceText.setFont(fontBoxes);
@@ -523,6 +540,8 @@ public final class OptionsMainMenuWindow extends JFrame{
         presentationFPSText.setEditable(false);
         audioInText.setEditable(false);
         audioOutText.setEditable(false);
+        cameraSettingInfoText.setEditable(false);
+        presentationSettingInfoText.setEditable(false);
         displayDeviceText.setBorder(BorderFactory.createEmptyBorder());
         displaySettingText.setBorder(BorderFactory.createEmptyBorder());
         cameraDeviceText.setBorder(BorderFactory.createEmptyBorder());
@@ -535,6 +554,8 @@ public final class OptionsMainMenuWindow extends JFrame{
         presentationFPSText.setBorder(BorderFactory.createEmptyBorder());
         audioInText.setBorder(BorderFactory.createEmptyBorder());
         audioOutText.setBorder(BorderFactory.createEmptyBorder());
+        cameraSettingInfoText.setBorder(BorderFactory.createEmptyBorder());
+        presentationSettingInfoText.setBorder(BorderFactory.createEmptyBorder());
         if(languageBundle.containsKey("AV_TOOL_TIP_DISPLAY_DEVICE")){
             displayDeviceText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_DISPLAY_DEVICE"));
             displayBox.setToolTipText(languageBundle.getString("AV_TOOL_TIP_DISPLAY_DEVICE"));
@@ -582,6 +603,14 @@ public final class OptionsMainMenuWindow extends JFrame{
         if(languageBundle.containsKey("AV_TOOL_TIP_AUDIO_OUT")){
             audioOutText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_AUDIO_OUT"));
             audioOutComboBox.setToolTipText(languageBundle.getString("AV_TOOL_TIP_AUDIO_OUT"));
+        }
+        if(languageBundle.containsKey("AV_TOOL_TIP_CAMERA_DEVICE_SETTING")){
+            cameraSettingText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_CAMERA_DEVICE_SETTING"));
+            cameraSettingInfoText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_CAMERA_DEVICE_SETTING"));
+        }
+        if(languageBundle.containsKey("AV_TOOL_TIP_PRESENTATION_DEVICE_SETTING")){
+            presentationSettingText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_PRESENTATION_DEVICE_SETTING"));
+            presentationSettingInfoText.setToolTipText(languageBundle.getString("AV_TOOL_TIP_PRESENTATION_DEVICE_SETTING"));
         }
         //buttons
         JButton testCameraButton = new JButton(languageBundle.getString("TEST_CAMERA"));
@@ -678,6 +707,14 @@ public final class OptionsMainMenuWindow extends JFrame{
         mainCameraPanelConstrains.gridy = 3;
         mainCameraPanelConstrains.anchor = GridBagConstraints.LINE_START;
         mainCameraPanel.add(mainCameraFPSBox, mainCameraPanelConstrains);
+        mainCameraPanelConstrains.gridx = 0;
+        mainCameraPanelConstrains.gridy = 4;
+        mainCameraPanelConstrains.anchor = GridBagConstraints.LINE_END;
+        mainCameraPanel.add(cameraSettingInfoText, mainCameraPanelConstrains);
+        mainCameraPanelConstrains.gridx = 1;
+        mainCameraPanelConstrains.gridy = 4;
+        mainCameraPanelConstrains.anchor = GridBagConstraints.LINE_START;
+        mainCameraPanel.add(cameraSettingText, mainCameraPanelConstrains);
         
         presetationPanel.setLayout(new GridBagLayout());        
         GridBagConstraints presetationPanelConstrains = new GridBagConstraints();        
@@ -717,6 +754,14 @@ public final class OptionsMainMenuWindow extends JFrame{
         presetationPanelConstrains.gridy = 3;
         presetationPanelConstrains.anchor = GridBagConstraints.LINE_START;
         presetationPanel.add(presentationFPSBox, presetationPanelConstrains);
+        mainCameraPanelConstrains.gridx = 0;
+        mainCameraPanelConstrains.gridy = 4;
+        mainCameraPanelConstrains.anchor = GridBagConstraints.LINE_END;
+        mainCameraPanel.add(presentationSettingInfoText, mainCameraPanelConstrains);
+        mainCameraPanelConstrains.gridx = 1;
+        mainCameraPanelConstrains.gridy = 4;
+        mainCameraPanelConstrains.anchor = GridBagConstraints.LINE_START;
+        mainCameraPanel.add(presentationSettingText, mainCameraPanelConstrains);
         
         displayPanel.setLayout(new GridBagLayout());        
         GridBagConstraints displayPanelConstrains = new GridBagConstraints();
@@ -921,8 +966,8 @@ public final class OptionsMainMenuWindow extends JFrame{
             }
             setAudioJComboBox(audioInComboBox, audioIn);
             setAudioJComboBox(audioOutComboBox, audioOut);
-            setAllJComboBoxesVideosetting(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
-            setAllJComboBoxesVideosetting(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, videoDevices);
+            setAllJComboBoxesVideosetting(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, cameraSettingText, videoDevices);
+            setAllJComboBoxesVideosetting(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, presentationSettingText, videoDevices);
         });
         addNewServerButton.addActionListener((ActionEvent event) -> {
             IPServerSaved newServer = new IPServerSaved();
@@ -1393,7 +1438,7 @@ public final class OptionsMainMenuWindow extends JFrame{
                     widthXheightPosition = vd.vpf.get(pixelFormatPosition).vfs.size() - 1;
                 }
                 VideoFPS vfps = new VideoFPS();
-                vfps.fps = modeMatcher.group(4) + " mode:" + modeMatcher.group(1);
+                vfps.fps = modeMatcher.group(4);
                 vfps.setting = "dshow" + ":" + vd.device + ":" + modeMatcher.group(1);
                 vd.vpf.get(pixelFormatPosition).vfs.get(widthXheightPosition).fps.add(vfps);
             }
@@ -1439,20 +1484,9 @@ public final class OptionsMainMenuWindow extends JFrame{
                 max_fps = Integer.parseInt(modeMatcher.group(4));
                 for(int i = max_fps; i > 0; i--) {
                     VideoFPS vfps = new VideoFPS();
-                    vfps.setting = partialSetting + ":framerate=" + i;
+                    vfps.setting = partialSetting + ":framerate=" + String.valueOf(i);
                     vfps.fps = String.valueOf(i);
-
-                    boolean wasNotFound = true;
-                    for (VideoFPS currentFps : listVfps) {
-                        if (currentFps.fps.equals(vfps.fps)) {
-                            wasNotFound = false;
-                        }
-                    }
-
-                    if (wasNotFound) {
-                        listVfps.add(vfps);
-                    }
-
+                    listVfps.add(vfps);
                 }
                 boolean found_item = false;             //maybe not most elegant
                 for(int i=0;i<vd.vpf.size();i++){
@@ -1613,33 +1647,73 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
     }
     
-    void setAllJComboBoxesVideosetting(JComboBox deviceBox, JComboBox formatBox, JComboBox widthXheightBox, JComboBox fpsBox, List<VideoDevice> videoDevices){
+    void setAllJComboBoxesVideosetting(JComboBox deviceBox, JComboBox formatBox, JComboBox widthXheightBox, JComboBox fpsBox, JTextField settingVerification, List<VideoDevice> videoDevices){
         setJComboBoxDevices(deviceBox, videoDevices);
         setJComboBoxFormat(formatBox, deviceBox, videoDevices);
         setJComboBoxFrameSize(widthXheightBox, deviceBox, formatBox, videoDevices);
         setJComboBoxFPS(fpsBox, deviceBox, formatBox, widthXheightBox, videoDevices);
+        actionSetFPSBox(deviceBox, formatBox, widthXheightBox, fpsBox, settingVerification, videoDevices);
     }
     
-    private void actionSetCameraDeviceBox(JComboBox devicesBox, JComboBox formatBox, JComboBox frameSizeBox, JComboBox fpsBox,
+    private void actionSetCameraDeviceBox(JComboBox devicesBox, JComboBox formatBox, JComboBox frameSizeBox, JComboBox fpsBox, JTextField settingVerification,
                                             List<VideoDevice> videoDevices){
         
         setJComboBoxFormat(formatBox, devicesBox, videoDevices);
         setJComboBoxFrameSize(frameSizeBox, devicesBox, formatBox, videoDevices);
         setJComboBoxFPS(fpsBox, devicesBox, formatBox, frameSizeBox, videoDevices);
-            
+        actionSetFPSBox(devicesBox, formatBox, frameSizeBox, fpsBox, settingVerification, videoDevices);
     }
     
-    private void actionSetCameraPixelFormatBox(JComboBox devicesBox, JComboBox formatBox, JComboBox frameSizeBox, JComboBox fpsBox,
+    private void actionSetCameraPixelFormatBox(JComboBox devicesBox, JComboBox formatBox, JComboBox frameSizeBox, JComboBox fpsBox, JTextField settingVerification,
                                             List<VideoDevice> videoDevices){
 
         setJComboBoxFrameSize(frameSizeBox, devicesBox, formatBox, videoDevices);
         setJComboBoxFPS(fpsBox, devicesBox, formatBox, frameSizeBox, videoDevices);
+        actionSetFPSBox(devicesBox, formatBox, frameSizeBox, fpsBox, settingVerification, videoDevices);
     }
     
-    private void actionSetCameraFrameSizeBox(JComboBox devicesBox, JComboBox formatBox, JComboBox frameSizeBox, JComboBox fpsBox,
+    private void actionSetCameraFrameSizeBox(JComboBox devicesBox, JComboBox formatBox, JComboBox frameSizeBox, JComboBox fpsBox, JTextField settingVerification,
                                             List<VideoDevice> videoDevices){
 
         setJComboBoxFPS(fpsBox, devicesBox, formatBox, frameSizeBox, videoDevices);
+        actionSetFPSBox(devicesBox, formatBox, frameSizeBox, fpsBox, settingVerification, videoDevices);
+    }
+    
+    private void actionSetFPSBox(JComboBox deviceBox, JComboBox formatBox, JComboBox widthXheightBox, JComboBox fpsBox, JTextField settingVerification,
+                                            List<VideoDevice> videoDevices){
+        String device;
+        String format;
+        String widthXheight;
+        String fps;
+        if((deviceBox == null) || (deviceBox.getItemCount() == 0) || (formatBox == null) || (formatBox.getItemCount() == 0) ||
+               (widthXheightBox == null) || (widthXheightBox.getItemCount() == 0) || (fpsBox == null) || (fpsBox.getItemCount() == 0)) {
+            return;
+        }else{
+            device = deviceBox.getSelectedItem().toString();
+            format = formatBox.getSelectedItem().toString();
+            widthXheight = widthXheightBox.getSelectedItem().toString();
+            fps = fpsBox.getSelectedItem().toString();
+        }
+        if(videoDevices != null){
+            for(int i=0;i<videoDevices.size();i++){
+                if(device.compareTo(videoDevices.get(i).name) == 0){
+                    for(int j=0;j<videoDevices.get(i).vpf.size();j++){
+                        if(format.compareTo(videoDevices.get(i).vpf.get(j).name) == 0){
+                            for(int k=0;k<videoDevices.get(i).vpf.get(j).vfs.size();k++){
+                                if(widthXheight.compareTo(videoDevices.get(i).vpf.get(j).vfs.get(k).widthXheight) == 0){
+                                    for(int l=0;l<videoDevices.get(i).vpf.get(j).vfs.get(k).fps.size();l++){
+                                        if(videoDevices.get(i).vpf.get(j).vfs.get(k).fps.get(l).fps.equals(fps)){
+                                            settingVerification.setText(videoDevices.get(i).vpf.get(j).vfs.get(k).fps.get(l).setting);
+                                        }
+                                    }
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     
     private List<AudioDevice> read_audio_devices_in_or_out(String uvAddress, boolean audio_in) throws IOException{
