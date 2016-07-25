@@ -1829,8 +1829,9 @@ public final class OptionsMainMenuWindow extends JFrame{
         
         String producerSetting = getVideoSettings(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
         String presentationSetting = getVideoSettings(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, videoDevices);
-        String audioInSetting = getAudioSetting(audioInComboBox, audioIn);
-        String audioOutSetting = getAudioSetting(audioOutComboBox, audioOut);
+        // TODO this is just hack
+        String audioOutSetting  = "portaudio" + getAudioSetting(audioInComboBox, audioIn);
+        String audioInSetting = "portaudio" + getAudioSetting(audioOutComboBox, audioOut);
         
         int resizeValue;
         try{
