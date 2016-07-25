@@ -333,7 +333,7 @@ public class SessionManagerImpl implements SessionManager {
                         if (!title.equals(currentTalkingName)) {
 
                             CounsilTimer currentTimer = timers.get(consumer.name);
-                            currentTimer.task.cancel();
+                            if (currentTimer.task != null) currentTimer.task.cancel();
                             currentTimer.timer.purge();
                             // new node TALK!
                             talkingNode = talker;

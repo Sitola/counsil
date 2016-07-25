@@ -1337,7 +1337,7 @@ public final class OptionsMainMenuWindow extends JFrame{
                     widthXheightPosition = vd.vpf.get(pixelFormatPosition).vfs.size() - 1;
                 }
                 VideoFPS vfps = new VideoFPS();
-                vfps.fps = modeMatcher.group(4);
+                vfps.fps = modeMatcher.group(4) + " mode:" + modeMatcher.group(1);
                 vfps.setting = "dshow" + ":" + vd.device + ":" + modeMatcher.group(1);
                 vd.vpf.get(pixelFormatPosition).vfs.get(widthXheightPosition).fps.add(vfps);
             }
