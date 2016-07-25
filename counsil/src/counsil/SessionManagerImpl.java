@@ -108,16 +108,16 @@ public class SessionManagerImpl implements SessionManager {
      */
     private Boolean canAlert;
     Timer alertTimer;
-    
+
     /**
      * actual resources bundlo for lenguages
      */
     ResourceBundle lenguageBundle;
-    
-     String alertColor;
-     
-     String talkColor;
-    
+
+    String alertColor;
+
+    String talkColor;
+
     /**
      * Constructor to initialize LayoutManager
      *
@@ -132,17 +132,16 @@ public class SessionManagerImpl implements SessionManager {
         alertColor += Integer.toHexString(riseHandColor.getRed());
         alertColor += Integer.toHexString(riseHandColor.getGreen());
         alertColor += Integer.toHexString(riseHandColor.getBlue());
-        
+
         talkColor = "#";
         talkColor += Integer.toHexString(talkingColor.getRed());
         talkColor += Integer.toHexString(talkingColor.getGreen());
         talkColor += Integer.toHexString(talkingColor.getBlue());
-        
 
         talkingNode = null;
         canAlert = true;
         alertTimer = new Timer();
-        
+
         this.lenguageBundle = languageBundle;
 
         if (layoutManager == null) {
@@ -285,7 +284,7 @@ public class SessionManagerImpl implements SessionManager {
                             talkingNode = null;
                         }
                     }
-                    stopConsumer(node);
+                    //stopConsumer(node);
                 }
             });
         }
@@ -340,7 +339,7 @@ public class SessionManagerImpl implements SessionManager {
                             talkingNode = talker;
                             layoutManager.upScale(title);
                             if (handle != null) {
-                                try {                                    
+                                try {
                                     handle.sendCommand("postprocess border:width=10:color=" + talkColor);
                                 } catch (InterruptedException | TimeoutException ex) {
                                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -353,15 +352,15 @@ public class SessionManagerImpl implements SessionManager {
             }
 
             private void alertConsumer(UltraGridControllerHandle handle, CounsilTimer timer) {
-               
-               // alertConsumerByFlashing(handle, timer, 2000);
+
+                // alertConsumerByFlashing(handle, timer, 2000);
                 alertConsumerContinuously(handle, timer, 25000);
-               
+
             }
 
             private void alertConsumerContinuously(UltraGridControllerHandle handle, CounsilTimer counsilTimer, int duration) {
 
-                try {                    
+                try {
                     handle.sendCommand("postprocess border:width=10:color=" + alertColor);
                 } catch (InterruptedException | TimeoutException ex) {
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -382,15 +381,13 @@ public class SessionManagerImpl implements SessionManager {
                 counsilTimer.timer.schedule(counsilTimer.task, duration);
             }
 
-
             class Flasher implements Runnable {
 
                 UltraGridControllerHandle handle;
                 CounsilTimer timer;
-                
-                
+
                 String[] COMMAND = {
-                    "postprocess border:width=10:color=#ff0000", 
+                    "postprocess border:width=10:color=#ff0000",
                     "postprocess flush"
                 };
 
@@ -411,23 +408,23 @@ public class SessionManagerImpl implements SessionManager {
                         }
                         timer.timesFlashed++;
                     } else {
-                        future.cancel(false);                        
-                alertConsumerContinuously(handle, timer, 25000);
+                        future.cancel(false);
+                        alertConsumerContinuously(handle, timer, 25000);
                     }
                 }
             }
-            
+
             ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
             ScheduledFuture<?> future;
 
             private void alertConsumerByFlashing(UltraGridControllerHandle handle, CounsilTimer timer, int duration) {
-                
+
                 timer.timesFlashed = 0;
                 future = executor.scheduleAtFixedRate(new Flasher(handle, timer), 0, duration, TimeUnit.MILLISECONDS);
             }
 
         };
-        
+
         // define message types
         core.getConnector().attachMessageListener(counsilListener, ALERT, TALK);
     }
@@ -438,46 +435,42 @@ public class SessionManagerImpl implements SessionManager {
      * @throws IOException if there is problem during starting Producer
      */
     private void createProducent(String role) throws IOException {
-        String producer = (String) local.getProperty("videoProducer");
-        if (producer == null) {
+        String video = (String) local.getProperty("videoProducer");
+        if (video == null) {
             throw new IllegalArgumentException("Specify video producer in config");
         }
-        createProducer(TypeOfContent.VIDEO, producer, role);
+        String audio = (String) local.getProperty("audioProducer");
+        //if (audio == null) {
+        //    throw new IllegalArgumentException("Specify audio in config");
+        //}
 
-        // create audio producer
-        // this require 1 teacher and 1 intepreter because of distributor 
-        if (isInterpreterOrTeacher(role)) {
-            String audio = (String) local.getProperty("audioProducer");
-            if (audio == null) {
-                throw new IllegalArgumentException("Specify audio in config");
-            }
-            createProducer(TypeOfContent.SOUND, audio, role);
-        }
+        createProducer(TypeOfContent.VIDEO, video, audio, role);
+        
         if (role.equals("teacher")) {
             String pres = (String) local.getProperty("presentationProducer");
-
-            // if configuration is not empty or empty string I will create pres
             if ((pres != null) && (!pres.equals(""))) {
-                createProducer(TypeOfContent.PRESENTATION, pres, role);
+                createProducer(TypeOfContent.PRESENTATION, pres, null, role);
             }
         }
 
     }
 
-    private void createProducer(TypeOfContent type, String settings, String role) throws IOException {
-        String PRODUCER = "producer";
-        ObjectNode prodConfig = core.newApplicationTemplate(PRODUCER);
+    private void createProducer(
+            TypeOfContent type, 
+            String videoSettings,
+            String audioSettings,
+            String role
+    ) throws IOException {
+        ObjectNode prodConfig = core.newApplicationTemplate("producer");
         String identification = local.getName() + "-" + type.toString() + "-" + role;
         prodConfig.put("content", identification);
         switch (type) {
-            case SOUND:
-                prodConfig.put("audio", settings);
+            case VIDEO:
+                prodConfig.put("video", videoSettings);
+                prodConfig.put("audio", audioSettings);
                 break;
             case PRESENTATION:
-                prodConfig.put("video", settings);
-                break;
-            case VIDEO:
-                prodConfig.put("video", settings);
+                prodConfig.put("video", videoSettings);
             default:
                 break;
         }
@@ -495,6 +488,7 @@ public class SessionManagerImpl implements SessionManager {
      * @throws IllegalArgumentException if app or node is null
      */
     private String createConsumer(UltraGridProducerApplication app, NetworkNode node) throws IOException, IllegalArgumentException {
+        // validation
         if (app == null) {
             throw new IllegalArgumentException("app is null");
         }
@@ -504,38 +498,26 @@ public class SessionManagerImpl implements SessionManager {
 
         UltraGridProducerApplication[] apps = node2producer.get(node);
         if (apps == null) {
-            apps = new UltraGridProducerApplication[3];
+            apps = new UltraGridProducerApplication[2];
         }
 
-        // get content destriptor from producer
+        // get content descriptor from producer
         String content = app.getProvidedContentDescriptor();
-        if (content.contains("SOUND") && ((String) local.getProperty("role")).equals("student")) {
-            return content;
-        }
+
         UltraGridConsumerApplication con = null;
         String name = local.getName() + "-" + content;
-
-        if (content.contains("SOUND") && isInterpreterOrTeacher((String) local.getProperty("role"))) {
-
-            System.out.println(local.getName() + ":" + node.getName());
-            if (node.getName().equals(local.getName())) {
-                return content;
-            }
-            System.out.println("I should not be here");
-            String audio = (String) local.getProperty("audioConsumer");
-            if (audio == null) {
-                throw new IllegalArgumentException("Specify audio in config");
-            }
-            con = createConsumer(content, audio, "dummy");
-            apps[2] = app;
+        if (content.contains("VIDEO")) {
+            con = createConsumer(
+                    content, 
+                    (String) local.getProperty("audioConsumer"), 
+                    (String) local.getProperty("videoConsumer")
+            );
+            apps[0] = app;
         }
+
         if (content.contains("PRESENTATION")) {
             con = createConsumer(content, null, (String) local.getProperty("videoConsumer"));
             apps[1] = app;
-        }
-        if (content.contains("VIDEO")) {
-            con = createConsumer(content, null, (String) local.getProperty("videoConsumer"));
-            apps[0] = app;
         }
 
         timers.put(name, new CounsilTimer());
@@ -578,16 +560,13 @@ public class SessionManagerImpl implements SessionManager {
             if (app instanceof UltraGridProducerApplication) {
                 UltraGridProducerApplication producer = (UltraGridProducerApplication) app;
                 try {
+                    // If this is incoming applications which was not here before
                     if (producer2consumer.containsKey(producer) == false) {
                         String consumerName = createConsumer(producer, node);
-                        if (!consumerName.contains("SOUND")) {
-
-                            if (consumerName.contains("PRESENTATION")) {
-                                System.out.println("I have created pres");
-                                layoutManager.addNode(consumerName, "presentation");
-                            } else {
-                                layoutManager.addNode(consumerName, (String) node.getProperty("role"));
-                            }
+                        if (consumerName.contains("PRESENTATION")) {
+                            layoutManager.addNode(consumerName, "presentation");
+                        } else {
+                            layoutManager.addNode(consumerName, (String) node.getProperty("role"));
                         }
                     }
                 } catch (IOException ex) {
@@ -638,10 +617,6 @@ public class SessionManagerImpl implements SessionManager {
         return null;
     }
 
-    private boolean isInterpreterOrTeacher(String role) {
-        return role.equals("teacher") || role.equals("interpreter");
-    }
-
     @Override
     public void stopCounsil() {
         core.stop();
@@ -654,45 +629,44 @@ public class SessionManagerImpl implements SessionManager {
 
         int studentCount = 0;
         Boolean teacher = false,
-                    interpreter = false, 
-
-                    presentation = false,
-                    interpreterAudio = false,
-                    teacherAudio = false;
+                interpreter = false,
+                presentation = false,
+                interpreterAudio = false,
+                teacherAudio = false;
 
         for (String name : consumer2name.values()) {
-            
+
             String nameToUpper = name.toUpperCase();
-            
+
             if (nameToUpper.contains("STUDENT")) {
                 studentCount++;
             } else if (nameToUpper.contains("INTERPRETER")) {
-                if (nameToUpper.contains("AUDIO")){
+                if (nameToUpper.contains("AUDIO")) {
                     interpreterAudio = true;
+                } else {
+                    interpreter = true;
                 }
-                else interpreter = true;
             } else if (nameToUpper.contains("TEACHER")) {
                 if (nameToUpper.contains("PRESENTATION")) {
                     presentation = true;
                 } else if (nameToUpper.contains("AUDIO")) {
                     teacherAudio = true;
+                } else if (nameToUpper.contains("AUDIO")) {
+                    teacherAudio = true;
                 } else {
-                    if (nameToUpper.contains("AUDIO")){
-                        teacherAudio = true;
-                    }
-                    else teacher = true;
+                    teacher = true;
                 }
             }
         }
 
-        status += (lenguageBundle.getString("INTERPRETER") + " video: ");       
+        status += (lenguageBundle.getString("INTERPRETER") + " video: ");
         if (interpreter) {
             status += (lenguageBundle.getString("ONLINE") + "\n");
         } else {
             status += (lenguageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (lenguageBundle.getString("INTERPRETER") + " audio: ");       
+        status += (lenguageBundle.getString("INTERPRETER") + " audio: ");
         if (interpreterAudio) {
             status += (lenguageBundle.getString("ONLINE") + "\n");
         } else {
@@ -705,7 +679,7 @@ public class SessionManagerImpl implements SessionManager {
         } else {
             status += (lenguageBundle.getString("OFFLINE") + "\n");
         }
-        
+
         status += (lenguageBundle.getString("TEACHER") + " audio: ");
         if (teacher) {
             status += (lenguageBundle.getString("ONLINE") + "\n");
