@@ -284,7 +284,7 @@ public class SessionManagerImpl implements SessionManager {
                             talkingNode = null;
                         }
                     }
-                    //stopConsumer(node);
+                    stopConsumer(node);
                 }
             });
         }
@@ -333,7 +333,7 @@ public class SessionManagerImpl implements SessionManager {
                         if (!title.equals(currentTalkingName)) {
 
                             CounsilTimer currentTimer = timers.get(consumer.name);
-                            if (currentTimer.task != null) currentTimer.task.cancel();
+                            currentTimer.task.cancel();
                             currentTimer.timer.purge();
                             // new node TALK!
                             talkingNode = talker;
@@ -507,14 +507,9 @@ public class SessionManagerImpl implements SessionManager {
         UltraGridConsumerApplication con = null;
         String name = local.getName() + "-" + content;
         if (content.contains("VIDEO")) {
-            String audio = (String) local.getProperty("audioConsumer");
-            if(local.uuid.equals(node.uuid)) {
-                audio = null;
-            }
-            
             con = createConsumer(
                     content, 
-                    audio, 
+                    (String) local.getProperty("audioConsumer"), 
                     (String) local.getProperty("videoConsumer")
             );
             apps[0] = app;
