@@ -112,7 +112,7 @@ public class SessionManagerImpl implements SessionManager {
     /**
      * actual resources bundlo for lenguages
      */
-    ResourceBundle lenguageBundle;
+    ResourceBundle languageBundle;
 
     String alertColor;
 
@@ -142,7 +142,7 @@ public class SessionManagerImpl implements SessionManager {
         canAlert = true;
         alertTimer = new Timer();
 
-        this.lenguageBundle = languageBundle;
+        this.languageBundle = languageBundle;
 
         if (layoutManager == null) {
             throw new IllegalArgumentException("layoutManager is null");
@@ -254,40 +254,37 @@ public class SessionManagerImpl implements SessionManager {
         // create produrer for local content
         createProducent((String) local.getProperty("role"));
 
-        Object listenerLock = new Object();
-        synchronized (listenerLock) {
-            topologyAggregator.addListener(new NodePresenceListener() {
+        topologyAggregator.addListener(new NodePresenceListener() {
 
-                @Override
-                public void init(Set<NetworkNode> nodes) {
-                    for (NetworkNode node : nodes) {
-                        onNodeChanged(node);
-                    }
-                }
-
-                @Override
-                public void onNewNodeAppeared(NetworkNode node) {
+            @Override
+            public void init(Set<NetworkNode> nodes) {
+                for (NetworkNode node : nodes) {
                     onNodeChanged(node);
                 }
+            }
 
-                @Override
-                public void onNodeChanged(NetworkNode node) {
-                    // Check if there is new media application
-                    checkProducent(node);
-                }
+            @Override
+            public void onNewNodeAppeared(NetworkNode node) {
+                onNodeChanged(node);
+            }
 
-                @Override
-                public void onNodeLeft(NetworkNode node) {
-                    String nodeName = consumer2name.get(producer2consumer.get(node2producer.get(node)));
-                    if (nodeName != null) {
-                        if ((talkingNode != null) && (node.getName().equals(talkingNode.getName()))) {
-                            talkingNode = null;
-                        }
+            @Override
+            public void onNodeChanged(NetworkNode node) {
+                // Check if there is new media application
+                checkProducent(node);
+            }
+
+            @Override
+            public void onNodeLeft(NetworkNode node) {
+                String nodeName = consumer2name.get(producer2consumer.get(node2producer.get(node)));
+                if (nodeName != null) {
+                    if ((talkingNode != null) && (node.getName().equals(talkingNode.getName()))) {
+                        talkingNode = null;
                     }
-                    //stopConsumer(node);
                 }
-            });
-        }
+                stopConsumer(node);
+            }
+        });
 
         counsilListener = new MessageListener() {
 
@@ -317,23 +314,25 @@ public class SessionManagerImpl implements SessionManager {
                             if (currentTalkingName != null) {
                                 layoutManager.downScale(currentTalkingName);
                             }
-                            if (oldConsumer != null) {
-                                UltraGridControllerHandle oldHandle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(oldConsumer));
-                                if (oldHandle != null) {
-                                    try {
-                                        oldHandle.sendCommand("postprocess flush");
-                                    } catch (InterruptedException | TimeoutException ex) {
-                                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                    }
+
+                            UltraGridControllerHandle oldHandle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(oldConsumer));
+                            if (oldHandle != null) {
+                                try {
+                                    oldHandle.sendCommand("postprocess flush");
+                                } catch (InterruptedException | TimeoutException ex) {
+                                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                             }
+
                             talkingNode = null;
                         }
 
                         if (!title.equals(currentTalkingName)) {
 
                             CounsilTimer currentTimer = timers.get(consumer.name);
-                            if (currentTimer.task != null) currentTimer.task.cancel();
+                            if (currentTimer.task != null) {
+                                currentTimer.task.cancel();
+                            }
                             currentTimer.timer.purge();
                             // new node TALK!
                             talkingNode = talker;
@@ -353,8 +352,8 @@ public class SessionManagerImpl implements SessionManager {
 
             private void alertConsumer(UltraGridControllerHandle handle, CounsilTimer timer) {
 
-                // alertConsumerByFlashing(handle, timer, 2000);
-                alertConsumerContinuously(handle, timer, 25000);
+                alertConsumerByFlashing(handle, timer, 1000);
+                alertConsumerContinuously(handle, timer, 30000);
 
             }
 
@@ -365,7 +364,7 @@ public class SessionManagerImpl implements SessionManager {
                 } catch (InterruptedException | TimeoutException ex) {
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }
-
+                
                 counsilTimer.task = new TimerTask() {
                     @Override
                     public void run() {
@@ -387,7 +386,7 @@ public class SessionManagerImpl implements SessionManager {
                 CounsilTimer timer;
 
                 String[] COMMAND = {
-                    "postprocess border:width=10:color=#ff0000",
+                    "postprocess border:width=10:color=" + alertColor,
                     "postprocess flush"
                 };
 
@@ -445,7 +444,7 @@ public class SessionManagerImpl implements SessionManager {
         //}
 
         createProducer(TypeOfContent.VIDEO, video, audio, role);
-        
+
         if (role.equals("teacher")) {
             String pres = (String) local.getProperty("presentationProducer");
             if ((pres != null) && (!pres.equals(""))) {
@@ -456,7 +455,7 @@ public class SessionManagerImpl implements SessionManager {
     }
 
     private void createProducer(
-            TypeOfContent type, 
+            TypeOfContent type,
             String videoSettings,
             String audioSettings,
             String role
@@ -506,10 +505,10 @@ public class SessionManagerImpl implements SessionManager {
 
         UltraGridConsumerApplication con = null;
         String name = local.getName() + "-" + content;
-        if (content.contains("VIDEO")) {
+        if (content.toUpperCase().contains("VIDEO")) {
             con = createConsumer(
-                    content, 
-                    (String) local.getProperty("audioConsumer"), 
+                    content,
+                    (String) local.getProperty("audioConsumer"),
                     (String) local.getProperty("videoConsumer")
             );
             apps[0] = app;
@@ -563,7 +562,7 @@ public class SessionManagerImpl implements SessionManager {
                     // If this is incoming applications which was not here before
                     if (producer2consumer.containsKey(producer) == false) {
                         String consumerName = createConsumer(producer, node);
-                        if (consumerName.contains("PRESENTATION")) {
+                        if (consumerName.toUpperCase().contains("PRESENTATION")) {
                             layoutManager.addNode(consumerName, "presentation");
                         } else {
                             layoutManager.addNode(consumerName, (String) node.getProperty("role"));
@@ -651,50 +650,48 @@ public class SessionManagerImpl implements SessionManager {
                     presentation = true;
                 } else if (nameToUpper.contains("AUDIO")) {
                     teacherAudio = true;
-                } else if (nameToUpper.contains("AUDIO")) {
-                    teacherAudio = true;
                 } else {
                     teacher = true;
                 }
             }
         }
 
-        status += (lenguageBundle.getString("INTERPRETER") + " video: ");
+        status += (languageBundle.getString("INTERPRETER") + " video: ");
         if (interpreter) {
-            status += (lenguageBundle.getString("ONLINE") + "\n");
+            status += (languageBundle.getString("ONLINE") + "\n");
         } else {
-            status += (lenguageBundle.getString("OFFLINE") + "\n");
+            status += (languageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (lenguageBundle.getString("INTERPRETER") + " audio: ");
+        status += (languageBundle.getString("INTERPRETER") + " audio: ");
         if (interpreterAudio) {
-            status += (lenguageBundle.getString("ONLINE") + "\n");
+            status += (languageBundle.getString("ONLINE") + "\n");
         } else {
-            status += (lenguageBundle.getString("OFFLINE") + "\n");
+            status += (languageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (lenguageBundle.getString("TEACHER") + " video: ");
+        status += (languageBundle.getString("TEACHER") + " video: ");
         if (teacher) {
-            status += (lenguageBundle.getString("ONLINE") + "\n");
+            status += (languageBundle.getString("ONLINE") + "\n");
         } else {
-            status += (lenguageBundle.getString("OFFLINE") + "\n");
+            status += (languageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (lenguageBundle.getString("TEACHER") + " audio: ");
-        if (teacher) {
-            status += (lenguageBundle.getString("ONLINE") + "\n");
+        status += (languageBundle.getString("TEACHER") + " audio: ");
+        if (teacherAudio) {
+            status += (languageBundle.getString("ONLINE") + "\n");
         } else {
-            status += (lenguageBundle.getString("OFFLINE") + "\n");
+            status += (languageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (lenguageBundle.getString("PRESENTATION") + ": ");
+        status += (languageBundle.getString("PRESENTATION") + ": ");
         if (presentation) {
-            status += (lenguageBundle.getString("ONLINE") + "\n");
+            status += (languageBundle.getString("ONLINE") + "\n");
         } else {
-            status += (lenguageBundle.getString("OFFLINE") + "\n");
+            status += (languageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (lenguageBundle.getString("STUDENTS") + ": ");
+        status += (languageBundle.getString("STUDENTS") + ": ");
         status += studentCount;
 
         return status;
