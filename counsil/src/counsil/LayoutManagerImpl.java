@@ -34,7 +34,8 @@ public class LayoutManagerImpl implements LayoutManager {
     final static int WINDOW_BORDER_OFFSET = 50;
 
     /**
-     * List of current active windows
+     * List of current active windows Needs to be locked, parallel access should
+     * not be allowed
      */
     private List<DisplayableWindow> windows = new ArrayList<>();
 
@@ -136,26 +137,26 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     @Override
     public void downScale(String name) {
+        synchronized (windows) {
+            DisplayableWindow window = getDisplayableWindowByTitle(name);
+            if (window != null) {
+                try {
+                    window.loadCurrentInfo();
 
-        DisplayableWindow window = getDisplayableWindowByTitle(name);
-        if (window != null) {
-            try {
-                window.loadCurrentInfo();
+                    int newX = window.getPosition().x + getPositionChange();
+                    int newY = window.getPosition().y + getPositionChange();
 
-                int newX = window.getPosition().x + getPositionChange();
-                int newY = window.getPosition().y + getPositionChange();
+                    window.setPosition(new Position(newX, newY));
+                    window.setHeight(window.getHeight() - scaleRatio);
+                    window.setWidth(window.getWidth() - scaleRatio);
 
-                window.setPosition(new Position(newX, newY));
-                window.setHeight(window.getHeight() - scaleRatio);
-                window.setWidth(window.getWidth() - scaleRatio);
+                    window.adjustWindow();
 
-                window.adjustWindow();
-
-            } catch (WDDManException ex) {
-                Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (WDDManException ex) {
+                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
-
     }
 
     /**
@@ -175,26 +176,26 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     @Override
     public void upScale(String name) {
+        synchronized (windows) {
+            DisplayableWindow window = getDisplayableWindowByTitle(name);
+            if (window != null) {
+                try {
+                    window.loadCurrentInfo();
 
-        DisplayableWindow window = getDisplayableWindowByTitle(name);
-        if (window != null) {
-            try {
-                window.loadCurrentInfo();
+                    int newX = window.getPosition().x - getPositionChange();
+                    int newY = window.getPosition().y - getPositionChange();
 
-                int newX = window.getPosition().x - getPositionChange();
-                int newY = window.getPosition().y - getPositionChange();
+                    window.setPosition(new Position(newX, newY));
+                    window.setHeight(window.getHeight() + scaleRatio);
+                    window.setWidth(window.getWidth() + scaleRatio);
 
-                window.setPosition(new Position(newX, newY));
-                window.setHeight(window.getHeight() + scaleRatio);
-                window.setWidth(window.getWidth() + scaleRatio);
+                    window.adjustWindow();
 
-                window.adjustWindow();
-
-            } catch (WDDManException ex) {
-                Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (WDDManException ex) {
+                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
-
     }
 
     /**
@@ -204,7 +205,8 @@ public class LayoutManagerImpl implements LayoutManager {
      * @param role tole of window user
      */
     @Override
-    public void addNode(String title, String role) {
+    public void addNode(String title, String role
+    ) {
         try {
             synchronized (windows) {
                 windows.add(new DisplayableWindow(wd, title, role));
@@ -220,7 +222,8 @@ public class LayoutManagerImpl implements LayoutManager {
      * @param listener
      */
     @Override
-    public void addLayoutManagerListener(LayoutManagerListener listener) {
+    public void addLayoutManagerListener(LayoutManagerListener listener
+    ) {
         layoutManagerListeners.add(listener);
     }
 
@@ -230,7 +233,8 @@ public class LayoutManagerImpl implements LayoutManager {
      * @param title window title
      */
     @Override
-    public void removeNode(String title) {
+    public void removeNode(String title
+    ) {
         synchronized (windows) {
             for (Iterator<DisplayableWindow> iter = windows.iterator(); iter.hasNext();) {
                 DisplayableWindow window = iter.next();
@@ -400,16 +404,14 @@ public class LayoutManagerImpl implements LayoutManager {
 
     /**
      * Gets window by title
-     *
+     * Calling the method should be synchronized, parallel access should not be allowed
      * @param title
      * @return
      */
     private DisplayableWindow getDisplayableWindowByTitle(String title) {
-        synchronized (windows) {
-            for (DisplayableWindow window : windows) {
-                if (window.contains(title)) {
-                    return window;
-                }
+        for (DisplayableWindow window : windows) {
+            if (window.contains(title)) {
+                return window;
             }
         }
         return null;
