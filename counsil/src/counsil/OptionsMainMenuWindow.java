@@ -1896,7 +1896,7 @@ public final class OptionsMainMenuWindow extends JFrame{
     }
 
     private void saveSettingAction() {
-        JSONObject newClinetConfiguration = new JSONObject();
+        JSONObject newClientConfiguration = new JSONObject();
         JSONObject raiseHandColorJson = new JSONObject();
         JSONObject talkingColorJson = new JSONObject();
         JSONArray serverIps = new JSONArray();
@@ -1931,24 +1931,24 @@ public final class OptionsMainMenuWindow extends JFrame{
             talkingColorJson.put("blue", talkingColorChooser.getColor().getBlue());
             talkingColorJson.put("green", talkingColorChooser.getColor().getGreen());
             
-            newClinetConfiguration.put("this ip", myIpSetTextField.getText());
-            newClinetConfiguration.put("ultragrid path", uvPathString);
-            newClinetConfiguration.put("layout path", layoutPathString);
-            newClinetConfiguration.put("producer settings", producerSetting);
-            newClinetConfiguration.put("consumer settings", displaySetting);
-            newClinetConfiguration.put("audio consumer", audioInSetting);
-            newClinetConfiguration.put("audio producer", audioOutSetting);
+            newClientConfiguration.put("this ip", myIpSetTextField.getText());
+            newClientConfiguration.put("ultragrid path", uvPathString);
+            newClientConfiguration.put("layout path", layoutPathString);
+            newClientConfiguration.put("producer settings", producerSetting);
+            newClientConfiguration.put("consumer settings", displaySetting);
+            newClientConfiguration.put("audio consumer", audioInSetting);
+            newClientConfiguration.put("audio producer", audioOutSetting);
             if(presentationUsed){
-                newClinetConfiguration.put("presentation producer", presentationSetting);
-                newClinetConfiguration.put("presentation", presentationUsed);
+                newClientConfiguration.put("presentation producer", presentationSetting);
+                newClientConfiguration.put("presentation", presentationUsed);
             }else{
-                newClinetConfiguration.put("presentation", presentationUsed);
+                newClientConfiguration.put("presentation", presentationUsed);
             }
-            newClinetConfiguration.put("language", getLanguage());
-            newClinetConfiguration.put("raise hand color", raiseHandColorJson);
-            newClinetConfiguration.put("talking color", talkingColorJson);
-            newClinetConfiguration.put("server ips", serverIps);
-            newClinetConfiguration.put("talking resizing", resizeValue);
+            newClientConfiguration.put("language", getLanguage());
+            newClientConfiguration.put("raise hand color", raiseHandColorJson);
+            newClientConfiguration.put("talking color", talkingColorJson);
+            newClientConfiguration.put("server ips", serverIps);
+            newClientConfiguration.put("talking resizing", resizeValue);
         } catch (JSONException ex) {
             Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1956,7 +1956,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         FileWriter fileWriter;
         try {
             fileWriter = new FileWriter(configurationFile);
-            fileWriter.write(newClinetConfiguration.toString());
+            fileWriter.write(newClientConfiguration.toString());
             fileWriter.close();
         } catch (IOException ex) {
             Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);

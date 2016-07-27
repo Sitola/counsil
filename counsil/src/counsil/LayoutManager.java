@@ -1,14 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package counsil;
 
 /**
  * Represents structure which manipulates with layout
  *
- * @author xminarik
+ * @author xdaxner
  */
 public interface LayoutManager {
 
@@ -52,11 +47,4 @@ public interface LayoutManager {
      * Refreshes layout to default positions
      */
     public void refreshLayout();
-
-     /**
-     * set ratio
-     * @param newRatio 
-     */
-    public void initializeScaleRatio(int newRatio);
-
 }

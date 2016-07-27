@@ -60,7 +60,7 @@ public class LayoutCalculator {
     }
 
     /**
-     * Gets role from configure file
+     * Gets role from configure file in 
      *
      * @return role of current user
      * @throws JSONException

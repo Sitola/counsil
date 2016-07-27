@@ -39,49 +39,51 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author palci
+ * @author palci, xdaxner
  */
 public class SessionManagerImpl implements SessionManager {
+
+    private static final String TEACHER = "TEACHER";
 
     /**
      * Maps consumers on producers Producers are keys
      */
-    Map<UltraGridProducerApplication, UltraGridConsumerApplication> producer2consumer = new HashMap<>();
+    private Map<UltraGridProducerApplication, UltraGridConsumerApplication> producer2consumer = new HashMap<>();
 
     /**
      * Maps producers to nodes where are running Nodes are keys
      */
-    Map<NetworkNode, UltraGridProducerApplication[]> node2producer = new HashMap<>();
+    private Map<NetworkNode, UltraGridProducerApplication[]> node2producer = new HashMap<>();
 
     /**
      *
      */
-    Map<UltraGridConsumerApplication, String> consumer2name = new HashMap<>();
+    private Map<UltraGridConsumerApplication, String> consumer2name = new HashMap<>();
 
     /**
      * Listens for ultragrid windows changes
      */
-    couniverse.core.controllers.AppEventListener consumerListener;
+    private couniverse.core.controllers.AppEventListener consumerListener;
 
     /**
      * Stored instance of node representing current computer
      */
-    NetworkNode local;
+    private NetworkNode local;
     /**
      * Instance of couniverse Core
      */
-    Core core;
+    private Core core;
 
     /**
      * Instance of LayoutManager to notify Layout about changes
      */
-    LayoutManager layoutManager;
-    TopologyAggregator topologyAggregator;
+    private LayoutManager layoutManager;
+    private TopologyAggregator topologyAggregator;
 
     /**
      * Listens alert and permission to talk messages
      */
-    MessageListener counsilListener;
+    private MessageListener counsilListener;
 
     /**
      * Currently talking node
@@ -104,19 +106,25 @@ public class SessionManagerImpl implements SessionManager {
     public static MessageType TALK = MessageType.createCustomMessageType("TalkPermissionGrantedMessage", "NetworkNode");
 
     /**
-     * 30 seconds timer, to forbid user spamming alert messages
+     * 30 seconds timer, to forbid user from spamming alert messages
      */
     private Boolean canAlert;
-    Timer alertTimer;
+    private Timer alertTimer;
 
     /**
-     * actual resources bundlo for lenguages
+     * Language resource bundle
      */
-    ResourceBundle languageBundle;
+    private ResourceBundle languageBundle;
 
-    String alertColor;
+    /**
+     * Color of window highlight while alerting
+     */
+    private String alertColor;
 
-    String talkColor;
+    /** 
+     * Color of window highlight while talking
+     */
+    private String talkColor;
 
     /**
      * Constructor to initialize LayoutManager
@@ -128,19 +136,12 @@ public class SessionManagerImpl implements SessionManager {
      */
     public SessionManagerImpl(LayoutManager layoutManager, Color talkingColor, Color riseHandColor, ResourceBundle languageBundle) {
 
-        alertColor = "#";
-        alertColor += Integer.toHexString(riseHandColor.getRed());
-        alertColor += Integer.toHexString(riseHandColor.getGreen());
-        alertColor += Integer.toHexString(riseHandColor.getBlue());
+        this.alertColor = getColorCode(riseHandColor);
+        this.talkColor = getColorCode(talkingColor);
 
-        talkColor = "#";
-        talkColor += Integer.toHexString(talkingColor.getRed());
-        talkColor += Integer.toHexString(talkingColor.getGreen());
-        talkColor += Integer.toHexString(talkingColor.getBlue());
-
-        talkingNode = null;
-        canAlert = true;
-        alertTimer = new Timer();
+        this.talkingNode = null;
+        this.canAlert = true;
+        this.alertTimer = new Timer();
 
         this.languageBundle = languageBundle;
 
@@ -153,7 +154,7 @@ public class SessionManagerImpl implements SessionManager {
             @Override
             public void alertActionPerformed() {
 
-                if ((talkingNode != null && local.getName().equals(talkingNode.getName())) || !canAlert) {
+                if ((talkingNode != null && talkingNode.getName().equals(local.getName())) || !canAlert) {
                     return;
                 }
 
@@ -182,7 +183,19 @@ public class SessionManagerImpl implements SessionManager {
     }
 
     /**
-     * gets producer from consumer (in producer2consumer) map
+     * Gets string implementation of Color
+     * @param color
+     * @return 
+     */
+    private String getColorCode(Color color) {
+        String colorStringRepresentation = "#" + Integer.toHexString(color.getRed());
+        colorStringRepresentation += Integer.toHexString(color.getGreen());
+        colorStringRepresentation += Integer.toHexString(color.getBlue());
+        return colorStringRepresentation;
+    }
+
+    /**
+     * Gets producer from consumer (in producer2consumer) map
      *
      * @param consumer
      * @return
@@ -278,7 +291,7 @@ public class SessionManagerImpl implements SessionManager {
             public void onNodeLeft(NetworkNode node) {
                 String nodeName = consumer2name.get(producer2consumer.get(node2producer.get(node)));
                 if (nodeName != null) {
-                    if ((talkingNode != null) && (node.getName().equals(talkingNode.getName()))) {
+                    if ((talkingNode != null) && (talkingNode.getName().equals(node.getName()))) {
                         talkingNode = null;
                     }
                 }
@@ -297,12 +310,12 @@ public class SessionManagerImpl implements SessionManager {
                 String title = consumer.getName();
                 UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
 
-                if (message.type.equals(ALERT)) {
+                if (ALERT.equals(message.type)) {
                     if (handle != null) {
                         alertConsumer(handle, timers.get(consumer.name));
                     }
 
-                } else if (message.type.equals(TALK)) {
+                } else if (TALK.equals((message.type))) {
                     if (title != null) {
 
                         String currentTalkingName = null;
@@ -327,7 +340,7 @@ public class SessionManagerImpl implements SessionManager {
                             talkingNode = null;
                         }
 
-                        if (!title.equals(currentTalkingName)) {
+                        if (!currentTalkingName.equals(title)) {
 
                             CounsilTimer currentTimer = timers.get(consumer.name);
                             if (currentTimer.task != null) {
@@ -364,7 +377,7 @@ public class SessionManagerImpl implements SessionManager {
                 } catch (InterruptedException | TimeoutException ex) {
                     Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
+
                 counsilTimer.task = new TimerTask() {
                     @Override
                     public void run() {
@@ -445,9 +458,9 @@ public class SessionManagerImpl implements SessionManager {
 
         createProducer(TypeOfContent.VIDEO, video, audio, role);
 
-        if (role.equals("teacher")) {
+        if (TEACHER.equals(role.toUpperCase())) {
             String pres = (String) local.getProperty("presentationProducer");
-            if ((pres != null) && (!pres.equals(""))) {
+            if ((pres != null) && (!"".equals(pres))) {
                 createProducer(TypeOfContent.PRESENTATION, pres, null, role);
             }
         }
@@ -645,7 +658,7 @@ public class SessionManagerImpl implements SessionManager {
                 } else {
                     interpreter = true;
                 }
-            } else if (nameToUpper.contains("TEACHER")) {
+            } else if (nameToUpper.contains(TEACHER)) {
                 if (nameToUpper.contains("PRESENTATION")) {
                     presentation = true;
                 } else if (nameToUpper.contains("AUDIO")) {
@@ -670,14 +683,14 @@ public class SessionManagerImpl implements SessionManager {
             status += (languageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (languageBundle.getString("TEACHER") + " video: ");
+        status += (languageBundle.getString(TEACHER) + " video: ");
         if (teacher) {
             status += (languageBundle.getString("ONLINE") + "\n");
         } else {
             status += (languageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (languageBundle.getString("TEACHER") + " audio: ");
+        status += (languageBundle.getString(TEACHER) + " audio: ");
         if (teacherAudio) {
             status += (languageBundle.getString("ONLINE") + "\n");
         } else {
