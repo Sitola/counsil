@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package counsil;
 
 import java.awt.Font;
@@ -22,28 +17,33 @@ import javax.swing.LayoutStyle;
 import javax.swing.UIManager;
 
 /**
- *
- * @author Desanka
+ * @author xdaxner
  */
 public class InteractionMenu extends JFrame {
 
     /**
-     * Represents buttons in current menu instance
+     * Buttons in current menu instance
      */
     protected final List<JButton> buttons = new ArrayList<>();
 
     /**
-     * Instance of initial menu to return after counsil session end
+     * Instance of initial menu to return to after counsil session end
      */
     private final InitialMenuLayout initialMenu;
-    
-    
-    public Font font;
+
+    /**
+     * Font used on buttons
+     */
+    public Font buttonFont;
 
     /**
      * List of listeners
      */
     protected final List<InteractionMenuListener> interactionMenuListeners = new ArrayList<>();
+
+    /**
+     * Language resource bundle
+     */
     private final ResourceBundle languageBundle;
 
     /**
@@ -57,7 +57,7 @@ public class InteractionMenu extends JFrame {
 
         super("CoUnSil");
 
-        initialMenu = iml;
+        this.initialMenu = iml;
 
         setLayout(new GridBagLayout());
         setUndecorated(true);
@@ -68,7 +68,7 @@ public class InteractionMenu extends JFrame {
         setLocation(position.x, position.y);
         setDefaultLookAndFeelDecorated(false);
         this.languageBundle = languageBundle;
-        this.font = font;
+        this.buttonFont = font;
         overrideJOptionPaneBundle();
     }
 
@@ -82,11 +82,18 @@ public class InteractionMenu extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Adds interaction menu listener to menu
+     * @param listener 
+     */
     public void addInteractionMenuListener(InteractionMenuListener listener) {
 
         interactionMenuListeners.add(listener);
     }
 
+    /**
+     * Sends the message that the refresh button was clicked
+     */
     private void refreshButtonActionPerformed() {
 
         interactionMenuListeners.stream().forEach((listener) -> {
@@ -94,11 +101,9 @@ public class InteractionMenu extends JFrame {
         });
     }
 
-    private void settingsButtonActionPerformed() {
-
-        initialMenu.optionMainMenuWindow = new OptionsMainMenuWindow(font, initialMenu.configurationFile, initialMenu, languageBundle);
-    }
-
+    /**
+     * Adds basic buttons to menu
+     */
     private void addBasicButtons() {
 
         JButton refreshButton = new JButton();
@@ -131,14 +136,14 @@ public class InteractionMenu extends JFrame {
         buttons.stream().forEach((button) -> {
 
             button.setPreferredSize(new java.awt.Dimension(130, 31));
-            button.setFont(font);
+            button.setFont(buttonFont);
 
             verticalGroup
-                    .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
+                .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
 
             horizontalGroup
-                    .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
+                .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
         });
 
         layout.setHorizontalGroup(horizontalGroup);
@@ -150,26 +155,24 @@ public class InteractionMenu extends JFrame {
     }
 
     /**
-     * Starts exiting program when "Exit" button is clicked
+     * Starts exiting program when exit button is clicked
      */
     private void exitButtonActionPerformed() {
         String message = languageBundle.getString("EXIT_CONFIRMATION");
         String title = languageBundle.getString("EXIT_TITLE");
         int reply = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
         if (reply == JOptionPane.YES_OPTION) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(InteractionMenu.class.getName()).log(Level.SEVERE, null, ex);
-            }
             initialMenu.closeCounsil();
             this.dispose();
         }
     }
 
+    /**
+     * Sets custom localization to exit message
+     */
     private void overrideJOptionPaneBundle() {
         UIManager.put("OptionPane.yesButtonText", languageBundle.getString("YES"));
         UIManager.put("OptionPane.noButtonText", languageBundle.getString("NO"));
-        UIManager.put("OptionPane.cancelButtonText", languageBundle.getString("CANCEL"));        
+        UIManager.put("OptionPane.cancelButtonText", languageBundle.getString("CANCEL"));
     }
 }
