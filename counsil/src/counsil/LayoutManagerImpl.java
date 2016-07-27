@@ -251,7 +251,6 @@ public class LayoutManagerImpl implements LayoutManager {
             calculator.recalculate(windows);
         }
         applyChanges();
-
         setMenuPosition();
     }
 
