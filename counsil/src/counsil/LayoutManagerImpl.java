@@ -23,7 +23,6 @@ import wddman.WDDManException;
 
 /**
  * Represents structure which manipulates with layout
- *
  * @author xdaxner
  */
 public class LayoutManagerImpl implements LayoutManager {
@@ -71,7 +70,6 @@ public class LayoutManagerImpl implements LayoutManager {
 
     /**
      * Initializes layout
-     *
      * @param role of this layout
      * @param iml initialMenuLayout to return when counsil exit
      * @param scaleRatio ratio to be scaled

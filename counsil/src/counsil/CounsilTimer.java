@@ -20,11 +20,9 @@ public class CounsilTimer {
         timesFlashed = 0;
     }
 
-    public void killAllTasks() {
-        
+    public void killAllTasks() {        
         timer.cancel();
         timer = new Timer();
-        task = null;
-                
+        task = null;                
     }    
 }

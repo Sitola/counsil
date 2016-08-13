@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package counsil;
 
 import java.awt.Font;
@@ -11,8 +6,7 @@ import java.util.ResourceBundle;
 import javax.swing.JButton;
 
 /**
- *
- * @author Desanka
+ * @author xdaxner
  */
 public class InteractionMenuStudentExtension extends InteractionMenu {
 
@@ -32,8 +26,7 @@ public class InteractionMenuStudentExtension extends InteractionMenu {
         this.languageBundle = languageBundle;
         buttons.add(createAndInitAlertButton());
     }
-
-    
+ 
     /**
      * Create and init alert button
      * @return new alert button
@@ -48,7 +41,6 @@ public class InteractionMenuStudentExtension extends InteractionMenu {
         
         return button;
     }
-
     
     /**
      * Starts raise/lower hand interaction when button is clicked

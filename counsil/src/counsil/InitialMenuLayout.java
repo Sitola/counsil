@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package counsil;
 
 import java.awt.BorderLayout;
@@ -89,6 +84,7 @@ public final class InitialMenuLayout{
      */
     SessionManager sm;
     
+    // TODO: Doplnit popis metody a komentar
     class JTextFieldLimit extends PlainDocument {
 
         private final int limit;
@@ -109,6 +105,7 @@ public final class InitialMenuLayout{
         }
     }
     
+    // TODO: Doplnit popis metody a komentar
     InitialMenuLayout(Position centerPosition, File clientConfigurationFile, Font buttonFont) {
         webClient = new WebClient();
         
@@ -132,7 +129,8 @@ public final class InitialMenuLayout{
         
         loadClientConfigurationFromFile();
         
-        port = 8080; //defoult value change in future
+        // TODO: opravit takto zadratovane nastaveni. Nesmi byt!!!
+        port = 8080; //default value change in future
         ipAddress = "";
         nameList = null;        
 
@@ -143,6 +141,7 @@ public final class InitialMenuLayout{
         openServerChooseWindow();
     }
     
+    // TODO: Doplnit popis metody a komentar
     final void initServerChooseWindow(){
         if(serverChooseWindow == null){
             return;
@@ -193,7 +192,7 @@ public final class InitialMenuLayout{
                         if(roomListNames != null){
                             openSettingRoomWindow(roomListNames);
                         }else{
-                            openErrorWindow(languageBundle.getString("ERROR_CAN_NOT_CONNECT_TO_SERVER"));
+                            openErrorWindow(languageBundle.getString("ERROR_CANNOT_CONNECT_TO_SERVER"));
                         }
                     });
                 }
@@ -271,6 +270,7 @@ public final class InitialMenuLayout{
         serverChooseWindow.setLocation(position.x - serverChooseWindow.getWidth()/2, position.y - serverChooseWindow.getHeight()/2);
     }
     
+    // TODO: Doplnit popis metody a komentar
     final void initErrorWindow(){        
         if(errorWindow == null){
             return;
@@ -307,6 +307,7 @@ public final class InitialMenuLayout{
         errorWindow.setLocation(position.x - errorWindow.getWidth() / 2, position.y - errorWindow.getHeight());
     }
     
+    // TODO: Doplnit popis metody a komentar
     final void  initSettingRoomWindow(){
         if(settingRoomWindow == null){
             return;
@@ -520,6 +521,7 @@ public final class InitialMenuLayout{
         settingRoomWindow.setLocation(position.x - settingRoomWindow.getWidth()/2, position.y - settingRoomWindow.getHeight()/2);
     }
     
+    // TODO: Doplnit popis metody a komentar
     final void initIpSettingWindow(){
         if(ipSettingWindow == null){
             return;
@@ -573,7 +575,7 @@ public final class InitialMenuLayout{
                         JOptionPane.showMessageDialog(new Frame(),languageBundle.getString("INCORRECT_PORT"), languageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
                     }
                 }else{
-                    JOptionPane.showMessageDialog(new Frame(), loadedString + languageBundle.getString("UNDEFINE_ADDRESS"), languageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(new Frame(), loadedString + languageBundle.getString("UNDEFINED_ADDRESS"), languageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
                 }
             } catch (BadLocationException ex) {
                 JOptionPane.showMessageDialog(new Frame(), loadedString + languageBundle.getString("ERROR_UNDOCUMENTED"), languageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
@@ -634,7 +636,8 @@ public final class InitialMenuLayout{
         }
         return null;
     }
-    
+    // TODO: Doplnit popis metody a komentar
+    //TODO: opravit return hodnoty tak, aby se zobrazovaly role lokalizovane
     public String getRoleFromLocalization(String localizeRole){
         if(languageBundle.getString("INTERPRETER").equals(localizeRole)){
             return "interpreter";
@@ -646,6 +649,7 @@ public final class InitialMenuLayout{
         
     }
     
+    // TODO: Doplnit popis metody a komentar
     private boolean ipFormatCorrect(String ip) {
         try {
             if ( ip == null || ip.isEmpty() ) {
@@ -882,22 +886,25 @@ public final class InitialMenuLayout{
             roomConfiguration.put("connector", connector);
             roomConfiguration.put("localNode", localNode);
             roomConfiguration.put("templates", templates);
-
-            FileWriter file = new FileWriter("nodeConfig.json");
-                   
-            file.write(roomConfiguration.toString());
-            file.flush();
-            file.close();
+             
+            //VR: Tady jsem to predelal na try(){}, nutno otestovat
+            try (FileWriter file = new FileWriter("nodeConfig.json")) {
+                file.write(roomConfiguration.toString());
+                file.flush();
+                file.close();
+            }
             
         } catch (JSONException | IOException ex) {
             Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
+    // TODO: Doplnit popis metody a komentar
     final JSONObject getConfiguration(){
         return roomConfiguration;
     }
     
+    // TODO: Doplnit popis metody a komentar
     JSONObject readJsonFile(File jsonFile){
         try {
             String entireFileText = new Scanner(jsonFile).useDelimiter("\\A").next();

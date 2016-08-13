@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package counsil;
 
 import couniverse.Main;
@@ -38,8 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author palci, xdaxner
+ * @author pkajaba, xdaxner
  */
 public class SessionManagerImpl implements SessionManager {
 
@@ -364,14 +358,11 @@ public class SessionManagerImpl implements SessionManager {
             }
 
             private void alertConsumer(UltraGridControllerHandle handle, CounsilTimer timer) {
-
                 alertConsumerByFlashing(handle, timer, 1000);
                 alertConsumerContinuously(handle, timer, 30000);
-
             }
 
             private void alertConsumerContinuously(UltraGridControllerHandle handle, CounsilTimer counsilTimer, int duration) {
-
                 try {
                     handle.sendCommand("postprocess border:width=10:color=" + alertColor);
                 } catch (InterruptedException | TimeoutException ex) {
@@ -443,7 +434,6 @@ public class SessionManagerImpl implements SessionManager {
 
     /**
      * Starts producer from local node
-     *
      * @throws IOException if there is problem during starting Producer
      */
     private void createProducent(String role) throws IOException {
@@ -452,10 +442,6 @@ public class SessionManagerImpl implements SessionManager {
             throw new IllegalArgumentException("Specify video producer in config");
         }
         String audio = (String) local.getProperty("audioProducer");
-        //if (audio == null) {
-        //    throw new IllegalArgumentException("Specify audio in config");
-        //}
-
         createProducer(TypeOfContent.VIDEO, video, audio, role);
 
         if (TEACHER.equals(role.toUpperCase())) {

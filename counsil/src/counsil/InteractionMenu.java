@@ -6,8 +6,6 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -22,27 +20,27 @@ import javax.swing.UIManager;
 public class InteractionMenu extends JFrame {
 
     /**
-     * Buttons in current menu instance
+     * Represents buttons in current menu instance
      */
     protected final List<JButton> buttons = new ArrayList<>();
 
     /**
-     * Instance of initial menu to return to after counsil session end
+     * Instance of initial menu to return after counsil session end
      */
     private final InitialMenuLayout initialMenu;
-
+    
     /**
-     * Font used on buttons
+     * Currently used font
      */
-    public Font buttonFont;
+    public Font font;
 
     /**
      * List of listeners
      */
     protected final List<InteractionMenuListener> interactionMenuListeners = new ArrayList<>();
-
+    
     /**
-     * Language resource bundle
+     * Currently used language bundle
      */
     private final ResourceBundle languageBundle;
 
@@ -57,7 +55,7 @@ public class InteractionMenu extends JFrame {
 
         super("CoUnSil");
 
-        this.initialMenu = iml;
+        initialMenu = iml;
 
         setLayout(new GridBagLayout());
         setUndecorated(true);
@@ -68,42 +66,39 @@ public class InteractionMenu extends JFrame {
         setLocation(position.x, position.y);
         setDefaultLookAndFeelDecorated(false);
         this.languageBundle = languageBundle;
-        this.buttonFont = font;
+        this.font = font;
         overrideJOptionPaneBundle();
     }
-
+    
     /**
-     * Initializes buttons and sets menu as visible
+     * Initializes menu buttons, adds them to menu and sets menu as visible
      */
     public void publish() {
-
         addBasicButtons();
         initComponents();
         setVisible(true);
     }
 
     /**
-     * Adds interaction menu listener to menu
+     * Adds interacion menu listener to the list of currently listening listeners
      * @param listener 
      */
     public void addInteractionMenuListener(InteractionMenuListener listener) {
-
         interactionMenuListeners.add(listener);
     }
 
     /**
-     * Sends the message that the refresh button was clicked
+     * Sends refreshActionPerformed to all listening listeners
      */
     private void refreshButtonActionPerformed() {
-
         interactionMenuListeners.stream().forEach((listener) -> {
             listener.refreshActionPerformed();
         });
     }
 
     /**
-     * Adds basic buttons to menu
-     */
+     * Adds buttons which are used by all the roles to button list
+     */ 
     private void addBasicButtons() {
 
         JButton refreshButton = new JButton();
@@ -133,10 +128,10 @@ public class InteractionMenu extends JFrame {
         GroupLayout.SequentialGroup horizontalGroup = layout.createSequentialGroup();
         GroupLayout.ParallelGroup verticalGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
 
+        // add buttons to menu grid
         buttons.stream().forEach((button) -> {
-
             button.setPreferredSize(new java.awt.Dimension(130, 31));
-            button.setFont(buttonFont);
+            button.setFont(font);
 
             verticalGroup
                 .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
@@ -146,16 +141,16 @@ public class InteractionMenu extends JFrame {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
         });
 
+        // set menu grid and layout
         layout.setHorizontalGroup(horizontalGroup);
         layout.setVerticalGroup(verticalGroup);
         getContentPane().setLayout(layout);
 
         pack();
-
     }
-
+    
     /**
-     * Starts exiting program when exit button is clicked
+     * Starts exiting program when "Exit" button is clicked
      */
     private void exitButtonActionPerformed() {
         String message = languageBundle.getString("EXIT_CONFIRMATION");
@@ -173,6 +168,6 @@ public class InteractionMenu extends JFrame {
     private void overrideJOptionPaneBundle() {
         UIManager.put("OptionPane.yesButtonText", languageBundle.getString("YES"));
         UIManager.put("OptionPane.noButtonText", languageBundle.getString("NO"));
-        UIManager.put("OptionPane.cancelButtonText", languageBundle.getString("CANCEL"));
+        UIManager.put("OptionPane.cancelButtonText", languageBundle.getString("CANCEL"));        
     }
 }

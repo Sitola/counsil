@@ -9,7 +9,6 @@ import wddman.WDDManException;
 
 /**
  * Represents window attributes
- *
  * @author xdaxner
  */
 class DisplayableWindow {
@@ -86,7 +85,36 @@ class DisplayableWindow {
         return this.title.equals(title);
 
     }
+    
+    /**
+     * Gets current information about window from wddman
+     */
+    public final void loadCurrentInfo() {
+        try {
+            getWindowInstance();
+            if (window != null) {
+                position.x = window.getLeft();
+                position.y = window.getTop();
+                width = window.getWidth();
+                height = window.getHeight();
+            }
+        } catch (WDDManException ex) {
+            Logger.getLogger(DisplayableWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
+    }
+
+    /**
+     * Closes wddman window instance
+     * @throws WDDManException 
+     */
+    public void close() throws WDDManException {
+        getWindowInstance();
+        if (window != null) {
+            window.close();
+        }
+    }
+    
     public Position getPosition() {
         return position;
     }
@@ -134,31 +162,6 @@ class DisplayableWindow {
         }
         final DisplayableWindow other = (DisplayableWindow) obj;
         return Objects.equals(this.title, other.title);
-    }
-
-    /**
-     * Gets current information about window from wddman
-     */
-    public final void loadCurrentInfo() {
-        try {
-            getWindowInstance();
-            if (window != null) {
-                position.x = window.getLeft();
-                position.y = window.getTop();
-                width = window.getWidth();
-                height = window.getHeight();
-            }
-        } catch (WDDManException ex) {
-            Logger.getLogger(DisplayableWindow.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }
-
-    public void close() throws WDDManException {
-        getWindowInstance();
-        if (window != null) {
-            window.close();
-        }
     }
 
     private void getWindowInstance() throws WDDManException {
