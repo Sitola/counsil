@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package counsil;
 
 import java.io.File;
@@ -245,7 +240,7 @@ public class LayoutCalculator {
             String myrole = condition.getString("my role");
             return myrole.equalsIgnoreCase(role);
         }
-        //defoult value true (incorrectly writen condition is ignored)
+        //default value is true (incorrectly writen condition is ignored)
         return true;
     }
     

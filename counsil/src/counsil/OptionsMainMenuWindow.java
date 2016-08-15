@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package counsil;
 
 import java.awt.Color;
@@ -51,11 +46,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
  * @author xminarik
  */
 public final class OptionsMainMenuWindow extends JFrame{
-    JPanel mainPanel, visualitationPanel, videoAudioPanel, miscsPanel;
+    JPanel mainPanel, visualizationPanel, videoAudioPanel, miscsPanel;
     JTabbedPane mainTabPanel;
     Font fontButtons;
     List<VideoDevice> videoDevices;
@@ -100,11 +94,11 @@ public final class OptionsMainMenuWindow extends JFrame{
     ResourceBundle languageBundle;
     
     // constructor
-    OptionsMainMenuWindow(Font fontButtons, File configurationFile, InitialMenuLayout initialMenuLayout, ResourceBundle lenguageBundle)
+    OptionsMainMenuWindow(Font fontButtons, File configurationFile, InitialMenuLayout initialMenuLayout, ResourceBundle languageBundle)
     {
-        super(lenguageBundle.getString("COUNSIL_OPTIONS"));
+        super(languageBundle.getString("COUNSIL_OPTIONS"));
         this.fontButtons = fontButtons;
-        this.languageBundle = lenguageBundle;
+        this.languageBundle = languageBundle;
         videoDevices = new ArrayList<>();
         audioIn = new ArrayList<>();
         audioOut = new ArrayList<>();
@@ -198,14 +192,14 @@ public final class OptionsMainMenuWindow extends JFrame{
         uvProcess = null;
         mainPanel = new JPanel();
         setLayout(new GridBagLayout());
-        visualitationPanel = new JPanel();
+        visualizationPanel = new JPanel();
         videoAudioPanel = new JPanel();
         videoAudioPanel.setLayout(new GridBagLayout());
         miscsPanel = new JPanel();
         mainTabPanel = new JTabbedPane();
-        mainTabPanel.addTab(lenguageBundle.getString("VISUALITATION"), visualitationPanel);
-        mainTabPanel.addTab(lenguageBundle.getString("AUDIO_VIDEO"), videoAudioPanel);
-        mainTabPanel.addTab(lenguageBundle.getString("MISC"), miscsPanel);
+        mainTabPanel.addTab(languageBundle.getString("VISUALIZATION"), visualizationPanel);
+        mainTabPanel.addTab(languageBundle.getString("AUDIO_VIDEO"), videoAudioPanel);
+        mainTabPanel.addTab(languageBundle.getString("MISC"), miscsPanel);
         
         addWindowListener(new WindowAdapter() {//action on close button (x)
             @Override
@@ -217,7 +211,7 @@ public final class OptionsMainMenuWindow extends JFrame{
             }
         });
         
-        JButton saveButton = new JButton(lenguageBundle.getString("SAVE"));
+        JButton saveButton = new JButton(languageBundle.getString("SAVE"));
         saveButton.setFont(fontButtons);
         saveButton.addActionListener((ActionEvent event) -> {
             if(uvProcess != null){
@@ -225,7 +219,7 @@ public final class OptionsMainMenuWindow extends JFrame{
             }
             saveSettingAction();
         });
-        JButton discardButton = new JButton(lenguageBundle.getString("DISCARD"));
+        JButton discardButton = new JButton(languageBundle.getString("DISCARD"));
         discardButton.setFont(fontButtons);
         discardButton.addActionListener((ActionEvent event) -> {
             if(uvProcess != null){
@@ -233,7 +227,7 @@ public final class OptionsMainMenuWindow extends JFrame{
             }
             dispose();
         });
-        setVisualitationPanel();
+        setVisualizationPanel();
         setVideoAudioPanel();
         setMiscsPanel();
         
@@ -297,27 +291,27 @@ public final class OptionsMainMenuWindow extends JFrame{
 
     }
 
-    private void setVisualitationPanel(){
+    private void setVisualizationPanel(){
         JPanel raiseHandColorPanel = new JPanel();
         JPanel talkingColorPanel = new JPanel();
-        JPanel resazingSizePanel = new JPanel();
-        JPanel lenguagePanel = new JPanel();
+        JPanel resizingSizePanel = new JPanel();
+        JPanel languagePanel = new JPanel();
         
-        JTextField lenguageInfoTextField = new JTextField(languageBundle.getString("LANGUAGE"));
-        lenguageInfoTextField.setEditable(false);
-        lenguageInfoTextField.setBorder(BorderFactory.createEmptyBorder());
+        JTextField languageInfoTextField = new JTextField(languageBundle.getString("LANGUAGE"));
+        languageInfoTextField.setEditable(false);
+        languageInfoTextField.setBorder(BorderFactory.createEmptyBorder());
         languageCombobox.setEditable(false);
         languageCombobox.setLightWeightPopupEnabled(true);
-        String setLenguage = "";
+        String setLanguage = "";
         try {
-            setLenguage = configuration.getString("language");
+            setLanguage = configuration.getString("language");
         } catch (JSONException ex) {
             Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
-        fillLanguageComboBox(languageCombobox, setLenguage);
-        lenguagePanel.setBorder(new TitledBorder(languageBundle.getString("LANGUAGE")));     
+        fillLanguageComboBox(languageCombobox, setLanguage);
+        languagePanel.setBorder(new TitledBorder(languageBundle.getString("LANGUAGE")));     
                
-        JTextField setResizeAmountTextInfo = new JTextField(languageBundle.getString("RESAZING_INFO_TEXT"));
+        JTextField setResizeAmountTextInfo = new JTextField(languageBundle.getString("RESIZING_INFO_TEXT"));
         JTextField setResizePixelSign = new JTextField(languageBundle.getString("PIXELS")); 
         setResizeAmountTextInfo.setBorder(BorderFactory.createEmptyBorder());
         setResizePixelSign.setBorder(BorderFactory.createEmptyBorder());
@@ -328,15 +322,17 @@ public final class OptionsMainMenuWindow extends JFrame{
         setResizeAmount.setHorizontalAlignment(JTextField.CENTER);
         setResizePixelSign.setHorizontalAlignment(JTextField.LEFT);
         setResizeAmount.setColumns(3);
-        resazingSizePanel.setBorder(new TitledBorder(languageBundle.getString("RESAZING")));
+        resizingSizePanel.setBorder(new TitledBorder(languageBundle.getString("RESIZING")));
         
         
         raiseHandcolorChooser.setPreviewPanel(new CustomPreviewPanel(new Dimension(100, 100)));
         raiseHandcolorChooser.setLayout(new FlowLayout());
         //Remove the default chooser panels
         AbstractColorChooserPanel raiseHandColorPanelsToRemove[] = raiseHandcolorChooser.getChooserPanels();
-        for (int i = 0; i < raiseHandColorPanelsToRemove.length; i ++) {
-            raiseHandcolorChooser.removeChooserPanel(raiseHandColorPanelsToRemove[i]);
+        
+        //VR: opraveno na advanced for-loop
+        for (AbstractColorChooserPanel raiseHandColorPanelsToRemove1 : raiseHandColorPanelsToRemove) {
+            raiseHandcolorChooser.removeChooserPanel(raiseHandColorPanelsToRemove1);
         }
         raiseHandcolorChooser.addChooserPanel(new RGBChooserPanel(languageBundle));
         raiseHandcolorChooser.setColor(raiseHandColor);
@@ -348,21 +344,22 @@ public final class OptionsMainMenuWindow extends JFrame{
         talkingColorChooser.setLayout(new FlowLayout());
         //Remove the default chooser panels
         AbstractColorChooserPanel talkingColorPanelsToRemove[] = talkingColorChooser.getChooserPanels();
-        for (int i = 0; i < talkingColorPanelsToRemove.length; i ++) {
-            talkingColorChooser.removeChooserPanel(talkingColorPanelsToRemove[i]);
+        //VR: opraveno na advanced for-loop
+        for (AbstractColorChooserPanel talkingColorPanelsToRemove1 : talkingColorPanelsToRemove) {
+            talkingColorChooser.removeChooserPanel(talkingColorPanelsToRemove1);
         }
         talkingColorChooser.addChooserPanel(new RGBChooserPanel(languageBundle));
         talkingColorChooser.setColor(talkingColor);
         talkingColorPanel.setBorder(new TitledBorder(languageBundle.getString("COLOR_TALKING")));
         talkingColorPanel.add(talkingColorChooser);
         
-        if(languageBundle.containsKey("VIS_TOOL_TIP_LENGUAGE")){
-            languageCombobox.setToolTipText(languageBundle.getString("VIS_TOOL_TIP_LENGUAGE"));
+        if(languageBundle.containsKey("VIS_TOOL_TIP_LANGUAGE")){
+            languageCombobox.setToolTipText(languageBundle.getString("VIS_TOOL_TIP_LANGUAGE"));
         }
-        if(languageBundle.containsKey("VIS_TOOL_TIP_RESAZING")){
-            setResizeAmountTextInfo.setToolTipText(languageBundle.getString("VIS_TOOL_TIP_RESAZING"));
-            setResizeAmount.setToolTipText(languageBundle.getString("VIS_TOOL_TIP_RESAZING"));
-            setResizePixelSign.setToolTipText(languageBundle.getString("VIS_TOOL_TIP_RESAZING"));
+        if(languageBundle.containsKey("VIS_TOOL_TIP_RESIZING")){
+            setResizeAmountTextInfo.setToolTipText(languageBundle.getString("VIS_TOOL_TIP_RESIZING"));
+            setResizeAmount.setToolTipText(languageBundle.getString("VIS_TOOL_TIP_RESIZING"));
+            setResizePixelSign.setToolTipText(languageBundle.getString("VIS_TOOL_TIP_RESIZING"));
         }
         if(languageBundle.containsKey("VIS_TOOL_TIP_COLOR_RISE_HAND")){
             raiseHandColorPanel.setToolTipText(languageBundle.getString("VIS_TOOL_TIP_COLOR_RISE_HAND"));
@@ -371,55 +368,55 @@ public final class OptionsMainMenuWindow extends JFrame{
             talkingColorPanel.setToolTipText(languageBundle.getString("VIS_TOOL_TIP_COLOR_TALKING"));
         }
         
-        lenguagePanel.setLayout(new GridBagLayout());
-        GridBagConstraints lenguagePanelConstrains = new GridBagConstraints();
-        lenguagePanelConstrains.insets = new Insets(5,5,5,5);
-        lenguagePanelConstrains.weightx = 0.5;
-        lenguagePanelConstrains.gridheight = 1;
-        lenguagePanelConstrains.gridwidth = 1;
-        lenguagePanelConstrains.gridx = 1;
-        lenguagePanelConstrains.gridy = 0;
-        /*lenguagePanel.add(lenguageInfoTextField, lenguagePanelConstrains);
-        lenguagePanelConstrains.gridx = 1;
-        lenguagePanelConstrains.gridy = 0;*/
+        languagePanel.setLayout(new GridBagLayout());
+        GridBagConstraints languagePanelConstrains = new GridBagConstraints();
+        languagePanelConstrains.insets = new Insets(5,5,5,5);
+        languagePanelConstrains.weightx = 0.5;
+        languagePanelConstrains.gridheight = 1;
+        languagePanelConstrains.gridwidth = 1;
+        languagePanelConstrains.gridx = 1;
+        languagePanelConstrains.gridy = 0;
+        /*languagePanel.add(languageInfoTextField, languagePanelConstrains);
+        languagePanelConstrains.gridx = 1;
+        languagePanelConstrains.gridy = 0;*/
         
-        lenguagePanelConstrains.anchor = GridBagConstraints.CENTER;
-        lenguagePanel.add(languageCombobox, lenguagePanelConstrains);
+        languagePanelConstrains.anchor = GridBagConstraints.CENTER;
+        languagePanel.add(languageCombobox, languagePanelConstrains);
         
-        resazingSizePanel.setLayout(new GridBagLayout());
-        GridBagConstraints resazingSizePanelConstrains = new GridBagConstraints();
-        resazingSizePanelConstrains.insets = new Insets(5,5,5,5);
-        //resazingSizePanelConstrains.weightx = 0.5;
-        resazingSizePanelConstrains.gridheight = 1;
-        resazingSizePanelConstrains.gridwidth = 1;
-        resazingSizePanelConstrains.gridx = 0;
-        resazingSizePanelConstrains.gridy = 0;
-        resazingSizePanel.add(setResizeAmountTextInfo, resazingSizePanelConstrains);
-        resazingSizePanelConstrains.gridx = 1;
-        resazingSizePanelConstrains.gridy = 0;
-        resazingSizePanel.add(setResizeAmount, resazingSizePanelConstrains);
-        resazingSizePanelConstrains.gridx = 2;
-        resazingSizePanelConstrains.gridy = 0;
-        resazingSizePanel.add(setResizePixelSign, resazingSizePanelConstrains);
+        resizingSizePanel.setLayout(new GridBagLayout());
+        GridBagConstraints resizingSizePanelConstrains = new GridBagConstraints();
+        resizingSizePanelConstrains.insets = new Insets(5,5,5,5);
+        //resizingSizePanelConstrains.weightx = 0.5;
+        resizingSizePanelConstrains.gridheight = 1;
+        resizingSizePanelConstrains.gridwidth = 1;
+        resizingSizePanelConstrains.gridx = 0;
+        resizingSizePanelConstrains.gridy = 0;
+        resizingSizePanel.add(setResizeAmountTextInfo, resizingSizePanelConstrains);
+        resizingSizePanelConstrains.gridx = 1;
+        resizingSizePanelConstrains.gridy = 0;
+        resizingSizePanel.add(setResizeAmount, resizingSizePanelConstrains);
+        resizingSizePanelConstrains.gridx = 2;
+        resizingSizePanelConstrains.gridy = 0;
+        resizingSizePanel.add(setResizePixelSign, resizingSizePanelConstrains);
         
-        visualitationPanel.setLayout(new GridBagLayout());
-        GridBagConstraints visualitationPanelConstrains = new GridBagConstraints();
-        visualitationPanelConstrains.fill = GridBagConstraints.HORIZONTAL;
-        visualitationPanelConstrains.weightx = 0.5;
-        visualitationPanelConstrains.gridheight = 1;
-        visualitationPanelConstrains.gridwidth = 1;
-        visualitationPanelConstrains.gridx = 0;
-        visualitationPanelConstrains.gridy = 0;
-        visualitationPanel.add(lenguagePanel, visualitationPanelConstrains);
-        visualitationPanelConstrains.gridx = 0;
-        visualitationPanelConstrains.gridy = 1;
-        visualitationPanel.add(resazingSizePanel, visualitationPanelConstrains);
-        visualitationPanelConstrains.gridx = 0;
-        visualitationPanelConstrains.gridy = 2;
-        visualitationPanel.add(raiseHandColorPanel, visualitationPanelConstrains);
-        visualitationPanelConstrains.gridx = 0;
-        visualitationPanelConstrains.gridy = 3;
-        visualitationPanel.add(talkingColorPanel, visualitationPanelConstrains);
+        visualizationPanel.setLayout(new GridBagLayout());
+        GridBagConstraints visualizationPanelConstrains = new GridBagConstraints();
+        visualizationPanelConstrains.fill = GridBagConstraints.HORIZONTAL;
+        visualizationPanelConstrains.weightx = 0.5;
+        visualizationPanelConstrains.gridheight = 1;
+        visualizationPanelConstrains.gridwidth = 1;
+        visualizationPanelConstrains.gridx = 0;
+        visualizationPanelConstrains.gridy = 0;
+        visualizationPanel.add(languagePanel, visualizationPanelConstrains);
+        visualizationPanelConstrains.gridx = 0;
+        visualizationPanelConstrains.gridy = 1;
+        visualizationPanel.add(resizingSizePanel, visualizationPanelConstrains);
+        visualizationPanelConstrains.gridx = 0;
+        visualizationPanelConstrains.gridy = 2;
+        visualizationPanel.add(raiseHandColorPanel, visualizationPanelConstrains);
+        visualizationPanelConstrains.gridx = 0;
+        visualizationPanelConstrains.gridy = 3;
+        visualizationPanel.add(talkingColorPanel, visualizationPanelConstrains);
     }
     
     private void setVideoAudioPanel(){
@@ -1682,7 +1679,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
         if(!uvFile.canExecute()){
             verificationTextField.setForeground(Color.red);
-            verificationTextField.setText(languageBundle.getString("FILE")+ " " + uvFile.getName() + " " + languageBundle.getString("CAN_NOT_BE_EXECUTED"));
+            verificationTextField.setText(languageBundle.getString("FILE")+ " " + uvFile.getName() + " " + languageBundle.getString("CANNOT_BE_EXECUTED"));
             correctUv = false;
             return;
         }
@@ -1770,7 +1767,7 @@ public final class OptionsMainMenuWindow extends JFrame{
             }else{
                 verificationTextField.setForeground(Color.red);
                 verificationTextField.setRows(1);
-                verificationTextField.setText("UltraGid " + languageBundle.getString("CAN_NOT_BE_EXECUTED"));
+                verificationTextField.setText("UltraGid " + languageBundle.getString("CANNOT_BE_EXECUTED"));
             }
         }        
     }
@@ -1896,7 +1893,7 @@ public final class OptionsMainMenuWindow extends JFrame{
     }
 
     private void saveSettingAction() {
-        JSONObject newClinetConfiguration = new JSONObject();
+        JSONObject newClientConfiguration = new JSONObject();
         JSONObject raiseHandColorJson = new JSONObject();
         JSONObject talkingColorJson = new JSONObject();
         JSONArray serverIps = new JSONArray();
@@ -1931,24 +1928,24 @@ public final class OptionsMainMenuWindow extends JFrame{
             talkingColorJson.put("blue", talkingColorChooser.getColor().getBlue());
             talkingColorJson.put("green", talkingColorChooser.getColor().getGreen());
             
-            newClinetConfiguration.put("this ip", myIpSetTextField.getText());
-            newClinetConfiguration.put("ultragrid path", uvPathString);
-            newClinetConfiguration.put("layout path", layoutPathString);
-            newClinetConfiguration.put("producer settings", producerSetting);
-            newClinetConfiguration.put("consumer settings", displaySetting);
-            newClinetConfiguration.put("audio consumer", audioInSetting);
-            newClinetConfiguration.put("audio producer", audioOutSetting);
+            newClientConfiguration.put("this ip", myIpSetTextField.getText());
+            newClientConfiguration.put("ultragrid path", uvPathString);
+            newClientConfiguration.put("layout path", layoutPathString);
+            newClientConfiguration.put("producer settings", producerSetting);
+            newClientConfiguration.put("consumer settings", displaySetting);
+            newClientConfiguration.put("audio consumer", audioInSetting);
+            newClientConfiguration.put("audio producer", audioOutSetting);
             if(presentationUsed){
-                newClinetConfiguration.put("presentation producer", presentationSetting);
-                newClinetConfiguration.put("presentation", presentationUsed);
+                newClientConfiguration.put("presentation producer", presentationSetting);
+                newClientConfiguration.put("presentation", presentationUsed);
             }else{
-                newClinetConfiguration.put("presentation", presentationUsed);
+                newClientConfiguration.put("presentation", presentationUsed);
             }
-            newClinetConfiguration.put("language", getLanguage());
-            newClinetConfiguration.put("raise hand color", raiseHandColorJson);
-            newClinetConfiguration.put("talking color", talkingColorJson);
-            newClinetConfiguration.put("server ips", serverIps);
-            newClinetConfiguration.put("talking resizing", resizeValue);
+            newClientConfiguration.put("language", getLanguage());
+            newClientConfiguration.put("raise hand color", raiseHandColorJson);
+            newClientConfiguration.put("talking color", talkingColorJson);
+            newClientConfiguration.put("server ips", serverIps);
+            newClientConfiguration.put("talking resizing", resizeValue);
         } catch (JSONException ex) {
             Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1956,7 +1953,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         FileWriter fileWriter;
         try {
             fileWriter = new FileWriter(configurationFile);
-            fileWriter.write(newClinetConfiguration.toString());
+            fileWriter.write(newClientConfiguration.toString());
             fileWriter.close();
         } catch (IOException ex) {
             Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
@@ -1971,6 +1968,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         dispose();
     }
     
+    // TODO: Doplnit popis metody a komentar
     private List<IPServerSaved> loadIpAddreses(){
         List<IPServerSaved> ret = new ArrayList<>();
         JSONArray ipAddreses;
@@ -1990,6 +1988,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         return ret;
     }
 
+    // TODO: Doplnit popis metody a komentar
     private void setServerIpsComboBox(List<IPServerSaved> ipAddresses, JComboBox serverIpSelect) {
         serverIpSelect.removeAllItems();
         for(int i=0;i<ipAddresses.size();i++){
@@ -1997,6 +1996,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
     }
     
+    // TODO: Doplnit popis metody a komentar
     private String getAudioSetting(JComboBox audioBox, List<AudioDevice> audioDevicis){
         if(audioBox == null || audioBox.getItemCount() == 0){
             return "";
@@ -2005,6 +2005,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         return audioDevicis.get(selectedIndex).setting;
     }
 
+    // TODO: Doplnit popis metody a komentar
     private void fillLanguageComboBox(JComboBox languageCombobox, String setLanguage) {
         languageCombobox.removeAllItems();
         languageCombobox.addItem("Slovenský");
@@ -2014,7 +2015,7 @@ public final class OptionsMainMenuWindow extends JFrame{
             languageCombobox.setSelectedItem(setLanguage);
         }
     }
-    
+    // TODO: Doplnit popis metody a komentar
     private String getLanguage(){
         if(languageCombobox.getItemCount() > 0){
             return languageCombobox.getSelectedItem().toString();
@@ -2024,35 +2025,37 @@ public final class OptionsMainMenuWindow extends JFrame{
     }
 }
 
-
+// TODO: Doplnit popis tridy a komentar
 class IPServerSaved{
     public String name;
     public String address;
     public String port;
 }
-
+// TODO: Doplnit popis tridy a komentar
 class VideoDevice{
     public String name;
     public String device;
     public List<VideoPixelFormat> vpf = new ArrayList<>();
 }
-
+// TODO: Doplnit popis tridy a komentar
 class VideoPixelFormat{
     public String name;
     public String pixelFormat;
     public List<VideoFrameSize> vfs = new ArrayList<>();
 }
-
+// TODO: Doplnit popis tridy a komentar
 class VideoFrameSize{
     public String widthXheight;
     public List<VideoFPS> fps;
 }
 
+// TODO: Doplnit popis tridy a komentar
 class VideoFPS{
     String fps;
     String setting;
 }
 
+// TODO: Doplnit popis tridy a komentar
 class AudioDevice{
     String name;
     String setting;

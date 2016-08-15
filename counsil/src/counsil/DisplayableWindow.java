@@ -8,28 +8,28 @@ import wddman.WDDMan;
 import wddman.WDDManException;
 
 /**
- * Represents window attributes * 
+ * Represents window attributes
  * @author xdaxner
  */
-class DisplayableWindow{
+class DisplayableWindow {
 
     /**
-     * Height of window
+     * Height of the window
      */
     private int height;
 
     /**
-     * Width of window
+     * Width of the window
      */
     private int width;
 
     /**
-     * Position of winodow
+     * Position of the window
      */
     private Position position;
 
     /**
-     * Window temporary role in layout
+     * Role of the window in layout
      */
     private final String role;
 
@@ -39,17 +39,17 @@ class DisplayableWindow{
     private final String title;
 
     /**
-     * wddman instance which this window uses
+     * Wddman instance
      */
-    private final WDDMan wd;     
-    
+    private final WDDMan wd;
+
     /**
-     * wddman window
+     * Wddman window instance
      */
     private wddman.Window window;
 
     /**
-     * Initializes arguments    
+     * Initializes arguments
      *
      * @param title title of new window
      * @param role role of window
@@ -57,22 +57,22 @@ class DisplayableWindow{
      * @throws UnsupportedOperatingSystemException
      */
     DisplayableWindow(WDDMan wddman, String title, String role) throws WDDManException, UnsupportedOperatingSystemException {
-        wd = wddman;          
-        this.title = title;    
-        this.role = role;   
-        position =  new Position();
+        this.wd = wddman;
+        this.title = title;
+        this.role = role;
+        this.position = new Position();
     }
 
     /**
      * Applies DisplayableWindow parameters to actual windows
-     *    
+     *
      * @throws WDDManException
      */
-    public void adjustWindow () throws WDDManException {
+    public void adjustWindow() throws WDDManException {
         getWindowInstance();
         if (window != null) {
             window.resize(position.x, position.y, width, height);
-        }               
+        }
     }
 
     /**
@@ -85,12 +85,37 @@ class DisplayableWindow{
         return this.title.equals(title);
 
     }
+    
+    /**
+     * Gets current information about window from wddman
+     */
+    public final void loadCurrentInfo() {
+        try {
+            getWindowInstance();
+            if (window != null) {
+                position.x = window.getLeft();
+                position.y = window.getTop();
+                width = window.getWidth();
+                height = window.getHeight();
+            }
+        } catch (WDDManException ex) {
+            Logger.getLogger(DisplayableWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
-    private void getWindowInstance() throws WDDManException {       
-        window = wd.getWindowByTitle(title);        
     }
 
-    Position getPosition() {
+    /**
+     * Closes wddman window instance
+     * @throws WDDManException 
+     */
+    public void close() throws WDDManException {
+        getWindowInstance();
+        if (window != null) {
+            window.close();
+        }
+    }
+    
+    public Position getPosition() {
         return position;
     }
 
@@ -107,24 +132,24 @@ class DisplayableWindow{
     }
 
     public int getWidth() {
-       return width;
+        return width;
     }
 
     public void setWidth(int width) {
         this.width = width;
     }
-      
-    public  String getRole (){
+
+    public String getRole() {
         return role;
     }
-  
-    public String getTitle(){
+
+    public String getTitle() {
         return title;
     }
-    
+
     @Override
     public int hashCode() {
-        int hash = 5;      
+        int hash = 5;
         hash = 53 * hash + Objects.hashCode(this.title);
         return hash;
     }
@@ -139,25 +164,7 @@ class DisplayableWindow{
         return Objects.equals(this.title, other.title);
     }
 
-    public final void loadCurrentInfo() {
-        try {
-            getWindowInstance();
-            if (window != null){
-                position.x = window.getLeft();
-                position.y = window.getTop();
-                width = window.getWidth();
-                height = window.getHeight();
-            }
-        } catch (WDDManException ex) {
-            Logger.getLogger(DisplayableWindow.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-    }
-
-    public void close() throws WDDManException {
-        getWindowInstance();
-        if (window != null){
-            window.close();
-        }
+    private void getWindowInstance() throws WDDManException {
+        window = wd.getWindowByTitle(title);
     }
 }

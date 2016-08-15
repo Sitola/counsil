@@ -23,23 +23,23 @@ import wddman.WDDManException;
 
 /**
  * Represents structure which manipulates with layout
- *
  * @author xdaxner
  */
 public class LayoutManagerImpl implements LayoutManager {
 
     /**
-     * Lock for gui and other stuff
+     * Represents size of inactive border of the window
      */
-    final private Object eventLock = new Object();
+    final static int WINDOW_BORDER_OFFSET = 50;
 
     /**
-     * List of current active windows
+     * List of current active windows Needs to be locked, parallel access should
+     * not be allowed
      */
     private List<DisplayableWindow> windows = new ArrayList<>();
 
     /**
-     * Instance of wddman
+     * Instance of the wddman
      */
     private WDDMan wd;
 
@@ -54,7 +54,7 @@ public class LayoutManagerImpl implements LayoutManager {
     private List<LayoutManagerListener> layoutManagerListeners = new ArrayList<>();
 
     /**
-     * Calculates layout
+     * Instance of layout calculator
      */
     private LayoutCalculator calculator;
 
@@ -64,16 +64,15 @@ public class LayoutManagerImpl implements LayoutManager {
     private NativeMouseInputListener mouseListener;
 
     /**
-     * ratio which is applied while scaling windows up/down
+     * Ratio which is applied while scaling windows up/down
      */
     private int scaleRatio;
 
     /**
      * Initializes layout
-     *
      * @param role of this layout
      * @param iml initialMenuLayout to return when counsil exit
-     * @param setScaleRatio ratio to be scaled
+     * @param scaleRatio ratio to be scaled
      * @param layoutFile
      * @param languageBundle
      * @param font
@@ -82,13 +81,13 @@ public class LayoutManagerImpl implements LayoutManager {
      * @throws wddman.WDDManException
      * @throws org.jnativehook.NativeHookException
      */
-    public LayoutManagerImpl(String role, InitialMenuLayout iml, int setScaleRatio, File layoutFile, ResourceBundle languageBundle, Font font) throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
+    public LayoutManagerImpl(String role, InitialMenuLayout iml, int scaleRatio, File layoutFile, ResourceBundle languageBundle, Font font) throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
 
-        calculator = new LayoutCalculator(role, layoutFile);
-        scaleRatio = setScaleRatio;
+        this.calculator = new LayoutCalculator(role, layoutFile);
+        this.scaleRatio = scaleRatio;
 
         try {
-            wd = new WDDMan();
+            this.wd = new WDDMan();
         } catch (UnsupportedOperatingSystemException ex) {
             Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             System.exit(-1);
@@ -100,11 +99,9 @@ public class LayoutManagerImpl implements LayoutManager {
             @Override
             public void run() {
                 try {
-
-                    if (role.toUpperCase().equals("STUDENT")) {
+                    if (STUDENT.equals(role.toUpperCase())) {
                         menu = new InteractionMenuStudentExtension(calculator.getMenuRole(), calculator.getMenuPostion(), iml, languageBundle, font);
-                    }
-                    else {
+                    } else {
                         menu = new InteractionMenu(calculator.getMenuRole(), calculator.getMenuPostion(), iml, languageBundle, font);
                     }
                     menu.publish();
@@ -132,42 +129,32 @@ public class LayoutManagerImpl implements LayoutManager {
     }
 
     /**
-     * set ratio
-     *
-     * @param newRatio
-     */
-    @Override
-    public void initializeScaleRatio(int newRatio) {
-        scaleRatio = newRatio;
-    }
-
-    /**
      * Scales window size down
      *
      * @param name
      */
     @Override
     public void downScale(String name) {
+        synchronized (windows) {
+            DisplayableWindow window = getDisplayableWindowByTitle(name);
+            if (window != null) {
+                try {
+                    window.loadCurrentInfo();
 
-        DisplayableWindow window = getDisplayableWindowByTitle(name);
-        if (window != null) {
-            try {
-                window.loadCurrentInfo();
+                    int newX = window.getPosition().x + getPositionChange();
+                    int newY = window.getPosition().y + getPositionChange();
 
-                int newX = window.getPosition().x + getPositionChange();
-                int newY = window.getPosition().y + getPositionChange();
+                    window.setPosition(new Position(newX, newY));
+                    window.setHeight(window.getHeight() - scaleRatio);
+                    window.setWidth(window.getWidth() - scaleRatio);
 
-                window.setPosition(new Position(newX, newY));
-                window.setHeight(window.getHeight() - scaleRatio);
-                window.setWidth(window.getWidth() - scaleRatio);
+                    window.adjustWindow();
 
-                window.adjustWindow();
-
-            } catch (WDDManException ex) {
-                Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (WDDManException ex) {
+                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
-
     }
 
     /**
@@ -187,26 +174,26 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     @Override
     public void upScale(String name) {
+        synchronized (windows) {
+            DisplayableWindow window = getDisplayableWindowByTitle(name);
+            if (window != null) {
+                try {
+                    window.loadCurrentInfo();
 
-        DisplayableWindow window = getDisplayableWindowByTitle(name);
-        if (window != null) {
-            try {
-                window.loadCurrentInfo();
+                    int newX = window.getPosition().x - getPositionChange();
+                    int newY = window.getPosition().y - getPositionChange();
 
-                int newX = window.getPosition().x - getPositionChange();
-                int newY = window.getPosition().y - getPositionChange();
+                    window.setPosition(new Position(newX, newY));
+                    window.setHeight(window.getHeight() + scaleRatio);
+                    window.setWidth(window.getWidth() + scaleRatio);
 
-                window.setPosition(new Position(newX, newY));
-                window.setHeight(window.getHeight() + scaleRatio);
-                window.setWidth(window.getWidth() + scaleRatio);
+                    window.adjustWindow();
 
-                window.adjustWindow();
-
-            } catch (WDDManException ex) {
-                Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (WDDManException ex) {
+                    Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
-
     }
 
     /**
@@ -216,9 +203,10 @@ public class LayoutManagerImpl implements LayoutManager {
      * @param role tole of window user
      */
     @Override
-    public void addNode(String title, String role) {
+    public void addNode(String title, String role
+    ) {
         try {
-            synchronized (eventLock) {
+            synchronized (windows) {
                 windows.add(new DisplayableWindow(wd, title, role));
             }
         } catch (WDDManException | UnsupportedOperatingSystemException ex) {
@@ -232,7 +220,8 @@ public class LayoutManagerImpl implements LayoutManager {
      * @param listener
      */
     @Override
-    public void addLayoutManagerListener(LayoutManagerListener listener) {
+    public void addLayoutManagerListener(LayoutManagerListener listener
+    ) {
         layoutManagerListeners.add(listener);
     }
 
@@ -242,8 +231,9 @@ public class LayoutManagerImpl implements LayoutManager {
      * @param title window title
      */
     @Override
-    public void removeNode(String title) {
-        synchronized (eventLock) {
+    public void removeNode(String title
+    ) {
+        synchronized (windows) {
             for (Iterator<DisplayableWindow> iter = windows.iterator(); iter.hasNext();) {
                 DisplayableWindow window = iter.next();
                 if (window.contains(title)) {
@@ -255,19 +245,19 @@ public class LayoutManagerImpl implements LayoutManager {
     }
 
     /**
-     * recalculates layout and applies changes
+     * Recalculates layout and applies changes
      */
     @Override
     public void refreshLayout() {
-        synchronized (eventLock) {
+        synchronized (windows) {
             calculator.recalculate(windows);
-            applyChanges();
         }
+        applyChanges();
         setMenuPosition();
     }
 
     /**
-     * add mouse listener to Counsil
+     * Adds mouse listener to Counsil
      *
      * @throws NativeHookException
      */
@@ -276,13 +266,16 @@ public class LayoutManagerImpl implements LayoutManager {
         mouseListener = new NativeMouseInputListener() {
             @Override
             public void nativeMouseClicked(NativeMouseEvent nme) {
+
+                Point clickPoint = nme.getPoint();
+
                 try {
-                    if (wasClickedInMenu(nme.getPoint())) {
+                    if (wasClickedInMenu(clickPoint)) {
                         return;
                     }
-                    DisplayableWindow clicked = findClickedWindow(nme.getPoint());
+                    DisplayableWindow clicked = findClickedWindow(clickPoint);
                     if (clicked != null) {
-                        System.err.println(clicked.getTitle() + " was CLICKED!");
+                        Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, clicked.getTitle() + " was clicked.");
                         sendClickToListeners(clicked, nme.getButton());
                     }
                 } catch (WDDManException ex) {
@@ -292,22 +285,26 @@ public class LayoutManagerImpl implements LayoutManager {
 
             @Override
             public void nativeMousePressed(NativeMouseEvent nme) {
-                // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                // Layout manager does not use this action, it does not need to implement it
+                return;
             }
 
             @Override
             public void nativeMouseReleased(NativeMouseEvent nme) {
-                // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                // Layout manager does not use this action, it does not need to implement it
+                return;
             }
 
             @Override
             public void nativeMouseMoved(NativeMouseEvent nme) {
-                // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                // Layout manager does not use this action, it does not need to implement it
+                return;
             }
 
             @Override
             public void nativeMouseDragged(NativeMouseEvent nme) {
-                // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                // Layout manager does not use this action, it does not need to implement it
+                return;
             }
 
             /**
@@ -317,13 +314,13 @@ public class LayoutManagerImpl implements LayoutManager {
              * @return
              */
             private boolean wasClickedInMenu(Point point) {
-                return menu.getAlignmentX() < point.x
+                return menu != null
+                        && menu.getAlignmentX() < point.x
                         && menu.getAlignmentY() < point.y
                         && menu.getAlignmentX() + menu.getWidth() > point.x
                         && menu.getAlignmentY() + menu.getHeight() > point.y;
             }
         };
-
         registerMouseListener();
     }
 
@@ -336,30 +333,28 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     private void sendClickToListeners(DisplayableWindow clicked, int button) {
         layoutManagerListeners.stream().forEach((listener) -> {
-            switch (button) {
-                case 1: {
-                    try {
-                        if (!calculator.getMenuRole().equals("student") && clicked.getRole().equals("student")) {
+            try {
+                switch (button) {
+                    case 1: {
+                        if (!STUDENT.equals(calculator.getMenuRole().toUpperCase())
+                                && STUDENT.equals(clicked.getRole().toUpperCase())) {
                             listener.windowChoosenActionPerformed(clicked.getTitle());
                         }
-                    } catch (JSONException ex) {
-                        Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                        break;
                     }
-                    break;
-                }
-                case 2: {
-                    try {
+                    case 2: {
                         clicked.close();
-                    } catch (WDDManException ex) {
-                        Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
+            } catch (JSONException | WDDManException ex) {
+                Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
     }
+    private static final String STUDENT = "STUDENT";
 
     /**
-     * registers mouse listener
+     * Registers mouse listener
      *
      * @throws NativeHookException
      */
@@ -372,19 +367,16 @@ public class LayoutManagerImpl implements LayoutManager {
     }
 
     /**
-     * finds clicked window and alerts listeners
+     * Finds clicked window and alerts listeners
      */
     private DisplayableWindow findClickedWindow(Point position) throws WDDManException {
-
-        final int OFFSET = 50;
-
-        for (DisplayableWindow window : windows) {
-            synchronized (eventLock) {
+        synchronized (windows) {
+            for (DisplayableWindow window : windows) {
                 window.loadCurrentInfo();
-                if ((window.getPosition().x + OFFSET <= position.x)
-                        && (window.getPosition().y + OFFSET <= position.y)
-                        && (window.getPosition().x + window.getWidth() - OFFSET >= position.x)
-                        && (window.getPosition().y + window.getHeight() - OFFSET >= position.y)) {
+                if ((window.getPosition().x + WINDOW_BORDER_OFFSET <= position.x)
+                        && (window.getPosition().y + WINDOW_BORDER_OFFSET <= position.y)
+                        && (window.getPosition().x + window.getWidth() - WINDOW_BORDER_OFFSET >= position.x)
+                        && (window.getPosition().y + window.getHeight() - WINDOW_BORDER_OFFSET >= position.y)) {
                     return window;
                 }
             }
@@ -396,18 +388,21 @@ public class LayoutManagerImpl implements LayoutManager {
      * Applies calculated layout
      */
     private void applyChanges() {
-        for (DisplayableWindow window : windows) {
-            try {
-                window.adjustWindow();
-            } catch (WDDManException ex) {
-                Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+        synchronized (windows) {
+            for (DisplayableWindow window : windows) {
+                try {
+                    window.adjustWindow();
+                } catch (WDDManException ex) {
+                    Logger.getLogger(LayoutManagerImpl.class
+                            .getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
     }
 
     /**
      * Gets window by title
-     *
+     * Calling the method should be synchronized, parallel access should not be allowed
      * @param title
      * @return
      */

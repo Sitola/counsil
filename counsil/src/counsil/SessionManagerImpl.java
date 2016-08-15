@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package counsil;
 
 import couniverse.Main;
@@ -38,50 +33,51 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author palci
+ * @author pkajaba, xdaxner
  */
 public class SessionManagerImpl implements SessionManager {
+
+    private static final String TEACHER = "TEACHER";
 
     /**
      * Maps consumers on producers Producers are keys
      */
-    Map<UltraGridProducerApplication, UltraGridConsumerApplication> producer2consumer = new HashMap<>();
+    private Map<UltraGridProducerApplication, UltraGridConsumerApplication> producer2consumer = new HashMap<>();
 
     /**
      * Maps producers to nodes where are running Nodes are keys
      */
-    Map<NetworkNode, UltraGridProducerApplication[]> node2producer = new HashMap<>();
+    private Map<NetworkNode, UltraGridProducerApplication[]> node2producer = new HashMap<>();
 
     /**
      *
      */
-    Map<UltraGridConsumerApplication, String> consumer2name = new HashMap<>();
+    private Map<UltraGridConsumerApplication, String> consumer2name = new HashMap<>();
 
     /**
      * Listens for ultragrid windows changes
      */
-    couniverse.core.controllers.AppEventListener consumerListener;
+    private couniverse.core.controllers.AppEventListener consumerListener;
 
     /**
      * Stored instance of node representing current computer
      */
-    NetworkNode local;
+    private NetworkNode local;
     /**
      * Instance of couniverse Core
      */
-    Core core;
+    private Core core;
 
     /**
      * Instance of LayoutManager to notify Layout about changes
      */
-    LayoutManager layoutManager;
-    TopologyAggregator topologyAggregator;
+    private LayoutManager layoutManager;
+    private TopologyAggregator topologyAggregator;
 
     /**
      * Listens alert and permission to talk messages
      */
-    MessageListener counsilListener;
+    private MessageListener counsilListener;
 
     /**
      * Currently talking node
@@ -104,19 +100,25 @@ public class SessionManagerImpl implements SessionManager {
     public static MessageType TALK = MessageType.createCustomMessageType("TalkPermissionGrantedMessage", "NetworkNode");
 
     /**
-     * 30 seconds timer, to forbid user spamming alert messages
+     * 30 seconds timer, to forbid user from spamming alert messages
      */
     private Boolean canAlert;
-    Timer alertTimer;
+    private Timer alertTimer;
 
     /**
-     * actual resources bundlo for lenguages
+     * Language resource bundle
      */
-    ResourceBundle lenguageBundle;
+    private ResourceBundle languageBundle;
 
-    String alertColor;
+    /**
+     * Color of window highlight while alerting
+     */
+    private String alertColor;
 
-    String talkColor;
+    /** 
+     * Color of window highlight while talking
+     */
+    private String talkColor;
 
     /**
      * Constructor to initialize LayoutManager
@@ -128,21 +130,14 @@ public class SessionManagerImpl implements SessionManager {
      */
     public SessionManagerImpl(LayoutManager layoutManager, Color talkingColor, Color riseHandColor, ResourceBundle languageBundle) {
 
-        alertColor = "#";
-        alertColor += Integer.toHexString(riseHandColor.getRed());
-        alertColor += Integer.toHexString(riseHandColor.getGreen());
-        alertColor += Integer.toHexString(riseHandColor.getBlue());
+        this.alertColor = getColorCode(riseHandColor);
+        this.talkColor = getColorCode(talkingColor);
 
-        talkColor = "#";
-        talkColor += Integer.toHexString(talkingColor.getRed());
-        talkColor += Integer.toHexString(talkingColor.getGreen());
-        talkColor += Integer.toHexString(talkingColor.getBlue());
+        this.talkingNode = null;
+        this.canAlert = true;
+        this.alertTimer = new Timer();
 
-        talkingNode = null;
-        canAlert = true;
-        alertTimer = new Timer();
-
-        this.lenguageBundle = languageBundle;
+        this.languageBundle = languageBundle;
 
         if (layoutManager == null) {
             throw new IllegalArgumentException("layoutManager is null");
@@ -153,7 +148,7 @@ public class SessionManagerImpl implements SessionManager {
             @Override
             public void alertActionPerformed() {
 
-                if ((talkingNode != null && local.getName().equals(talkingNode.getName())) || !canAlert) {
+                if ((talkingNode != null && talkingNode.getName().equals(local.getName())) || !canAlert) {
                     return;
                 }
 
@@ -182,7 +177,19 @@ public class SessionManagerImpl implements SessionManager {
     }
 
     /**
-     * gets producer from consumer (in producer2consumer) map
+     * Gets string implementation of Color
+     * @param color
+     * @return 
+     */
+    private String getColorCode(Color color) {
+        String colorStringRepresentation = "#" + Integer.toHexString(color.getRed());
+        colorStringRepresentation += Integer.toHexString(color.getGreen());
+        colorStringRepresentation += Integer.toHexString(color.getBlue());
+        return colorStringRepresentation;
+    }
+
+    /**
+     * Gets producer from consumer (in producer2consumer) map
      *
      * @param consumer
      * @return
@@ -254,40 +261,37 @@ public class SessionManagerImpl implements SessionManager {
         // create produrer for local content
         createProducent((String) local.getProperty("role"));
 
-        Object listenerLock = new Object();
-        synchronized (listenerLock) {
-            topologyAggregator.addListener(new NodePresenceListener() {
+        topologyAggregator.addListener(new NodePresenceListener() {
 
-                @Override
-                public void init(Set<NetworkNode> nodes) {
-                    for (NetworkNode node : nodes) {
-                        onNodeChanged(node);
-                    }
-                }
-
-                @Override
-                public void onNewNodeAppeared(NetworkNode node) {
+            @Override
+            public void init(Set<NetworkNode> nodes) {
+                for (NetworkNode node : nodes) {
                     onNodeChanged(node);
                 }
+            }
 
-                @Override
-                public void onNodeChanged(NetworkNode node) {
-                    // Check if there is new media application
-                    checkProducent(node);
-                }
+            @Override
+            public void onNewNodeAppeared(NetworkNode node) {
+                onNodeChanged(node);
+            }
 
-                @Override
-                public void onNodeLeft(NetworkNode node) {
-                    String nodeName = consumer2name.get(producer2consumer.get(node2producer.get(node)));
-                    if (nodeName != null) {
-                        if ((talkingNode != null) && (node.getName().equals(talkingNode.getName()))) {
-                            talkingNode = null;
-                        }
+            @Override
+            public void onNodeChanged(NetworkNode node) {
+                // Check if there is new media application
+                checkProducent(node);
+            }
+
+            @Override
+            public void onNodeLeft(NetworkNode node) {
+                String nodeName = consumer2name.get(producer2consumer.get(node2producer.get(node)));
+                if (nodeName != null) {
+                    if ((talkingNode != null) && (talkingNode.getName().equals(node.getName()))) {
+                        talkingNode = null;
                     }
-                    //stopConsumer(node);
                 }
-            });
-        }
+                stopConsumer(node);
+            }
+        });
 
         counsilListener = new MessageListener() {
 
@@ -300,12 +304,12 @@ public class SessionManagerImpl implements SessionManager {
                 String title = consumer.getName();
                 UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
 
-                if (message.type.equals(ALERT)) {
+                if (ALERT.equals(message.type)) {
                     if (handle != null) {
                         alertConsumer(handle, timers.get(consumer.name));
                     }
 
-                } else if (message.type.equals(TALK)) {
+                } else if (TALK.equals((message.type))) {
                     if (title != null) {
 
                         String currentTalkingName = null;
@@ -317,23 +321,25 @@ public class SessionManagerImpl implements SessionManager {
                             if (currentTalkingName != null) {
                                 layoutManager.downScale(currentTalkingName);
                             }
-                            if (oldConsumer != null) {
-                                UltraGridControllerHandle oldHandle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(oldConsumer));
-                                if (oldHandle != null) {
-                                    try {
-                                        oldHandle.sendCommand("postprocess flush");
-                                    } catch (InterruptedException | TimeoutException ex) {
-                                        Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                                    }
+
+                            UltraGridControllerHandle oldHandle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(oldConsumer));
+                            if (oldHandle != null) {
+                                try {
+                                    oldHandle.sendCommand("postprocess flush");
+                                } catch (InterruptedException | TimeoutException ex) {
+                                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                             }
+
                             talkingNode = null;
                         }
 
-                        if (!title.equals(currentTalkingName)) {
+                        if (!currentTalkingName.equals(title)) {
 
                             CounsilTimer currentTimer = timers.get(consumer.name);
-                            if (currentTimer.task != null) currentTimer.task.cancel();
+                            if (currentTimer.task != null) {
+                                currentTimer.task.cancel();
+                            }
                             currentTimer.timer.purge();
                             // new node TALK!
                             talkingNode = talker;
@@ -352,14 +358,11 @@ public class SessionManagerImpl implements SessionManager {
             }
 
             private void alertConsumer(UltraGridControllerHandle handle, CounsilTimer timer) {
-
-                // alertConsumerByFlashing(handle, timer, 2000);
-                alertConsumerContinuously(handle, timer, 25000);
-
+                alertConsumerByFlashing(handle, timer, 1000);
+                alertConsumerContinuously(handle, timer, 30000);
             }
 
             private void alertConsumerContinuously(UltraGridControllerHandle handle, CounsilTimer counsilTimer, int duration) {
-
                 try {
                     handle.sendCommand("postprocess border:width=10:color=" + alertColor);
                 } catch (InterruptedException | TimeoutException ex) {
@@ -387,7 +390,7 @@ public class SessionManagerImpl implements SessionManager {
                 CounsilTimer timer;
 
                 String[] COMMAND = {
-                    "postprocess border:width=10:color=#ff0000",
+                    "postprocess border:width=10:color=" + alertColor,
                     "postprocess flush"
                 };
 
@@ -431,7 +434,6 @@ public class SessionManagerImpl implements SessionManager {
 
     /**
      * Starts producer from local node
-     *
      * @throws IOException if there is problem during starting Producer
      */
     private void createProducent(String role) throws IOException {
@@ -440,15 +442,11 @@ public class SessionManagerImpl implements SessionManager {
             throw new IllegalArgumentException("Specify video producer in config");
         }
         String audio = (String) local.getProperty("audioProducer");
-        //if (audio == null) {
-        //    throw new IllegalArgumentException("Specify audio in config");
-        //}
-
         createProducer(TypeOfContent.VIDEO, video, audio, role);
-        
-        if (role.equals("teacher")) {
+
+        if (TEACHER.equals(role.toUpperCase())) {
             String pres = (String) local.getProperty("presentationProducer");
-            if ((pres != null) && (!pres.equals(""))) {
+            if ((pres != null) && (!"".equals(pres))) {
                 createProducer(TypeOfContent.PRESENTATION, pres, null, role);
             }
         }
@@ -456,7 +454,7 @@ public class SessionManagerImpl implements SessionManager {
     }
 
     private void createProducer(
-            TypeOfContent type, 
+            TypeOfContent type,
             String videoSettings,
             String audioSettings,
             String role
@@ -506,15 +504,14 @@ public class SessionManagerImpl implements SessionManager {
 
         UltraGridConsumerApplication con = null;
         String name = local.getName() + "-" + content;
-        if (content.contains("VIDEO")) {
+        if (content.toUpperCase().contains("VIDEO")) {
             String audio = (String) local.getProperty("audioConsumer");
             if(local.uuid.equals(node.uuid)) {
                 audio = null;
             }
-            
             con = createConsumer(
-                    content, 
-                    audio, 
+                    content,
+                    audio,
                     (String) local.getProperty("videoConsumer")
             );
             apps[0] = app;
@@ -568,7 +565,7 @@ public class SessionManagerImpl implements SessionManager {
                     // If this is incoming applications which was not here before
                     if (producer2consumer.containsKey(producer) == false) {
                         String consumerName = createConsumer(producer, node);
-                        if (consumerName.contains("PRESENTATION")) {
+                        if (consumerName.toUpperCase().contains("PRESENTATION")) {
                             layoutManager.addNode(consumerName, "presentation");
                         } else {
                             layoutManager.addNode(consumerName, (String) node.getProperty("role"));
@@ -651,11 +648,9 @@ public class SessionManagerImpl implements SessionManager {
                 } else {
                     interpreter = true;
                 }
-            } else if (nameToUpper.contains("TEACHER")) {
+            } else if (nameToUpper.contains(TEACHER)) {
                 if (nameToUpper.contains("PRESENTATION")) {
                     presentation = true;
-                } else if (nameToUpper.contains("AUDIO")) {
-                    teacherAudio = true;
                 } else if (nameToUpper.contains("AUDIO")) {
                     teacherAudio = true;
                 } else {
@@ -664,42 +659,42 @@ public class SessionManagerImpl implements SessionManager {
             }
         }
 
-        status += (lenguageBundle.getString("INTERPRETER") + " video: ");
+        status += (languageBundle.getString("INTERPRETER") + " video: ");
         if (interpreter) {
-            status += (lenguageBundle.getString("ONLINE") + "\n");
+            status += (languageBundle.getString("ONLINE") + "\n");
         } else {
-            status += (lenguageBundle.getString("OFFLINE") + "\n");
+            status += (languageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (lenguageBundle.getString("INTERPRETER") + " audio: ");
+        status += (languageBundle.getString("INTERPRETER") + " audio: ");
         if (interpreterAudio) {
-            status += (lenguageBundle.getString("ONLINE") + "\n");
+            status += (languageBundle.getString("ONLINE") + "\n");
         } else {
-            status += (lenguageBundle.getString("OFFLINE") + "\n");
+            status += (languageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (lenguageBundle.getString("TEACHER") + " video: ");
+        status += (languageBundle.getString(TEACHER) + " video: ");
         if (teacher) {
-            status += (lenguageBundle.getString("ONLINE") + "\n");
+            status += (languageBundle.getString("ONLINE") + "\n");
         } else {
-            status += (lenguageBundle.getString("OFFLINE") + "\n");
+            status += (languageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (lenguageBundle.getString("TEACHER") + " audio: ");
-        if (teacher) {
-            status += (lenguageBundle.getString("ONLINE") + "\n");
+        status += (languageBundle.getString(TEACHER) + " audio: ");
+        if (teacherAudio) {
+            status += (languageBundle.getString("ONLINE") + "\n");
         } else {
-            status += (lenguageBundle.getString("OFFLINE") + "\n");
+            status += (languageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (lenguageBundle.getString("PRESENTATION") + ": ");
+        status += (languageBundle.getString("PRESENTATION") + ": ");
         if (presentation) {
-            status += (lenguageBundle.getString("ONLINE") + "\n");
+            status += (languageBundle.getString("ONLINE") + "\n");
         } else {
-            status += (lenguageBundle.getString("OFFLINE") + "\n");
+            status += (languageBundle.getString("OFFLINE") + "\n");
         }
 
-        status += (lenguageBundle.getString("STUDENTS") + ": ");
+        status += (languageBundle.getString("STUDENTS") + ": ");
         status += studentCount;
 
         return status;
