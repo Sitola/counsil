@@ -1,5 +1,6 @@
 package counsil;
 
+import com.sun.jna.platform.win32.User32;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -115,38 +116,72 @@ class DisplayableWindow {
         }
     }
     
+    /**
+     * Brings physical instance of windows to the front of the screen
+     */
+    public void bringToTheFront() {
+       //! TODO User32.INSTANCE.BringWindowToTop(window);
+    }
+    
+    /**
+     * Returns position of the window     
+     */
     public Position getPosition() {
         return position;
     }
 
+    /**
+     * Sets the position of the window
+     */
     void setPosition(Position position) {
         this.position = position;
     }
 
+    /**
+     * Returns height of the window
+     */
     public int getHeight() {
         return height;
     }
 
+    /**
+     * Sets height of the window
+     */
     public void setHeight(int height) {
         this.height = height;
     }
 
+    /**
+     * Returns width of the window
+     */
     public int getWidth() {
         return width;
     }
 
+    /**
+     * Sets width of the window
+     */
     public void setWidth(int width) {
         this.width = width;
     }
 
+    /**
+     * Returns role of the window
+     */
     public String getRole() {
         return role;
     }
 
+    /**
+     * Returns title of the window
+     */
     public String getTitle() {
         return title;
     }
 
+    /**
+     * Creates hash code of the displayable window
+     */
     @Override
     public int hashCode() {
         int hash = 5;
@@ -154,6 +189,9 @@ class DisplayableWindow {
         return hash;
     }
 
+    /**
+     * Evaluates displayable window equality
+     */
     @Override
     public boolean equals(Object obj) {
 
@@ -164,7 +202,11 @@ class DisplayableWindow {
         return Objects.equals(this.title, other.title);
     }
 
+    /**
+     * Gets wddman window instance from wddman
+     * @throws WDDManException 
+     */
     private void getWindowInstance() throws WDDManException {
         window = wd.getWindowByTitle(title);
-    }
+    }    
 }

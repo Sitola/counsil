@@ -1,17 +1,18 @@
 package counsil;
 
 /**
+ * Listener of the GUI, listens for window clicks and menu interaction
  * @author xdaxner
  */
 public interface LayoutManagerListener {
     
     /**
-     * what to do when user wants to talk
+     * Listens for the alert action
      */
     void alertActionPerformed();
     
     /**
-     *  what to do when window is chosen
+     * Listens for choosen window
      * @param windowName of window
      */
     
