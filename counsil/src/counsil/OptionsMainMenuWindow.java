@@ -73,6 +73,7 @@ public final class OptionsMainMenuWindow extends JFrame{
     InitialMenuLayout imt;    //need to reload server choosing window
     String displaySetting;
     boolean presentationUsed;
+    boolean studentOnly;
     
     //need to be global so they can be set from different tab
     JComboBox mainCameraBox;
@@ -93,7 +94,9 @@ public final class OptionsMainMenuWindow extends JFrame{
     
     ResourceBundle languageBundle;
     
-    // constructor
+    /**
+     * constructor
+     */ 
     OptionsMainMenuWindow(Font fontButtons, File configurationFile, InitialMenuLayout initialMenuLayout, ResourceBundle languageBundle)
     {
         super(languageBundle.getString("COUNSIL_OPTIONS"));
@@ -187,6 +190,17 @@ public final class OptionsMainMenuWindow extends JFrame{
             } catch (JSONException ex) {
                 presentationUsed = false;
             }
+        }else{
+            presentationUsed = false;
+        }
+        if(configuration.has("student only")){
+            try {
+                studentOnly = configuration.getBoolean("student only");
+            } catch (JSONException ex) {
+                studentOnly = false;
+            }
+        }else{
+            studentOnly = false;
         }
         setResizeAmount.setBorder(BorderFactory.createEmptyBorder());
         uvProcess = null;
@@ -238,6 +252,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         //load posibylities
         try {
             videoDevices = loadVideoDevicesAndSettings(uvPathString);
+            addTestcrdDevice(videoDevices);
             audioIn = read_audio_devices_in_or_out(uvPathString, true);
             audioOut = read_audio_devices_in_or_out(uvPathString, false);
         } catch (IOException ex) {
@@ -291,6 +306,9 @@ public final class OptionsMainMenuWindow extends JFrame{
 
     }
 
+    /**
+     * set visualization panel
+     */
     private void setVisualizationPanel(){
         JPanel raiseHandColorPanel = new JPanel();
         JPanel talkingColorPanel = new JPanel();
@@ -376,10 +394,6 @@ public final class OptionsMainMenuWindow extends JFrame{
         languagePanelConstrains.gridwidth = 1;
         languagePanelConstrains.gridx = 1;
         languagePanelConstrains.gridy = 0;
-        /*languagePanel.add(languageInfoTextField, languagePanelConstrains);
-        languagePanelConstrains.gridx = 1;
-        languagePanelConstrains.gridy = 0;*/
-        
         languagePanelConstrains.anchor = GridBagConstraints.CENTER;
         languagePanel.add(languageCombobox, languagePanelConstrains);
         
@@ -419,9 +433,10 @@ public final class OptionsMainMenuWindow extends JFrame{
         visualizationPanel.add(talkingColorPanel, visualizationPanelConstrains);
     }
     
+    /**
+     * set video and audio panel
+     */
     private void setVideoAudioPanel(){
-        
-        
         JPanel mainCameraPanel = new JPanel();
         mainCameraPanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("CAMERA")));
         JPanel presetationPanel = new JPanel();
@@ -578,6 +593,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         //buttons
         JButton testCameraButton = new JButton(languageBundle.getString("TEST_CAMERA"));
         JButton testPresentationButton = new JButton(languageBundle.getString("TEST_PRESENTATION"));
+        JButton testTestcardButton = new JButton(languageBundle.getString("TEST_TESTCARD"));
         testCameraButton.setFont(fontButtons);
         testPresentationButton.setFont(fontButtons);
         if(languageBundle.containsKey("AV_TOOL_TIP_TEST_CAMERA")){
@@ -586,17 +602,12 @@ public final class OptionsMainMenuWindow extends JFrame{
         if(languageBundle.containsKey("AV_TOOL_TIP_TEST_PRESENTATION")){
             testPresentationButton.setToolTipText(languageBundle.getString("AV_TOOL_TIP_TEST_PRESENTATION"));
         }
+        if(languageBundle.containsKey("AV_TOOL_TIP_TEST_TESTCARD")){
+            testTestcardButton.setToolTipText(languageBundle.getString("AV_TOOL_TIP_TEST_TESTCARD"));
+        }
         testCameraButton.addActionListener((ActionEvent event) -> {
             try {
-                String reciveSetting = "";
-                if(displayBox.getItemCount() > 0){
-                    reciveSetting = displayBox.getSelectedItem().toString();
-                    if(displaySettingBox.getItemCount() > 0){
-                        if(displaySettingBox.getSelectedItem().toString().equals("nodecorate")){
-                            reciveSetting += ":" + displaySettingBox.getSelectedItem().toString();
-                        }
-                    }
-                }
+                String reciveSetting =  getDisplaySetting();
                 String outputSetting = getVideoSettings(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
                 startUltragrid(uvPathString, reciveSetting, outputSetting);
             } catch (IOException ex) {
@@ -605,16 +616,17 @@ public final class OptionsMainMenuWindow extends JFrame{
         });
         testPresentationButton.addActionListener((ActionEvent event) -> {
             try {
-                String reciveSetting = "";
-                if(displayBox.getItemCount() > 0){
-                    reciveSetting = displayBox.getSelectedItem().toString();
-                    if(displaySettingBox.getItemCount() > 0){
-                        if(displaySettingBox.getSelectedItem().toString().equals("nodecorate")){
-                            reciveSetting += ":" + displaySettingBox.getSelectedItem().toString();
-                        }
-                    }
-                }
+                String reciveSetting = getDisplaySetting();
                 String outputSetting = getVideoSettings(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, videoDevices);
+                startUltragrid(uvPathString, reciveSetting, outputSetting);
+            } catch (IOException ex) {
+                Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+        testTestcardButton.addActionListener((ActionEvent event) -> {
+            try {
+                String reciveSetting = getDisplaySetting();
+                String outputSetting = "testcard:255:255:25:RGB";
                 startUltragrid(uvPathString, reciveSetting, outputSetting);
             } catch (IOException ex) {
                 Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
@@ -626,6 +638,7 @@ public final class OptionsMainMenuWindow extends JFrame{
             boolean isSelected = e.getStateChange() == ItemEvent.SELECTED;
             presetationPanel.setVisible(isSelected);
             testPresentationButton.setVisible(isSelected);
+            testTestcardButton.setVisible(isSelected);
             presentationUsed = isSelected;
             this.pack();
         });
@@ -820,6 +833,11 @@ public final class OptionsMainMenuWindow extends JFrame{
         videoAudioConstrains.gridwidth = 3;
         videoAudioConstrains.ipadx = 0;
         videoAudioPanel.add(presetationPanel, videoAudioConstrains);
+        videoAudioConstrains.gridx = 1;
+        videoAudioConstrains.gridy = 9;
+        videoAudioConstrains.gridheight = 1;
+        videoAudioConstrains.gridwidth = 1;
+        videoAudioPanel.add(testTestcardButton, videoAudioConstrains);
         videoAudioConstrains.gridx = 2;
         videoAudioConstrains.gridy = 9;
         videoAudioConstrains.gridheight = 1;
@@ -828,9 +846,13 @@ public final class OptionsMainMenuWindow extends JFrame{
         
         presetationPanel.setVisible(false);
         testPresentationButton.setVisible(false);
+        testTestcardButton.setVisible(false);
         presentationCheckBox.setSelected(presentationUsed);
     }
     
+    /**
+     * set miscs panel
+     */
     private void setMiscsPanel(){
         
         JPanel myIpAddressPanel = new JPanel();
@@ -903,6 +925,7 @@ public final class OptionsMainMenuWindow extends JFrame{
             ultragridOK(uvPathString, verificationText);
             try {
                 videoDevices = loadVideoDevicesAndSettings(uvPathString);
+                addTestcrdDevice(videoDevices);
                 audioIn = read_audio_devices_in_or_out(uvPathString, true);
                 audioOut = read_audio_devices_in_or_out(uvPathString, false);
             } catch (IOException ex) {
@@ -1187,6 +1210,12 @@ public final class OptionsMainMenuWindow extends JFrame{
         myIpSetTextField.setText(myIpLoaded);
     }
     
+    /**
+     * get list of video devices and setting
+     * @param uvPath
+     * @return
+     * @throws IOException 
+     */
     private List<VideoDevice> loadVideoDevicesAndSettings(String uvPath) throws IOException{
         if(!correctUv){
             return new ArrayList<>();
@@ -1205,13 +1234,20 @@ public final class OptionsMainMenuWindow extends JFrame{
                 uvVideoSetting = "avfoundation";
                 ret = getVideoDevicesAndSettingsMac(uvPath, uvVideoSetting);
             }else{      //probably should log incorrect os system
+                Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, "no supported os");
                 return null;
             }
         }
         return ret;
     }
     
-    
+    /**
+     * get list of video devices and setting from Linux OS
+     * @param uvAddress
+     * @param uvVideoSetting
+     * @return
+     * @throws IOException 
+     */
     List<VideoDevice> getVideoDevicesAndSettingsLinux(String uvAddress, String uvVideoSetting) throws IOException{
         Process uvProcess = new ProcessBuilder(uvAddress, "-t", uvVideoSetting + ":help").start();
         InputStream is = uvProcess.getInputStream();
@@ -1278,6 +1314,13 @@ public final class OptionsMainMenuWindow extends JFrame{
         return videoInputs;
     }
     
+    /**
+     * get list of video devices and setting from Windows OS
+     * @param uvAddress
+     * @param uvVideoSetting
+     * @return
+     * @throws IOException 
+     */
     List<VideoDevice> getVideoDevicesAndSettingsWindows(String uvAddress, String uvVideoSetting) throws IOException{
         
         Process uvProcess = new ProcessBuilder(uvAddress, "-t", uvVideoSetting + ":help").start();
@@ -1342,6 +1385,13 @@ public final class OptionsMainMenuWindow extends JFrame{
         return videoInputs;
     }
     
+    /**
+     * get list of video devices and setting from Mac OS
+     * @param uvAddress
+     * @param uvVideoSetting
+     * @return
+     * @throws IOException 
+     */
     List<VideoDevice> getVideoDevicesAndSettingsMac(String uvAddress, String uvVideoSetting) throws IOException{
         Process uvProcess = new ProcessBuilder(uvAddress, "-t", uvVideoSetting + ":help").start();
         InputStream is = uvProcess.getInputStream();
@@ -1414,6 +1464,32 @@ public final class OptionsMainMenuWindow extends JFrame{
         return videoInputs;
     }
     
+    /**
+     * get video display setting from comboBoxes
+     * @return 
+     */
+    String getDisplaySetting(){
+        String reciveSetting = "";
+        if(displayBox.getItemCount() > 0){
+            reciveSetting = displayBox.getSelectedItem().toString();
+            if(displaySettingBox.getItemCount() > 0){
+                if(displaySettingBox.getSelectedItem().toString().equals("nodecorate")){
+                    reciveSetting += ":" + displaySettingBox.getSelectedItem().toString();
+                }
+            }
+        }
+        return reciveSetting;
+    }
+    
+    /**
+     * get video setting from selected comboBoxes
+     * @param devicesBox
+     * @param formatBox
+     * @param frameSizeBox
+     * @param fpsBox
+     * @param videoDevices
+     * @return 
+     */
     String getVideoSettings(JComboBox devicesBox, JComboBox formatBox, JComboBox frameSizeBox, JComboBox fpsBox,
                                             List<VideoDevice> videoDevices){        
         String ret = "";
@@ -1422,32 +1498,41 @@ public final class OptionsMainMenuWindow extends JFrame{
             String format = formatBox.getSelectedItem().toString();
             String resolution = frameSizeBox.getSelectedItem().toString();
             String fps = fpsBox.getSelectedItem().toString();
+            int cameraInt = devicesBox.getSelectedIndex();
+            int formatInt = formatBox.getSelectedIndex();
+            int resolutionInt = frameSizeBox.getSelectedIndex();
+            int fpsInt = fpsBox.getSelectedIndex();
             List<VideoPixelFormat> videoPixelFormats = null;
             List<VideoFrameSize> videoFrameSizes = null;
             List<VideoFPS> videoFPS = null;
-            for (int i=0; i<videoDevices.size();i++){
-                if(videoDevices.get(i).name.compareTo(camera) == 0){
-                   videoPixelFormats = videoDevices.get(i).vpf;
+            if(videoDevices.size() > cameraInt){
+                if(videoDevices.get(cameraInt).name.compareTo(camera) == 0){
+                   videoPixelFormats = videoDevices.get(cameraInt).vpf;
+                }
+            }
+            if(videoPixelFormats.size() > formatInt){
+                if(videoPixelFormats.get(formatInt).name.compareTo(format) == 0){
+                   videoFrameSizes = videoPixelFormats.get(formatInt).vfs;
                 }
             }
             if(videoPixelFormats != null){
-                for (int i=0; i<videoPixelFormats.size();i++){
-                    if(videoPixelFormats.get(i).name.compareTo(format) == 0){
-                       videoFrameSizes = videoPixelFormats.get(i).vfs;
+                if(videoPixelFormats.size() > formatInt){
+                    if(videoPixelFormats.get(formatInt).name.compareTo(format) == 0){
+                       videoFrameSizes = videoPixelFormats.get(formatInt).vfs;
                     }
                 }
             }
             if(videoFrameSizes != null){
-                for (int i=0; i<videoFrameSizes.size();i++){
-                    if(videoFrameSizes.get(i).widthXheight.compareTo(resolution) == 0){
-                       videoFPS = videoFrameSizes.get(i).fps;
+                if(videoFrameSizes.size() > resolutionInt){
+                    if(videoFrameSizes.get(resolutionInt).widthXheight.compareTo(resolution) == 0){
+                       videoFPS = videoFrameSizes.get(resolutionInt).fps;
                     }
                 }
             }
             if(videoFPS != null){
-                for (int i=0; i<videoFPS.size();i++){
-                    if(videoFPS.get(i).fps.compareTo(fps) == 0){
-                       ret = videoFPS.get(i).setting;
+                if(videoFPS.size() > fpsInt){
+                    if(videoFPS.get(fpsInt).fps.compareTo(fps) == 0){
+                       ret = videoFPS.get(fpsInt).setting;
                     }
                 }
             }
@@ -1455,6 +1540,11 @@ public final class OptionsMainMenuWindow extends JFrame{
         return ret;
     }
     
+    /**
+     * set devices comboBox from video setting
+     * @param devicesBox
+     * @param videoDevices 
+     */
     private void setJComboBoxDevices(JComboBox devicesBox, List<VideoDevice> videoDevices){
         devicesBox.removeAllItems();
         if(videoDevices != null){
@@ -1464,6 +1554,12 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
     }
     
+    /**
+     * set format comboBox from video setting
+     * @param formatBox
+     * @param deviceBox
+     * @param videoDevices 
+     */
     private void setJComboBoxFormat(JComboBox formatBox, JComboBox deviceBox, List<VideoDevice> videoDevices){
         formatBox.removeAllItems();
         String device;
@@ -1484,6 +1580,13 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
     }
     
+    /**
+     * set frame size comboBox from video setting 
+     * @param frameSizeBox
+     * @param deviceBox
+     * @param formatBox
+     * @param videoDevices 
+     */
     private void setJComboBoxFrameSize(JComboBox frameSizeBox, JComboBox deviceBox, JComboBox formatBox, List<VideoDevice> videoDevices){
         frameSizeBox.removeAllItems();
         String device;
@@ -1510,6 +1613,14 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
     }
     
+    /**
+     * set fps comboBox from video devices
+     * @param fpsBox
+     * @param deviceBox
+     * @param formatBox
+     * @param widthXheightBox
+     * @param videoDevices 
+     */
     private void setJComboBoxFPS(JComboBox fpsBox, JComboBox deviceBox, JComboBox formatBox, JComboBox widthXheightBox, List<VideoDevice> videoDevices){
         fpsBox.removeAllItems();
         String device;
@@ -1543,6 +1654,15 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
     }
     
+    /**
+     * set all video comboBoxes from videoDevices
+     * @param deviceBox
+     * @param formatBox
+     * @param widthXheightBox
+     * @param fpsBox
+     * @param settingVerification
+     * @param videoDevices 
+     */
     void setAllJComboBoxesVideosetting(JComboBox deviceBox, JComboBox formatBox, JComboBox widthXheightBox, JComboBox fpsBox, JTextField settingVerification, List<VideoDevice> videoDevices){
         setJComboBoxDevices(deviceBox, videoDevices);
         setJComboBoxFormat(formatBox, deviceBox, videoDevices);
@@ -1551,6 +1671,15 @@ public final class OptionsMainMenuWindow extends JFrame{
         actionSetFPSBox(deviceBox, formatBox, widthXheightBox, fpsBox, settingVerification, videoDevices);
     }
     
+    /**
+     * action to do when device comboBox is changed
+     * @param devicesBox
+     * @param formatBox
+     * @param frameSizeBox
+     * @param fpsBox
+     * @param settingVerification
+     * @param videoDevices 
+     */
     private void actionSetCameraDeviceBox(JComboBox devicesBox, JComboBox formatBox, JComboBox frameSizeBox, JComboBox fpsBox, JTextField settingVerification,
                                             List<VideoDevice> videoDevices){
         
@@ -1560,6 +1689,15 @@ public final class OptionsMainMenuWindow extends JFrame{
         actionSetFPSBox(devicesBox, formatBox, frameSizeBox, fpsBox, settingVerification, videoDevices);
     }
     
+    /**
+     * action to do when pixel format is changed
+     * @param devicesBox
+     * @param formatBox
+     * @param frameSizeBox
+     * @param fpsBox
+     * @param settingVerification
+     * @param videoDevices 
+     */
     private void actionSetCameraPixelFormatBox(JComboBox devicesBox, JComboBox formatBox, JComboBox frameSizeBox, JComboBox fpsBox, JTextField settingVerification,
                                             List<VideoDevice> videoDevices){
 
@@ -1568,6 +1706,15 @@ public final class OptionsMainMenuWindow extends JFrame{
         actionSetFPSBox(devicesBox, formatBox, frameSizeBox, fpsBox, settingVerification, videoDevices);
     }
     
+    /**
+     * action to do when frame size comboBox is changed
+     * @param devicesBox
+     * @param formatBox
+     * @param frameSizeBox
+     * @param fpsBox
+     * @param settingVerification
+     * @param videoDevices 
+     */
     private void actionSetCameraFrameSizeBox(JComboBox devicesBox, JComboBox formatBox, JComboBox frameSizeBox, JComboBox fpsBox, JTextField settingVerification,
                                             List<VideoDevice> videoDevices){
 
@@ -1575,6 +1722,15 @@ public final class OptionsMainMenuWindow extends JFrame{
         actionSetFPSBox(devicesBox, formatBox, frameSizeBox, fpsBox, settingVerification, videoDevices);
     }
     
+    /**
+     * action to do when fps comboBox is changed
+     * @param deviceBox
+     * @param formatBox
+     * @param widthXheightBox
+     * @param fpsBox
+     * @param settingVerification
+     * @param videoDevices 
+     */
     private void actionSetFPSBox(JComboBox deviceBox, JComboBox formatBox, JComboBox widthXheightBox, JComboBox fpsBox, JTextField settingVerification,
                                             List<VideoDevice> videoDevices){
         String device;
@@ -1612,6 +1768,13 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
     }
     
+    /**
+     * read possible audio devices
+     * @param uvAddress
+     * @param audio_in
+     * @return
+     * @throws IOException 
+     */
     private List<AudioDevice> read_audio_devices_in_or_out(String uvAddress, boolean audio_in) throws IOException{
         if(!correctUv){
             return new ArrayList<>();
@@ -1651,6 +1814,11 @@ public final class OptionsMainMenuWindow extends JFrame{
         return audioDevices;
     }
     
+    /**
+     * check if uv address is correct, result save in global variabile and write message to verification text
+     * @param uvAddress
+     * @param verificationTextField 
+     */
     void ultragridOK(String uvAddress, JTextArea verificationTextField){
         if(uvProcess != null){
             uvProcess.destroyForcibly();
@@ -1772,6 +1940,13 @@ public final class OptionsMainMenuWindow extends JFrame{
         }        
     }
     
+    /**
+     * start ultragrid
+     * @param uvAddress
+     * @param uvReciveSetting
+     * @param uvSendSetting
+     * @throws IOException 
+     */
     private void startUltragrid(String uvAddress, String uvReciveSetting, String uvSendSetting) throws IOException{
         if(uvProcess != null){
             uvProcess.destroyForcibly();
@@ -1784,6 +1959,11 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
     }
 
+    /**
+     * fill display combo boxes
+     * @param displayBox
+     * @param displaySettingBox 
+     */
     private void setJComboBoxDisplay(JComboBox displayBox, JComboBox displaySettingBox) {
         displayBox.removeAllItems();
         displayBox.addItem("gl");
@@ -1825,6 +2005,11 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
     }
     
+    /**
+     * load current selected display setting to global variabile 
+     * @param displayBox
+     * @param displaySettingBox 
+     */
     private void setCorrectDisplaySetting(JComboBox displayBox, JComboBox displaySettingBox) {
         if(displayBox == null){
             return;
@@ -1851,6 +2036,11 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
     }
     
+    /**
+     * fill audio comboBox from audio devices
+     * @param audioBox
+     * @param audioDevicis 
+     */
     private void setAudioJComboBox(JComboBox audioBox, List<AudioDevice> audioDevicis){
         audioBox.removeAllItems();
         for(int i=0;i<audioDevicis.size();i++){
@@ -1858,6 +2048,15 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
     }
     
+    /**
+     * find setting string in video devices and set is as selected
+     * @param devicesBox
+     * @param formatBox
+     * @param frameSizeBox
+     * @param fpsBox
+     * @param videoDevices
+     * @param videoSetting 
+     */
     private void SetVideoSettingFromConfig(JComboBox devicesBox, JComboBox formatBox, JComboBox frameSizeBox, JComboBox fpsBox,
                                             List<VideoDevice> videoDevices, String videoSetting){
         for(int i=0;i<videoDevices.size();i++){
@@ -1878,6 +2077,10 @@ public final class OptionsMainMenuWindow extends JFrame{
 
     }
     
+    /**
+     * @param jsonFile file to be read from
+     * @return JSONObject that was read from file
+     */
     JSONObject readJsonFile(File jsonFile){
         try {
             String entireFileText = new Scanner(jsonFile).useDelimiter("\\A").next();
@@ -1888,10 +2091,16 @@ public final class OptionsMainMenuWindow extends JFrame{
         return null;
     }
     
+    /**
+     * dispose of this window
+     */
     public void discardAction(){
         dispose();
     }
 
+    /**
+     * save setting that was changed
+     */
     private void saveSettingAction() {
         JSONObject newClientConfiguration = new JSONObject();
         JSONObject raiseHandColorJson = new JSONObject();
@@ -1946,6 +2155,7 @@ public final class OptionsMainMenuWindow extends JFrame{
             newClientConfiguration.put("talking color", talkingColorJson);
             newClientConfiguration.put("server ips", serverIps);
             newClientConfiguration.put("talking resizing", resizeValue);
+            newClientConfiguration.put("student only", studentOnly);
         } catch (JSONException ex) {
             Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1968,7 +2178,10 @@ public final class OptionsMainMenuWindow extends JFrame{
         dispose();
     }
     
-    // TODO: Doplnit popis metody a komentar
+    /**
+     * load ip address
+     * @return list of ip addresses loaded from configuration
+     */
     private List<IPServerSaved> loadIpAddreses(){
         List<IPServerSaved> ret = new ArrayList<>();
         JSONArray ipAddreses;
@@ -1988,7 +2201,11 @@ public final class OptionsMainMenuWindow extends JFrame{
         return ret;
     }
 
-    // TODO: Doplnit popis metody a komentar
+    /**
+     * fill server ip addresses to comboBox
+     * @param ipAddresses list of ip addresses
+     * @param serverIpSelect comboBox to be filled in
+     */
     private void setServerIpsComboBox(List<IPServerSaved> ipAddresses, JComboBox serverIpSelect) {
         serverIpSelect.removeAllItems();
         for(int i=0;i<ipAddresses.size();i++){
@@ -1996,7 +2213,12 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
     }
     
-    // TODO: Doplnit popis metody a komentar
+    /**
+     * get audio setting from comboBox
+     * @param audioBox comboBox to get language from
+     * @param audioDevicis audio devices to get setting from
+     * @return 
+     */
     private String getAudioSetting(JComboBox audioBox, List<AudioDevice> audioDevicis){
         if(audioBox == null || audioBox.getItemCount() == 0){
             return "";
@@ -2005,7 +2227,11 @@ public final class OptionsMainMenuWindow extends JFrame{
         return audioDevicis.get(selectedIndex).setting;
     }
 
-    // TODO: Doplnit popis metody a komentar
+    /**
+     * fill language comboBox
+     * @param languageCombobox combo box to be filled in
+     * @param setLanguage language to be set
+     */
     private void fillLanguageComboBox(JComboBox languageCombobox, String setLanguage) {
         languageCombobox.removeAllItems();
         languageCombobox.addItem("Slovenský");
@@ -2015,7 +2241,11 @@ public final class OptionsMainMenuWindow extends JFrame{
             languageCombobox.setSelectedItem(setLanguage);
         }
     }
-    // TODO: Doplnit popis metody a komentar
+    
+    /**
+     * return language name
+     * @return return language
+     */
     private String getLanguage(){
         if(languageCombobox.getItemCount() > 0){
             return languageCombobox.getSelectedItem().toString();
@@ -2023,39 +2253,103 @@ public final class OptionsMainMenuWindow extends JFrame{
             return "";
         }
     }
+    
+    /**
+     * add to list of video devices testcard device
+     * @param videoDevices 
+     */
+    private void addTestcrdDevice(List<VideoDevice> videoDevices){
+        VideoDevice testcardDevice = new VideoDevice();
+        testcardDevice.device = "testcard";
+        testcardDevice.name = "testcard";
+        testcardDevice.vpf = new ArrayList<>();
+        
+        VideoPixelFormat testcardPixelFormat = new VideoPixelFormat();
+        testcardPixelFormat.name = "RGB";
+        testcardPixelFormat.pixelFormat = "RGB";
+        testcardPixelFormat.vfs = new ArrayList<>();
+        testcardDevice.vpf.add(testcardPixelFormat);
+        
+        VideoFrameSize testcardFrameSize_255 = new VideoFrameSize();
+        testcardFrameSize_255.widthXheight = "255x255";
+        testcardFrameSize_255.fps = new ArrayList<>();
+        testcardPixelFormat.vfs.add(testcardFrameSize_255);
+        
+        VideoFPS testcardFPS_255_15 = new VideoFPS();
+        testcardFPS_255_15.fps = "15";
+        testcardFPS_255_15.setting = "testcard:255:255:15:RGB";
+        testcardFrameSize_255.fps.add(testcardFPS_255_15);
+        
+        VideoFrameSize testcardFrameSize_1024 = new VideoFrameSize();
+        testcardFrameSize_1024.widthXheight = "1024x768";
+        testcardFrameSize_1024.fps = new ArrayList<>();
+        testcardPixelFormat.vfs.add(testcardFrameSize_1024);
+        
+        VideoFPS testcardFPS_1024_15 = new VideoFPS();
+        testcardFPS_1024_15.fps = "15";
+        testcardFPS_1024_15.setting = "testcard:1024:768:15:RGB";
+        testcardFrameSize_1024.fps.add(testcardFPS_1024_15);
+        
+        videoDevices.add(testcardDevice);
+    }
 }
 
-// TODO: Doplnit popis tridy a komentar
+/**
+ * class for ip address saved in configuration file and work with this data
+ * @author Huvart
+ */
 class IPServerSaved{
     public String name;
     public String address;
     public String port;
 }
-// TODO: Doplnit popis tridy a komentar
+
+/**
+ * part of group of classes to save video devices
+ * this one is for video device
+ * @author Huvart
+ */
 class VideoDevice{
     public String name;
     public String device;
     public List<VideoPixelFormat> vpf = new ArrayList<>();
 }
-// TODO: Doplnit popis tridy a komentar
+
+/**
+ * part of group of classes to save video devices
+ * this one is for video format
+ * @author Huvart
+ */
 class VideoPixelFormat{
     public String name;
     public String pixelFormat;
     public List<VideoFrameSize> vfs = new ArrayList<>();
 }
-// TODO: Doplnit popis tridy a komentar
+
+/**
+ * part of group of classes to save video devices
+ * this one is for video frame size
+ * @author Huvart
+ */
 class VideoFrameSize{
     public String widthXheight;
     public List<VideoFPS> fps;
 }
 
-// TODO: Doplnit popis tridy a komentar
+/**
+ * part of group of classes to save video devices
+ * this one is for fps
+ * @author Huvart
+ */
 class VideoFPS{
     String fps;
     String setting;
 }
 
-// TODO: Doplnit popis tridy a komentar
+/**
+ * class to save audio devices
+ * @author Huvart
+ */
 class AudioDevice{
     String name;
     String setting;

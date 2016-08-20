@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -51,61 +52,107 @@ import wddman.WDDManException;
  */
 public final class InitialMenuLayout{
     
+    /**
+     * text field for error message displayed in error window
+     */
     JTextField errorMessageField;
+    
+    /**
+     * panel for rooms, rooms are set after initialization on specific place (where
+     * this panel is)
+     */
     JPanel roomPanel;
+    
+    /**
+     * list of layouts files
+     */
     List<LayoutFile> layoutList;
+    
+    /**
+     * button group for rooms
+     */
     ButtonGroup roomGroup;
     
+    /**
+     * center position where windows are going to be displayed
+     */
     Position position;
+    
+    /**
+     * global font for text
+     */
     private final Font font;
+    
+    /**
+     * web client to get information from server
+     */
     private final WebClient webClient;
+    
+    /**
+     * global port, some buttons set it and call function which is using it
+     */
     int port;
+    
+    /**
+     * global ip address, some buttons set it and call function which is using it
+     */
     String ipAddress;
     
+    /**
+     * setting if this is student only device
+     */
+    boolean studentOnly;
+    
+    String role;
+    String name;
+    JCheckBox audioCheckBox;
+    boolean logedIn;
+    
+    /**
+     * 5 main windows
+     */
     private final JFrame serverChooseWindow;
     private final JFrame settingRoomWindow;
     private final JFrame errorWindow;
     private final JFrame ipSettingWindow;
+    private final JFrame roleNameWindow;
     
+    /**
+     * class for optionsMainMenu to be able to manipulate with it, mostly to close it
+     */
     public OptionsMainMenuWindow optionMainMenuWindow;
         
+    /**
+     * configuration from server about the room
+     */
     JSONObject roomConfiguration;
+    
+    /**
+     * configuration from this pc
+     */
     JSONObject clientConfig;
-
-    String nameList[];
     
-    JFormattedTextField ipField[];
-    Integer ipValue[];
-    
+    /**
+     * configuration file
+     */
     File configurationFile;
+    
+    /**
+     * lenguage localization
+     */
     ResourceBundle languageBundle;
+    
     /**
      * to init and end couniverse part of counsil
      */
     SessionManager sm;
     
-    // TODO: Doplnit popis metody a komentar
-    class JTextFieldLimit extends PlainDocument {
-
-        private final int limit;
-        
-        JTextFieldLimit(int limit) {
-          super();
-          this.limit = limit;
-        }
-
-        @Override
-        public void insertString(int offset, String str, AttributeSet attr) throws BadLocationException {
-          if (str == null)
-            return;
-
-          if ((getLength() + str.length()) <= limit) {
-            super.insertString(offset, str, attr);
-          }
-        }
-    }
-    
-    // TODO: Doplnit popis metody a komentar
+    /**
+     * constructor
+     * @param centerPosition position of center where windows are going to be display
+     * @param clientConfigurationFile client configuration file
+     * @param buttonFont font for buttons
+     */
     InitialMenuLayout(Position centerPosition, File clientConfigurationFile, Font buttonFont) {
         webClient = new WebClient();
         
@@ -121,6 +168,7 @@ public final class InitialMenuLayout{
         settingRoomWindow = new JFrame();
         errorWindow = new JFrame();
         ipSettingWindow = new JFrame();
+        roleNameWindow = new JFrame();
         
         optionMainMenuWindow = null;
         configurationFile = clientConfigurationFile;
@@ -129,19 +177,146 @@ public final class InitialMenuLayout{
         
         loadClientConfigurationFromFile();
         
-        // TODO: opravit takto zadratovane nastaveni. Nesmi byt!!!
-        port = 8080; //default value change in future
-        ipAddress = "";
-        nameList = null;        
+        port = 0;
+        ipAddress = ""; 
+        role = "";
+        name = "";
+        logedIn = false;
 
         initSettingRoomWindow();
         initServerChooseWindow();
         initIpSettingWindow();
         initErrorWindow();
-        openServerChooseWindow();
+        initRoleNameWindow();
+        openRoleNameWindow();
     }
     
-    // TODO: Doplnit popis metody a komentar
+    /**
+     * initialization of window where user set name and role
+     */
+    final void initRoleNameWindow(){
+        if(roleNameWindow == null){
+            return;
+        }
+        roleNameWindow.getContentPane().removeAll();
+        roleNameWindow.setTitle(languageBundle.getString("COUNSIL"));
+        roleNameWindow.setVisible(false);
+        roleNameWindow.addWindowListener(new WindowAdapter() {//action on close button (x)
+            @Override
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);
+            }
+        });
+        
+        
+        JPanel mainPanel = new JPanel();
+        JPanel namePanel = new JPanel();
+        JPanel rolePanel = new JPanel();
+        mainPanel.setLayout(new GridBagLayout());
+        namePanel.setLayout(new GridLayout(1, 1));
+        rolePanel.setLayout(new GridLayout(1, 3));
+        
+        rolePanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("ROLE")));
+        namePanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("NAME")));
+        
+        ButtonGroup roleGroup = new ButtonGroup();
+        
+        //create buttons
+        //role
+        JRadioButton studentButton = new JRadioButton(languageBundle.getString("STUDENT"));
+        studentButton.setFont(font);
+        JRadioButton teacherButton = new JRadioButton(languageBundle.getString("TEACHER"));
+        teacherButton.setFont(font);
+        JRadioButton interpreterButton = new JRadioButton(languageBundle.getString("INTERPRETER"));
+        interpreterButton.setFont(font);
+        roleGroup.add(studentButton);
+        roleGroup.add(teacherButton);
+        roleGroup.add(interpreterButton);
+        roleGroup.setSelected(studentButton.getModel(), true);
+        role = languageBundle.getString("STUDENT");
+        rolePanel.add(studentButton);
+        rolePanel.add(teacherButton);
+        rolePanel.add(interpreterButton);
+        
+        studentButton.addActionListener((ActionEvent event) -> {
+            role = languageBundle.getString("STUDENT");
+        });
+        teacherButton.addActionListener((ActionEvent event) -> {
+            role = languageBundle.getString("TEACHER");
+        });
+        interpreterButton.addActionListener((ActionEvent event) -> {
+            role = languageBundle.getString("INTERPRETER");
+        });
+        
+        teacherButton.setEnabled(!studentOnly);
+        interpreterButton.setEnabled(!studentOnly);
+        
+        //set name
+        JTextField setNameSettingField = new JTextField();
+        setNameSettingField.setEditable(true);
+        setNameSettingField.setColumns(10);
+        namePanel.add(setNameSettingField);
+        
+        //"next" button
+        JButton nextButton = new JButton(languageBundle.getString("NEXT"));
+        nextButton.setFont(font);
+        nextButton.addActionListener((ActionEvent e) -> {
+            if(setNameSettingField.getText().isEmpty()){
+                openErrorWindow(languageBundle.getString("ERROR_EMPTY_NAME"));
+            }else{
+                logedIn = true;
+                name = setNameSettingField.getText();
+                name = Normalizer.normalize(name, Normalizer.Form.NFD);
+                name = name.replaceAll("[^\\p{ASCII}]", "");            //transform ščťžýáíé.. to sctzyaie..
+                openServerChooseWindow();
+            }
+        });
+        
+        //exit button
+        JButton exitButton = new JButton(languageBundle.getString("EXIT"));
+        exitButton.setFont(font);
+        exitButton.addActionListener((ActionEvent e) -> {
+            System.exit(0);
+        });
+
+        if(languageBundle.containsKey("ROOM_SETTING_TOOL_TIP_ROLE")){
+            rolePanel.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
+            studentButton.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
+            teacherButton.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
+            interpreterButton.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
+        }
+        if(languageBundle.containsKey("ROOM_SETTING_TOOL_TIP_NAME")){
+            namePanel.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_NAME"));
+            setNameSettingField.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_NAME"));
+        }
+        
+        GridBagConstraints mainPanelConstraints = new GridBagConstraints();
+        mainPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
+        mainPanelConstraints.weightx = 0.5;
+        mainPanelConstraints.gridx = 0;
+        mainPanelConstraints.gridy = 0;
+        mainPanel.add(namePanel, mainPanelConstraints);
+        mainPanelConstraints.gridx = 0;
+        mainPanelConstraints.gridy = 1;
+        mainPanel.add(rolePanel, mainPanelConstraints);
+        mainPanelConstraints.gridx = 0;
+        mainPanelConstraints.gridy = 3;
+        mainPanel.add(nextButton, mainPanelConstraints);
+        mainPanelConstraints.gridx = 0;
+        mainPanelConstraints.gridy = 4;
+        mainPanel.add(exitButton, mainPanelConstraints);
+        
+        roleNameWindow.getContentPane().add(mainPanel);
+        roleNameWindow.pack();
+        roleNameWindow.setLocation(position.x - roleNameWindow.getWidth()/2, position.y - roleNameWindow.getHeight()/2);
+    
+    }
+    
+    /**
+     * initialization of window where user can choose server to connect from saved 
+     * servers, go to window where he can set ip address to connect or open options
+     * menu window
+     */
     final void initServerChooseWindow(){
         if(serverChooseWindow == null){
             return;
@@ -150,7 +325,6 @@ public final class InitialMenuLayout{
         serverChooseWindow.setTitle(languageBundle.getString("COUNSIL"));
         serverChooseWindow.setVisible(false);
         serverChooseWindow.addWindowListener(new WindowAdapter() {//action on close button (x)
-           
             @Override
             public void windowClosing(WindowEvent e) {
                 System.exit(0);
@@ -184,6 +358,7 @@ public final class InitialMenuLayout{
                         try{
                             serverPort = Integer.valueOf(serverPortString);
                         }catch(NumberFormatException error){
+                            Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, error);
                             serverPort = 80; //defout value
                         }
                         ipAddress = serverIP;
@@ -232,8 +407,17 @@ public final class InitialMenuLayout{
                 optionMainMenuWindow.dispose();
                 optionMainMenuWindow = null;
             }
-                        
             optionMainMenuWindow = new OptionsMainMenuWindow(font, configurationFile, this, languageBundle);
+        });
+        JButton nameChangeButton = new JButton(languageBundle.getString("NAME_CHANGE"));
+        nameChangeButton.setFont(font);
+        nameChangeButton.addActionListener((ActionEvent event) -> {
+            if(optionMainMenuWindow != null){
+                optionMainMenuWindow.dispose();
+                optionMainMenuWindow = null;
+            }
+            logedIn = false;
+            openRoleNameWindow();
         });
         JButton exitButton = new JButton(languageBundle.getString("EXIT"));
         exitButton.setFont(font);
@@ -264,13 +448,19 @@ public final class InitialMenuLayout{
         mainPanel.add(optionsButton, mainPanelConstraints);
         mainPanelConstraints.gridx = 0;
         mainPanelConstraints.gridy = 3;
+        mainPanel.add(nameChangeButton, mainPanelConstraints);
+        mainPanelConstraints.gridx = 0;
+        mainPanelConstraints.gridy = 4;
         mainPanel.add(exitButton, mainPanelConstraints);
         serverChooseWindow.getContentPane().add(mainPanel);
         serverChooseWindow.pack();
         serverChooseWindow.setLocation(position.x - serverChooseWindow.getWidth()/2, position.y - serverChooseWindow.getHeight()/2);
     }
     
-    // TODO: Doplnit popis metody a komentar
+    /**
+     * initialization of window to show some errors if error force user to return
+     * to initial window
+     */
     final void initErrorWindow(){        
         if(errorWindow == null){
             return;
@@ -282,7 +472,11 @@ public final class InitialMenuLayout{
           
             @Override
             public void windowClosing(WindowEvent e) {
-                openServerChooseWindow();
+                if(logedIn){
+                    openServerChooseWindow();
+                }else{
+                    openRoleNameWindow();
+                }
             }
         });
         
@@ -295,8 +489,11 @@ public final class InitialMenuLayout{
         JButton okButton = new JButton(languageBundle.getString("OK_BUTTON"));
         okButton.setFont(font);
         okButton.addActionListener((ActionEvent e) -> {
-            openServerChooseWindow();
-            //go to choose server window
+            if(logedIn){
+                openServerChooseWindow();
+            }else{
+                openRoleNameWindow();
+            }
         });
         jMainPanel.add(errorMessageField, BorderLayout.NORTH);
         jButtonPanel.add(okButton);
@@ -308,6 +505,11 @@ public final class InitialMenuLayout{
     }
     
     // TODO: Doplnit popis metody a komentar
+    /**
+     * initialization of window to set user information before connecting to server
+     * user set name, role, room, sound and layout
+     * also information about counsil is in this window
+     */
     final void  initSettingRoomWindow(){
         if(settingRoomWindow == null){
             return;
@@ -324,7 +526,7 @@ public final class InitialMenuLayout{
         });
         
         //create panels, room panel is declared globaly to be able simply change rooms as download from server
-        JPanel rolePanel, layoutPanel, actionPanel, mainPanel, audioPanel, namePanel, rightMainPanel, leftMainPanel, aboutPanel, anotherPanel;
+        JPanel layoutPanel, actionPanel, mainPanel, audioPanel, rightMainPanel, leftMainPanel, aboutPanel, anotherPanel;
         
         rightMainPanel = new JPanel();
         rightMainPanel.setLayout(new GridBagLayout());
@@ -334,8 +536,6 @@ public final class InitialMenuLayout{
         aboutPanel.setLayout(new GridLayout(1,1));
         anotherPanel = new JPanel();
         anotherPanel.setLayout(new GridBagLayout());
-        rolePanel = new JPanel();
-        rolePanel.setLayout(new GridLayout(1, 3));
         layoutPanel = new JPanel();
         layoutPanel.setLayout(new GridBagLayout());
         roomPanel = new JPanel();
@@ -346,55 +546,24 @@ public final class InitialMenuLayout{
         mainPanel.setLayout(new GridBagLayout());
         audioPanel = new JPanel();
         audioPanel.setLayout(new GridLayout(1,1));
-        namePanel = new JPanel();
-        namePanel.setLayout(new GridLayout(1,1));
         
         
         ButtonGroup layoutGroup =  new ButtonGroup();
-        ButtonGroup roleGroup = new ButtonGroup();
-        
-        //create buttons
-        //role
-        JRadioButton studentButton = new JRadioButton(languageBundle.getString("STUDENT"));
-        studentButton.setFont(font);
-        JRadioButton teacherButton = new JRadioButton(languageBundle.getString("TEACHER"));
-        teacherButton.setFont(font);
-        JRadioButton interpreterButton = new JRadioButton(languageBundle.getString("INTERPRETER"));
-        interpreterButton.setFont(font);
-        roleGroup.add(studentButton);
-        roleGroup.add(teacherButton);
-        roleGroup.add(interpreterButton);
-        roleGroup.setSelected(studentButton.getModel(), true);
-        rolePanel.add(studentButton);
-        rolePanel.add(teacherButton);
-        rolePanel.add(interpreterButton);
+
         //audio
-        JCheckBox audioCheckBox = new JCheckBox(languageBundle.getString("AUDIO"));
+        audioCheckBox = new JCheckBox(languageBundle.getString("AUDIO"));
       
-        audioCheckBox.setSelected(false);
         audioPanel.add(audioCheckBox);
-        //set name
-        JTextField setNameInfoField = new JTextField(languageBundle.getString("NAME"));
-        setNameInfoField.setEditable(false);
-        JTextField setNameSettingField = new JTextField();
-        setNameSettingField.setEditable(true);
-        setNameSettingField.setColumns(10);
-        //namePanel.add(setNameInfoField);
-        namePanel.add(setNameSettingField);
+        
         //action
         JButton startButton = new JButton(languageBundle.getString("START"));
         startButton.setFont(font);
         startButton.addActionListener((ActionEvent event) -> {
             //login to room
-            String role = getSelectedRadioButtonText(roleGroup);
-            role = getRoleFromLocalization(role);
+            String unlocalizedRole = getRoleFromLocalization(role);
             String layout = getSelectedRadioButtonText(layoutGroup);
             String room = getSelectedRadioButtonText(roomGroup);
-            if(rolePanel.getComponentCount() > 0){
-                startCounsil(role, audioCheckBox.isSelected(), setNameSettingField.getText(), layout, room);
-            }else{
-                openErrorWindow(languageBundle.getString("STARTUP_ERROR"));
-            }
+            startCounsil(unlocalizedRole, audioCheckBox.isSelected(), name, layout, room);
         });
         JButton backButton = new JButton(languageBundle.getString("BACK"));
         backButton.setFont(font);
@@ -437,16 +606,6 @@ public final class InitialMenuLayout{
         aboutPanel.add(aboutText);
         
         //tool tips
-        if(languageBundle.containsKey("ROOM_SETTING_TOOL_TIP_NAME")){
-            namePanel.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_NAME"));
-            setNameSettingField.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_NAME"));
-        }
-        if(languageBundle.containsKey("ROOM_SETTING_TOOL_TIP_ROLE")){
-            rolePanel.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
-            studentButton.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
-            teacherButton.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
-            interpreterButton.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_ROLE"));
-        }
         if(languageBundle.containsKey("ROOM_SETTING_TOOL_TIP_ROOM")){
             roomPanel.setToolTipText(languageBundle.getString("ROOM_SETTING_TOOL_TIP_ROOM"));
             //this tool tip also set to all room buttons
@@ -460,8 +619,6 @@ public final class InitialMenuLayout{
             //this tool tip also set to all layouts buttons
         }
         
-        rolePanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("ROLE")));
-        namePanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("NAME")));
         roomPanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("ROOM")));
         anotherPanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("ADVANCED_PANEL")));
         
@@ -496,15 +653,9 @@ public final class InitialMenuLayout{
         leftMainPanelConstraints.weightx = 0.5;
         leftMainPanelConstraints.gridx = 0;
         leftMainPanelConstraints.gridy = 0;
-        leftMainPanel.add(namePanel, leftMainPanelConstraints);
-        leftMainPanelConstraints.gridx = 0;
-        leftMainPanelConstraints.gridy = 1;
-        leftMainPanel.add(rolePanel, leftMainPanelConstraints);
-        leftMainPanelConstraints.gridx = 0;
-        leftMainPanelConstraints.gridy = 2;
         leftMainPanel.add(roomPanel, leftMainPanelConstraints);
         leftMainPanelConstraints.gridx = 0;
-        leftMainPanelConstraints.gridy = 3;
+        leftMainPanelConstraints.gridy = 1;
         leftMainPanel.add(anotherPanel, leftMainPanelConstraints);
         
         GridBagConstraints mainPanelConstraints = new GridBagConstraints();
@@ -521,7 +672,12 @@ public final class InitialMenuLayout{
         settingRoomWindow.setLocation(position.x - settingRoomWindow.getWidth()/2, position.y - settingRoomWindow.getHeight()/2);
     }
     
-    // TODO: Doplnit popis metody a komentar
+    
+    /**
+     * initialization of window where user can connect to server on specific address
+     * and port, main usage is to test new servers and if someone doesn't want to
+     * save ip address
+     */
     final void initIpSettingWindow(){
         if(ipSettingWindow == null){
             return;
@@ -636,8 +792,13 @@ public final class InitialMenuLayout{
         }
         return null;
     }
-    // TODO: Doplnit popis metody a komentar
+    
     //TODO: opravit return hodnoty tak, aby se zobrazovaly role lokalizovane
+    /**
+     * function for transforming localize role to unlocalize role
+     * @param localizeRole current localize role
+     * @return unlocalize role
+     */
     public String getRoleFromLocalization(String localizeRole){
         if(languageBundle.getString("INTERPRETER").equals(localizeRole)){
             return "interpreter";
@@ -646,10 +807,14 @@ public final class InitialMenuLayout{
         }else {
             return "student";
         }
-        
     }
     
     // TODO: Doplnit popis metody a komentar
+    /**
+     * function to verify if ip address have correct format
+     * @param ip ip address to be checked
+     * @return boolean if ip address have correct format
+     */
     private boolean ipFormatCorrect(String ip) {
         try {
             if ( ip == null || ip.isEmpty() ) {
@@ -721,6 +886,11 @@ public final class InitialMenuLayout{
         return null;
     }
     
+    void openRoleNameWindow(){
+        closeAllWindows();
+        roleNameWindow.setVisible(true);
+    }
+    
     void openServerChooseWindow(){
         closeAllWindows();
         serverChooseWindow.setVisible(true);
@@ -777,6 +947,14 @@ public final class InitialMenuLayout{
             }
         }
         
+        if(!role.equals(languageBundle.getString("STUDENT"))){
+            audioCheckBox.setSelected(true);
+            audioCheckBox.setEnabled(false);
+        }else{
+            audioCheckBox.setSelected(false);
+            audioCheckBox.setEnabled(true);
+        }
+        
         settingRoomWindow.setVisible(true);
         settingRoomWindow.pack();
         settingRoomWindow.setLocation(position.x - settingRoomWindow.getWidth()/2, position.y - settingRoomWindow.getHeight()/2);
@@ -786,6 +964,7 @@ public final class InitialMenuLayout{
      * close all initial menu windows
      */
     final void closeAllWindows(){
+        roleNameWindow.setVisible(false);
         serverChooseWindow.setVisible(false);
         errorWindow.setVisible(false);
         ipSettingWindow.setVisible(false);
@@ -819,12 +998,26 @@ public final class InitialMenuLayout{
     }
     
     /**
-     * close counsil and re-start initial menu
+     * close counsil and re-open initial menu
      */
     final void closeCounsil(){
-        sm.stopCounsil();
-        sm = null;
+        if(sm == null){
+            System.out.println("noooooooooooooo");
+        }else{
+            sm.stopCounsil();
+            sm = null;
+        }
         openServerChooseWindow();
+    }
+    
+    final String shortNameRole(String role){
+        if(languageBundle.getString("INTERPRETER").equals(role)){
+            return "i";
+        }else if(languageBundle.getString("TEACHER").equals(role)){
+            return "t";
+        }else {
+            return "s";
+        }
     }
     
     /**
@@ -845,7 +1038,7 @@ public final class InitialMenuLayout{
             connector.put("serverPort", infoFromServer.getInt("comunication port"));
             connector.put("startServer", false);
 
-            String userName = role + "_" + name + "_" + infoFromServer.getString("connect number");
+            String userName = name + " (" + shortNameRole(role) + infoFromServer.getString("connect number") + ")";
             JSONObject interfaceInside = new JSONObject();
             interfaceInside.put("name", userName);
             interfaceInside.put("address", clientConfig.getString("this ip"));
@@ -900,11 +1093,20 @@ public final class InitialMenuLayout{
     }
     
     // TODO: Doplnit popis metody a komentar
+    /**
+     * 
+     * @return configuration saved in JSON file
+     */
     final JSONObject getConfiguration(){
         return roomConfiguration;
     }
     
     // TODO: Doplnit popis metody a komentar
+    /**
+     * read configuration file and save it in JSON
+     * @param jsonFile configuration file
+     * @return configuration JSON
+     */
     JSONObject readJsonFile(File jsonFile){
         try {
             String entireFileText = new Scanner(jsonFile).useDelimiter("\\A").next();
@@ -915,6 +1117,9 @@ public final class InitialMenuLayout{
         return null;
     }
     
+    /**
+     * load client configuration file
+     */
     void loadClientConfigurationFromFile(){
         clientConfig = readJsonFile(configurationFile);
         layoutList.clear();
@@ -964,9 +1169,18 @@ public final class InitialMenuLayout{
             }
         }
         languageBundle = ResourceBundle.getBundle(languageResourcesName);
-        
+        try {
+            studentOnly = clientConfig.getBoolean("student only");
+        } catch (JSONException ex) {
+            studentOnly = false;
+        }
     }
     
+    /**
+     * get layout file
+     * @param layoutName
+     * @return class containing layout name and layout file
+     */
     LayoutFile getLayoutFile(String layoutName){
         for(int i = 0; i < layoutList.size(); i++){
             if(layoutList.get(i).layoutName.equals(layoutName)){
@@ -977,7 +1191,35 @@ public final class InitialMenuLayout{
     }
 }
 
+/**
+ * class to save and work with layout name and layout file
+ * @author xminarik
+ */
 class LayoutFile{
     public String layoutName;
     public File file;
+}
+
+// TODO: Doplnit popis metody a komentar
+/*
+ * class for limitting length of text, primary use for ip address field
+ */
+class JTextFieldLimit extends PlainDocument {
+
+    private final int limit;
+
+    JTextFieldLimit(int limit) {
+      super();
+      this.limit = limit;
+    }
+
+    @Override
+    public void insertString(int offset, String str, AttributeSet attr) throws BadLocationException {
+      if (str == null)
+        return;
+
+      if ((getLength() + str.length()) <= limit) {
+        super.insertString(offset, str, attr);
+      }
+    }
 }
