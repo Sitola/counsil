@@ -37,6 +37,9 @@ import java.util.logging.Logger;
  */
 public class SessionManagerImpl implements SessionManager {
 
+    /**
+     * Represents teacher string
+     */
     private static final String TEACHER = "TEACHER";
 
     /**
@@ -55,14 +58,10 @@ public class SessionManagerImpl implements SessionManager {
     private Map<UltraGridConsumerApplication, String> consumer2name = new HashMap<>();
 
     /**
-     * Listens for ultragrid windows changes
-     */
-    private couniverse.core.controllers.AppEventListener consumerListener;
-
-    /**
      * Stored instance of node representing current computer
      */
     private NetworkNode local;
+
     /**
      * Instance of couniverse Core
      */
@@ -115,7 +114,7 @@ public class SessionManagerImpl implements SessionManager {
      */
     private String alertColor;
 
-    /** 
+    /**
      * Color of window highlight while talking
      */
     private String talkColor;
@@ -132,28 +131,23 @@ public class SessionManagerImpl implements SessionManager {
 
         this.alertColor = getColorCode(riseHandColor);
         this.talkColor = getColorCode(talkingColor);
-
         this.talkingNode = null;
         this.canAlert = true;
         this.alertTimer = new Timer();
-
         this.languageBundle = languageBundle;
-
-        if (layoutManager == null) {
-            throw new IllegalArgumentException("layoutManager is null");
-        }
         this.layoutManager = layoutManager;
+
         this.layoutManager.addLayoutManagerListener(new LayoutManagerListener() {
 
             @Override
             public void alertActionPerformed() {
 
-                if ((talkingNode != null && talkingNode.getName().equals(local.getName())) || !canAlert) {
+                if (!canAlert || (talkingNode != null && talkingNode.getName().equals(local.getName()))) {
                     return;
                 }
 
                 CoUniverseMessage alert = CoUniverseMessage.newInstance(ALERT, core.getLocalNode());
-                System.out.println("Sending alert...");
+                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, "Sending alert...");
                 core.getConnector().sendMessageToGroup(alert, GroupConnectorID.ALL_NODES);
                 canAlert = false;
 
@@ -178,8 +172,9 @@ public class SessionManagerImpl implements SessionManager {
 
     /**
      * Gets string implementation of Color
+     *
      * @param color
-     * @return 
+     * @return
      */
     private String getColorCode(Color color) {
         String colorStringRepresentation = "#" + Integer.toHexString(color.getRed());
@@ -434,6 +429,7 @@ public class SessionManagerImpl implements SessionManager {
 
     /**
      * Starts producer from local node
+     *
      * @throws IOException if there is problem during starting Producer
      */
     private void createProducent(String role) throws IOException {
@@ -598,7 +594,7 @@ public class SessionManagerImpl implements SessionManager {
                     layoutManager.removeNode(removed);
                     core.stopApplication(ugCon);
                 } else {
-                    System.out.println("You are trying to stop non-registered application");
+                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, "You are trying to stop non-registered application");
                 }
             }
         }
@@ -606,7 +602,7 @@ public class SessionManagerImpl implements SessionManager {
 
     }
 
-    public static UltraGridConsumerApplication getKeyByValue(Map<UltraGridConsumerApplication, String> map, String value) {
+    private UltraGridConsumerApplication getKeyByValue(Map<UltraGridConsumerApplication, String> map, String value) {
         for (Entry<UltraGridConsumerApplication, String> entry : map.entrySet()) {
             if (Objects.equals(value, entry.getValue())) {
                 return entry.getKey();
@@ -615,13 +611,19 @@ public class SessionManagerImpl implements SessionManager {
         return null;
     }
 
+    /**
+     * Stops the instance of couniverse core
+     */
     @Override
-    public void stopCounsil() {
+    public void stop() {
         core.stop();
     }
 
+    /**
+     * Gets status information about connected nodes
+     */
     @Override
-    public String getStatus() {
+    public String getStatus() { //! needs to be refactored if used
 
         String status = new String();
 

@@ -16,7 +16,13 @@ public interface SessionManager {
      */
     public void initCounsil() throws IOException, InterruptedException;
 
-    public void stopCounsil();
+    /**
+     * Stops the instance of couniverse core
+     */
+    public void stop();
 
+    /**
+     * Gets status information about connected nodes
+     */
     public String getStatus();
 }

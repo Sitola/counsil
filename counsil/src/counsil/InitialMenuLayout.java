@@ -822,7 +822,7 @@ public final class InitialMenuLayout{
      * close counsil and re-start initial menu
      */
     final void closeCounsil(){
-        sm.stopCounsil();
+        sm.stop();
         sm = null;
         openServerChooseWindow();
     }
