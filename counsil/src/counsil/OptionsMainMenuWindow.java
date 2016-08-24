@@ -32,6 +32,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -58,11 +59,17 @@ public final class OptionsMainMenuWindow extends JFrame{
     List<IPServerSaved> ipAddresses;
     boolean correctUv;
     boolean havePortaudio;
+    boolean haveCoreaudio;
+    boolean haveALSA;
+    boolean haveGL;
+    boolean haveSDL;
     Process uvProcess;
     JSONObject configuration;
     String uvPathString;
     String layoutPathString;
-    JTextArea verificationText;
+    JTextField audioStatusTextField;
+    JTextField displayStatusTextField;
+    JTextField uvStatusTextField;
     Color raiseHandColor;
     Color talkingColor;
     JColorChooser raiseHandcolorChooser;   
@@ -108,12 +115,21 @@ public final class OptionsMainMenuWindow extends JFrame{
         ipAddresses = new ArrayList<>();
         correctUv = false;
         havePortaudio = false;
+        haveCoreaudio = false;
+        haveALSA = false;
+        haveGL = false;
+        haveSDL = false;
         uvPathString = "";
         layoutPathString = "";
-        verificationText = new JTextArea();
-        verificationText.setBackground(this.getBackground());
-        verificationText.setEditable(false);
-        verificationText.setBorder(BorderFactory.createEmptyBorder());
+        audioStatusTextField = new JTextField();
+        audioStatusTextField.setEditable(false);
+        audioStatusTextField.setBackground(this.getBackground());
+        displayStatusTextField = new JTextField();
+        displayStatusTextField.setEditable(false);
+        displayStatusTextField.setBackground(this.getBackground());
+        uvStatusTextField = new JTextField();
+        uvStatusTextField.setEditable(false);
+        uvStatusTextField.setBackground(this.getBackground());
         raiseHandcolorChooser = new JColorChooser(new Color(0, 0, 0));
         talkingColorChooser = new JColorChooser(new Color(0, 0, 0));
         this.configurationFile = configurationFile;
@@ -248,7 +264,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         //setting fields
                 
         //try if ultragrid is functional
-        ultragridOK(uvPathString, verificationText);
+        ultragridOK(uvPathString);
         //load posibylities
         try {
             videoDevices = loadVideoDevicesAndSettings(uvPathString);
@@ -593,7 +609,6 @@ public final class OptionsMainMenuWindow extends JFrame{
         //buttons
         JButton testCameraButton = new JButton(languageBundle.getString("TEST_CAMERA"));
         JButton testPresentationButton = new JButton(languageBundle.getString("TEST_PRESENTATION"));
-        JButton testTestcardButton = new JButton(languageBundle.getString("TEST_TESTCARD"));
         testCameraButton.setFont(fontButtons);
         testPresentationButton.setFont(fontButtons);
         if(languageBundle.containsKey("AV_TOOL_TIP_TEST_CAMERA")){
@@ -601,9 +616,6 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
         if(languageBundle.containsKey("AV_TOOL_TIP_TEST_PRESENTATION")){
             testPresentationButton.setToolTipText(languageBundle.getString("AV_TOOL_TIP_TEST_PRESENTATION"));
-        }
-        if(languageBundle.containsKey("AV_TOOL_TIP_TEST_TESTCARD")){
-            testTestcardButton.setToolTipText(languageBundle.getString("AV_TOOL_TIP_TEST_TESTCARD"));
         }
         testCameraButton.addActionListener((ActionEvent event) -> {
             try {
@@ -623,22 +635,12 @@ public final class OptionsMainMenuWindow extends JFrame{
                 Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
-        testTestcardButton.addActionListener((ActionEvent event) -> {
-            try {
-                String reciveSetting = getDisplaySetting();
-                String outputSetting = "testcard:255:255:25:RGB";
-                startUltragrid(uvPathString, reciveSetting, outputSetting);
-            } catch (IOException ex) {
-                Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        });
         //check box
         JCheckBox presentationCheckBox = new JCheckBox(languageBundle.getString("PRESENTATION"));
         presentationCheckBox.addItemListener((ItemEvent e) -> {
             boolean isSelected = e.getStateChange() == ItemEvent.SELECTED;
             presetationPanel.setVisible(isSelected);
             testPresentationButton.setVisible(isSelected);
-            testTestcardButton.setVisible(isSelected);
             presentationUsed = isSelected;
             this.pack();
         });
@@ -788,65 +790,48 @@ public final class OptionsMainMenuWindow extends JFrame{
         GridBagConstraints videoAudioConstrains = new GridBagConstraints();
         videoAudioConstrains.fill = GridBagConstraints.HORIZONTAL;
         videoAudioConstrains.insets = new Insets(5,5,5,5);
-        videoAudioConstrains.anchor = GridBagConstraints.LINE_END;
         videoAudioConstrains.weightx = 0.5;
-        videoAudioConstrains.gridheight = 1;
-        videoAudioConstrains.gridwidth = 1;
-        videoAudioConstrains.gridx = 0;
-        videoAudioConstrains.gridy = 0;
-
         videoAudioConstrains.anchor = GridBagConstraints.CENTER;
         videoAudioConstrains.gridx = 0;
-        videoAudioConstrains.gridy = 3;
-        videoAudioConstrains.gridheight = 1;
-        videoAudioConstrains.gridwidth = 2;
-        videoAudioPanel.add(verificationText, videoAudioConstrains);
-        videoAudioConstrains.gridx = 0;
-        videoAudioConstrains.gridy = 4;
+        videoAudioConstrains.gridy = 0;
         videoAudioConstrains.gridheight = 1;
         videoAudioConstrains.gridwidth = 3;
         videoAudioPanel.add(audioPanel, videoAudioConstrains);
         videoAudioConstrains.gridx = 0;
-        videoAudioConstrains.gridy = 5;
+        videoAudioConstrains.gridy = 1;
         videoAudioConstrains.gridheight = 1;
         videoAudioConstrains.gridwidth = 3;
         videoAudioPanel.add(displayPanel, videoAudioConstrains);
         videoAudioConstrains.gridx = 0;
-        videoAudioConstrains.gridy = 6;
+        videoAudioConstrains.gridy = 2;
         videoAudioConstrains.gridheight = 1;
         videoAudioConstrains.gridwidth = 3;
         videoAudioPanel.add(mainCameraPanel, videoAudioConstrains);
         videoAudioConstrains.gridx = 0;
-        videoAudioConstrains.gridy = 7;
+        videoAudioConstrains.gridy = 3;
         videoAudioConstrains.gridheight = 1;
         videoAudioConstrains.gridwidth = 1;
         videoAudioPanel.add(presentationCheckBox, videoAudioConstrains);
         videoAudioConstrains.gridx = 2;
-        videoAudioConstrains.gridy = 7;
+        videoAudioConstrains.gridy = 3;
         videoAudioConstrains.gridheight = 1;
         videoAudioConstrains.gridwidth = 1;
         videoAudioConstrains.ipadx = 30;
         videoAudioPanel.add(testCameraButton, videoAudioConstrains);
         videoAudioConstrains.gridx = 0;
-        videoAudioConstrains.gridy = 8;
+        videoAudioConstrains.gridy = 4;
         videoAudioConstrains.gridheight = 1;
         videoAudioConstrains.gridwidth = 3;
         videoAudioConstrains.ipadx = 0;
         videoAudioPanel.add(presetationPanel, videoAudioConstrains);
-        videoAudioConstrains.gridx = 1;
-        videoAudioConstrains.gridy = 9;
-        videoAudioConstrains.gridheight = 1;
-        videoAudioConstrains.gridwidth = 1;
-        videoAudioPanel.add(testTestcardButton, videoAudioConstrains);
         videoAudioConstrains.gridx = 2;
-        videoAudioConstrains.gridy = 9;
+        videoAudioConstrains.gridy = 5;
         videoAudioConstrains.gridheight = 1;
         videoAudioConstrains.gridwidth = 1;
         videoAudioPanel.add(testPresentationButton, videoAudioConstrains);
         
         presetationPanel.setVisible(false);
         testPresentationButton.setVisible(false);
-        testTestcardButton.setVisible(false);
         presentationCheckBox.setSelected(presentationUsed);
     }
     
@@ -861,6 +846,8 @@ public final class OptionsMainMenuWindow extends JFrame{
         serverIpSettingPanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("SERVER_IP_SETTING")));
         JPanel addressPanel = new JPanel();
         addressPanel.setBorder(BorderFactory.createTitledBorder(languageBundle.getString("PATHS")));
+        JPanel statusPanel = new JPanel();
+        addressPanel.setBorder(BorderFactory.createEmptyBorder());
         
         myIpSetTextField.setEditable(true);
         myIpSetTextField.setColumns(10);
@@ -885,16 +872,25 @@ public final class OptionsMainMenuWindow extends JFrame{
         JTextField serverIpPortChangeInfoText = new JTextField(languageBundle.getString("SERVER_PORT"));
         JTextField uvPathInfoText = new JTextField(languageBundle.getString("UV_PATH"));
         JTextField layoutPathInfoText = new JTextField(languageBundle.getString("LAYOUT_PATH"));
+        JTextField uvStatusTExtFieldInfoTExt = new JTextField(languageBundle.getString("ULTRAGRID"));
+        JTextField displayStatusTextFieldInfoTExt = new JTextField(languageBundle.getString("DISPLAY_SOFTWARE"));
+        JTextField audioStatusTextFieldInfoTExt = new JTextField(languageBundle.getString("AUDIO_SOFTWARE"));
         serverIpAddresChangeTextFieldInfoText.setEditable(false);
         serverIpNameChangeInfoText.setEditable(false);
         serverIpPortChangeInfoText.setEditable(false);
         uvPathInfoText.setEditable(false);
         layoutPathInfoText.setEditable(false);
+        uvStatusTExtFieldInfoTExt.setEditable(false);
+        displayStatusTextFieldInfoTExt.setEditable(false);
+        audioStatusTextFieldInfoTExt.setEditable(false);
         serverIpAddresChangeTextFieldInfoText.setHorizontalAlignment(JTextField.RIGHT);
         serverIpNameChangeInfoText.setHorizontalAlignment(JTextField.RIGHT);
         serverIpPortChangeInfoText.setHorizontalAlignment(JTextField.RIGHT);
         uvPathInfoText.setHorizontalAlignment(JTextField.RIGHT);
         layoutPathInfoText.setHorizontalAlignment(JTextField.RIGHT);
+        uvStatusTExtFieldInfoTExt.setHorizontalAlignment(JTextField.RIGHT);
+        displayStatusTextFieldInfoTExt.setHorizontalAlignment(JTextField.RIGHT);
+        audioStatusTextFieldInfoTExt.setHorizontalAlignment(JTextField.RIGHT);
        
         serverIpAddresChangeTextFieldInfoText.setBorder(BorderFactory.createEmptyBorder());
         serverIpNameChangeInfoText.setBorder(BorderFactory.createEmptyBorder());
@@ -922,7 +918,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         saveChangesInServerButton.setFont(fontButtons);
         deleteCurrentServerButton.setFont(fontButtons);
         reloadUltragridButton.addActionListener((ActionEvent event) -> {
-            ultragridOK(uvPathString, verificationText);
+            ultragridOK(uvPathString);
             try {
                 videoDevices = loadVideoDevicesAndSettings(uvPathString);
                 addTestcrdDevice(videoDevices);
@@ -1092,12 +1088,20 @@ public final class OptionsMainMenuWindow extends JFrame{
             reloadUltragridButton.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_RELOAD_UV"));
         }
         if(languageBundle.containsKey("MISC_TOOL_TIP_UV_STATUS_TEXT")){
-            verificationText.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_UV_STATUS_TEXT"));
+            uvStatusTextField.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_UV_STATUS_TEXT"));
+            uvStatusTExtFieldInfoTExt.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_UV_STATUS_TEXT"));
+        }
+        if(languageBundle.containsKey("MISC_TOOL_TIP_DISPLAY_STATUS_TEXT")){
+            displayStatusTextField.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_DISPLAY_STATUS_TEXT"));
+            displayStatusTextFieldInfoTExt.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_DISPLAY_STATUS_TEXT"));
+        }
+        if(languageBundle.containsKey("MISC_TOOL_TIP_AUDIO_STATUS_TEXT")){
+            audioStatusTextField.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_AUDIO_STATUS_TEXT"));
+            audioStatusTextFieldInfoTExt.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_AUDIO_STATUS_TEXT"));
         }
         
         myIpAddressPanel.setLayout(new GridBagLayout());
         GridBagConstraints myIpAddressConstraints = new GridBagConstraints();
-        //myIpAddressConstraints.fill = GridBagConstraints.HORIZONTAL;
         myIpAddressConstraints.insets = new Insets(5,5,5,5);
         myIpAddressConstraints.weightx = 0.5;
         myIpAddressConstraints.gridheight = 1;
@@ -1105,6 +1109,30 @@ public final class OptionsMainMenuWindow extends JFrame{
         myIpAddressConstraints.gridx = 0;
         myIpAddressConstraints.gridy = 0;
         myIpAddressPanel.add(myIpSetTextField, myIpAddressConstraints);
+        
+        statusPanel.setLayout(new GridBagLayout());
+        GridBagConstraints statusPanelConstraints = new GridBagConstraints();
+        statusPanelConstraints.weightx = 0.5;
+        statusPanelConstraints.gridheight = 1;
+        statusPanelConstraints.gridwidth = 1;
+        statusPanelConstraints.gridx = 0;
+        statusPanelConstraints.gridy = 0;
+        statusPanel.add(uvStatusTExtFieldInfoTExt, statusPanelConstraints);
+        statusPanelConstraints.gridx = 1;
+        statusPanelConstraints.gridy = 0;
+        statusPanel.add(uvStatusTextField, statusPanelConstraints);
+        statusPanelConstraints.gridx = 0;
+        statusPanelConstraints.gridy = 1;
+        statusPanel.add(displayStatusTextFieldInfoTExt, statusPanelConstraints);
+        statusPanelConstraints.gridx = 1;
+        statusPanelConstraints.gridy = 1;
+        statusPanel.add(displayStatusTextField, statusPanelConstraints);
+        statusPanelConstraints.gridx = 0;
+        statusPanelConstraints.gridy = 2;
+        statusPanel.add(audioStatusTextFieldInfoTExt, statusPanelConstraints);
+        statusPanelConstraints.gridx = 1;
+        statusPanelConstraints.gridy = 2;
+        statusPanel.add(audioStatusTextField, statusPanelConstraints);
         
         serverIpSettingPanel.setLayout(new GridBagLayout());
         GridBagConstraints serverIpSettingPanelConstraints = new GridBagConstraints();
@@ -1191,7 +1219,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         miscsPanelConstraints.gridy = 3;
         miscsPanelConstraints.gridheight = 1;
         miscsPanelConstraints.gridwidth = 2;
-        miscsPanel.add(verificationText, miscsPanelConstraints);
+        miscsPanel.add(statusPanel, miscsPanelConstraints);
         miscsPanelConstraints.anchor = GridBagConstraints.LINE_END;
         miscsPanelConstraints.gridx = 2;
         miscsPanelConstraints.gridy = 3;
@@ -1779,10 +1807,44 @@ public final class OptionsMainMenuWindow extends JFrame{
         if(!correctUv){
             return new ArrayList<>();
         }
+
+        List<AudioDevice> audioDevices = new ArrayList<>();
+
+        //if port audio than add devices
+        List<AudioDevice> audioDevicesPortaudio = read_audio_devices_in_or_out_portaudio(uvAddress, audio_in);
+        //if coreaudio than add devices
+        List<AudioDevice> audioDevicesCoreaudio = read_audio_devices_in_or_out_coreaudio(uvAddress, audio_in);
+        //if somthing linux than add devices
+        List<AudioDevice> audioDevicesALSA = read_audio_devices_in_or_out_alsa(uvAddress, audio_in);
+        
+        audioDevices.addAll(audioDevicesPortaudio);
+        audioDevices.addAll(audioDevicesCoreaudio);
+        audioDevices.addAll(audioDevicesALSA);
+        return audioDevices;
+    }
+    
+    /**
+     * read possible portaudio audio devices
+     * @param uvAddress address to ultragrid
+     * @param audio_in boolean if we want audio in(true) or audio out(false)
+     * @return
+     * @throws IOException 
+     */
+    private List<AudioDevice> read_audio_devices_in_or_out_portaudio(String uvAddress, boolean audio_in) throws IOException{
+        if(!correctUv){
+            return new ArrayList<>();
+        }
         if(!havePortaudio){
             return new ArrayList<>();
         }
-        Process uvProcess = new ProcessBuilder(uvAddress, "-s", "portaudio:help").start();
+        
+        Process uvProcess;
+        if(audio_in){
+            uvProcess = new ProcessBuilder(uvAddress, "-r", "portaudio:help").start();
+        }else{
+            uvProcess = new ProcessBuilder(uvAddress, "-s", "portaudio:help").start();
+        }
+        
         InputStream is = uvProcess.getInputStream();
         InputStreamReader isr = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(isr);
@@ -1790,7 +1852,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         
         List<AudioDevice> audioDevices = new ArrayList<>();
         while ((line = br.readLine()) != null) {
-            Pattern devicePattern = Pattern.compile("portaudio(:\\d+) : (.+) \\(output channels: (\\d+); input channels: (\\d+)\\)");
+            Pattern devicePattern = Pattern.compile("portaudio([:\\d]+) : (.+) \\(output channels: (\\d+); input channels: (\\d+)\\)");
             Matcher deviceMatcher = devicePattern.matcher(line);
             if(deviceMatcher.find()){
                 if(audio_in){
@@ -1815,129 +1877,297 @@ public final class OptionsMainMenuWindow extends JFrame{
     }
     
     /**
-     * check if uv address is correct, result save in global variabile and write message to verification text
+     * read possible coreaudio audio devices
+     * @param uvAddress address to ultragrid
+     * @param audio_in boolean if we want audio in(true) or audio out(false)
+     * @return
+     * @throws IOException 
+     */
+    private List<AudioDevice> read_audio_devices_in_or_out_coreaudio(String uvAddress, boolean audio_in) throws IOException{
+        if(!correctUv){
+            return new ArrayList<>();
+        }
+        if(!haveCoreaudio){
+            return new ArrayList<>();
+        }
+        
+        Process uvProcess;
+        if(audio_in){
+            uvProcess = new ProcessBuilder(uvAddress, "-r", "coreaudio:help").start();
+        }else{
+            uvProcess = new ProcessBuilder(uvAddress, "-s", "coreaudio:help").start();
+        }
+         
+        InputStream is = uvProcess.getInputStream();
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr);
+        String line;
+       
+        List<AudioDevice> audioDevices = new ArrayList<>();
+        while ((line = br.readLine()) != null) {
+            Pattern devicePattern = Pattern.compile("coreaudio([:\\d]*) : (.+)");
+            Matcher deviceMatcher = devicePattern.matcher(line);
+            if(deviceMatcher.find()){
+                AudioDevice new_device = new AudioDevice();
+                new_device.name = deviceMatcher.group(2);
+                new_device.setting = "coreaudio" + deviceMatcher.group(1);
+                audioDevices.add(new_device);
+            }
+        }
+        return audioDevices;
+    }
+    
+    /**
+     * read possible alsa audio devices
+     * @param uvAddress address to ultragrid
+     * @param audio_in boolean if we want audio in(true) or audio out(false)
+     * @return
+     * @throws IOException 
+     */
+    private List<AudioDevice> read_audio_devices_in_or_out_alsa(String uvAddress, boolean audio_in) throws IOException{
+        if(!correctUv){
+            return new ArrayList<>();
+        }
+        if(!haveALSA){
+            return new ArrayList<>();
+        }
+        Process uvProcess;
+        if(audio_in){
+            uvProcess = new ProcessBuilder(uvAddress, "-r", "ALSA:help").start();
+        }else{
+            uvProcess = new ProcessBuilder(uvAddress, "-s", "ALSA:help").start();
+        }
+         
+        InputStream is = uvProcess.getInputStream();
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr);
+        String line;
+       
+        List<AudioDevice> audioDevices = new ArrayList<>();
+        while ((line = br.readLine()) != null) {
+            Pattern devicePattern = Pattern.compile("alsa(:\\d*) : (.+)");
+            Matcher deviceMatcher = devicePattern.matcher(line);
+            if(deviceMatcher.find()){
+                AudioDevice new_device = new AudioDevice();
+                new_device.name = deviceMatcher.group(2);
+                new_device.setting = "alsa" + deviceMatcher.group(1);
+                audioDevices.add(new_device);
+            }
+            
+        }
+        return audioDevices;
+    }
+    
+    /**
+     * check if uv address is correct and what component is present, result save 
+     * in global variabile and information text message is set
      * @param uvAddress
      * @param verificationTextField 
      */
-    void ultragridOK(String uvAddress, JTextArea verificationTextField){
-        if(uvProcess != null){
+    void ultragridOK(String uvAddress){
+        if(uvProcess != null){  //if another uv process is open close it
             uvProcess.destroyForcibly();
         }
         
-        verificationTextField.setRows(1);
+        correctUv = true;   //will be changed if any problem is found
         //initiial tests if it can be ultragrid
         if(uvAddress.isEmpty()){
-            verificationTextField.setForeground(Color.red);
-            verificationTextField.setText(languageBundle.getString("EMPTY_PATH"));
+            uvStatusTextField.setForeground(Color.red);
+            uvStatusTextField.setText(languageBundle.getString("EMPTY_PATH"));
             correctUv = false;
-            return;
         }
         File uvFile = new File(uvAddress);
         if(!uvFile.exists()){
-            verificationTextField.setForeground(Color.red);
-            verificationTextField.setText(languageBundle.getString("INVALID_PATH")+ " " + uvFile.getName() + ".");
+            uvStatusTextField.setForeground(Color.red);
+            uvStatusTextField.setText(languageBundle.getString("INVALID_PATH")+ " " + uvFile.getName() + ".");
             correctUv = false;
-            return;
         }
         if(uvFile.isDirectory()){
-            verificationTextField.setForeground(Color.red);
-            verificationTextField.setText(languageBundle.getString("FILE")+ " " + uvFile.getName() + " " + languageBundle.getString("IS_DIRECTORY"));
+            uvStatusTextField.setForeground(Color.red);
+            uvStatusTextField.setText(languageBundle.getString("FILE")+ " " + uvFile.getName() + " " + languageBundle.getString("IS_DIRECTORY"));
             correctUv = false;
-            return;
         }
         if(!uvFile.canExecute()){
-            verificationTextField.setForeground(Color.red);
-            verificationTextField.setText(languageBundle.getString("FILE")+ " " + uvFile.getName() + " " + languageBundle.getString("CANNOT_BE_EXECUTED"));
+            uvStatusTextField.setForeground(Color.red);
+            uvStatusTextField.setText(languageBundle.getString("FILE")+ " " + uvFile.getName() + " " + languageBundle.getString("CANNOT_BE_EXECUTED"));
             correctUv = false;
             return;
         }
         
-        String outMessage = "";
         boolean correctUvOutput = false;
         boolean correctUvreturnValue = false;
         
-        try {
-            // mac return uv help value 10, -v seems be ok
-            uvProcess = new ProcessBuilder(uvAddress, "-v").start();  //may add output check, maby later, or some other checks
-            
-            InputStream is = uvProcess.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(isr);
-            String line;
-            boolean firsLine = true;
-            int linesCheckMaxLimit = 100;
-            int i = 0;
-            
-            while (((line = br.readLine()) != null) && (linesCheckMaxLimit > i)) {
-                i++;
-                Pattern glPattern = Pattern.compile("OpenGL \\.*+ (no|yes)");
-                Matcher glMatcher = glPattern.matcher(line);
-                
-                
-                Pattern sdlPattern = Pattern.compile("SDL \\.*+ (no|yes)");
-                Matcher sdlMatcher = sdlPattern.matcher(line);
-                
-                Pattern portaudioPattern = Pattern.compile("Portaudio \\.*+ (no|yes)");
-                Matcher portaudioMatcher = portaudioPattern.matcher(line);
-                
-                if(firsLine){
-                    Pattern ultragridPattern = Pattern.compile("UltraGrid ");
-                    Matcher ultragridMatcher = ultragridPattern.matcher(line);
-                    correctUvOutput = ultragridMatcher.find();
-                    firsLine = false;
-                }
-                
-                if(glMatcher.find()){
-                    if(glMatcher.group(1).equals("yes")){
-                        outMessage += "gl " + languageBundle.getString("FOUND") + "\n";
-                    }else{
-                        outMessage += "gl " + languageBundle.getString("NOT_FOUND") + "\n";
+        if(correctUv){
+            try {
+                // mac return uv help value 10, -v seems be ok
+                uvProcess = new ProcessBuilder(uvAddress, "-v").start();
+
+                InputStream is = uvProcess.getInputStream();
+                InputStreamReader isr = new InputStreamReader(is);
+                BufferedReader br = new BufferedReader(isr);
+                String line;
+                boolean firsLine = true;
+                int linesCheckMaxLimit = 100;
+                int i = 0;
+
+                while (((line = br.readLine()) != null) && (linesCheckMaxLimit > i)) {
+                    i++;
+                    Pattern glPattern = Pattern.compile("OpenGL \\.*+ (no|yes)");
+                    Matcher glMatcher = glPattern.matcher(line);
+
+                    Pattern sdlPattern = Pattern.compile("SDL \\.*+ (no|yes)");
+                    Matcher sdlMatcher = sdlPattern.matcher(line);
+
+                    Pattern portaudioPattern = Pattern.compile("Portaudio \\.*+ (no|yes)");
+                    Matcher portaudioMatcher = portaudioPattern.matcher(line);
+
+                    Pattern coreaudioPattern = Pattern.compile("CoreAudio \\.*+ (no|yes)");
+                    Matcher coreaudioMatcher = coreaudioPattern.matcher(line);
+
+                    Pattern alsaPattern = Pattern.compile("ALSA \\.*+ (no|yes)");
+                    Matcher alsaMatcher = alsaPattern.matcher(line);
+
+                    if(firsLine){
+                        Pattern ultragridPattern = Pattern.compile("UltraGrid ");
+                        Matcher ultragridMatcher = ultragridPattern.matcher(line);
+                        correctUvOutput = ultragridMatcher.find();
+                        firsLine = false;
+                    }
+
+                    if(glMatcher.find()){
+                        if(glMatcher.group(1).equals("yes")){
+                            haveGL = true;
+                        }else{
+                            haveGL = false;
+                        }
+                    }
+
+                    if(sdlMatcher.find()){
+                        if(sdlMatcher.group(1).equals("yes")){
+                            haveSDL = true;
+                        }else{
+                            haveSDL = false;
+                        }
+                    }
+
+                    if(portaudioMatcher.find()){
+                        if(portaudioMatcher.group(1).equals("yes")){
+                            havePortaudio = true;
+                        }else{
+                            havePortaudio = false;
+                        }
+                    }
+
+                    if(coreaudioMatcher.find()){
+                        if(coreaudioMatcher.group(1).equals("yes")){
+                            haveCoreaudio = true;
+                        }else{
+                            haveCoreaudio = false;
+                        }
+                    }
+
+                    if(alsaMatcher.find()){
+                        if(alsaMatcher.group(1).equals("yes")){
+                            haveALSA = true;
+                        }else{
+                            haveALSA = false;
+                        }
                     }
                 }
-                
-                if(sdlMatcher.find()){
-                    if(sdlMatcher.group(1).equals("yes")){
-                        outMessage += "sdl " + languageBundle.getString("FOUND") + "\n";
-                    }else{
-                        outMessage += "sdl " + languageBundle.getString("NOT_FOUND") + "\n";
-                    }
-                }
-                
-                if(portaudioMatcher.find()){
-                    if(portaudioMatcher.group(1).equals("yes")){
-                        outMessage += "portaudio " + languageBundle.getString("FOUND") + "\n";
-                        havePortaudio = true;
-                    }else{
-                        outMessage += "portaudio " + languageBundle.getString("NOT_FOUND") + "\n";
-                        havePortaudio = false;
-                    }
-                }
+                correctUvreturnValue = (uvProcess.exitValue() == 0);
+            } catch (IllegalThreadStateException | IOException ex){
+                uvProcess.destroyForcibly();
             }
-            correctUvreturnValue = (uvProcess.exitValue() == 0);
-        } catch (IllegalThreadStateException | IOException ex){
             uvProcess.destroyForcibly();
-        }
-        uvProcess.destroyForcibly();
-        //probably overkill destroing process, but I realy dont want to allow process to survive
-        
-        if(correctUvreturnValue && correctUvOutput){
-            verificationTextField.setForeground(Color.getHSBColor((float)0.39, (float)1, (float)0.8));
-            verificationTextField.setRows(4);
-            outMessage += "UltraGid ";
-            outMessage += languageBundle.getString("FOUND");
-            verificationTextField.setText(outMessage);
-            correctUv = true;
-        }else{
-            if(correctUvreturnValue){
-                verificationTextField.setForeground(Color.red);
-                verificationTextField.setRows(1);
-                verificationTextField.setText(languageBundle.getString("ERROR"));
+            //probably overkill destroing process, but I realy dont want to allow process to survive
+            if(correctUvreturnValue && correctUvOutput){
+                correctUv = true;
+                uvStatusTextField.setForeground(Color.getHSBColor((float)0.39, (float)1, (float)0.8));
+                uvStatusTextField.setText(languageBundle.getString("ALLRIGHT"));
             }else{
-                verificationTextField.setForeground(Color.red);
-                verificationTextField.setRows(1);
-                verificationTextField.setText("UltraGid " + languageBundle.getString("CANNOT_BE_EXECUTED"));
+                correctUv = false;
+                if(correctUvreturnValue){
+                    uvStatusTextField.setForeground(Color.red);
+                    uvStatusTextField.setText(languageBundle.getString("ERROR"));
+                }else{
+                    uvStatusTextField.setForeground(Color.red);
+                    uvStatusTextField.setText("UltraGid " + languageBundle.getString("CANNOT_BE_EXECUTED"));
+                }
             }
-        }        
+        }
+        setAudioStatusTextField();
+        setDisplayStatusTextField();
+    }
+    
+    /**
+     * set display text field from global information if is possible to use GL and SDL
+     */
+    void setDisplayStatusTextField(){
+        Color greenColor = Color.getHSBColor((float)0.39, (float)1, (float)0.8);
+        if(!correctUv){
+            displayStatusTextField.setText(languageBundle.getString("NONE"));
+            displayStatusTextField.setForeground(Color.RED);
+        }else{
+            boolean noDisplaySoftware = true;
+            displayStatusTextField.setText("");
+            if(haveGL){
+                noDisplaySoftware = false;
+                displayStatusTextField.setText("GL");
+            }
+            if(haveSDL){
+                if(!noDisplaySoftware){
+                    displayStatusTextField.setText(displayStatusTextField.getText() + ", ");
+                }
+                noDisplaySoftware = false;
+                displayStatusTextField.setText(displayStatusTextField.getText() + "SDL");
+            }
+            
+            if(noDisplaySoftware){
+                displayStatusTextField.setText(languageBundle.getString("NONE"));
+                displayStatusTextField.setForeground(Color.RED);
+            }else{
+                displayStatusTextField.setForeground(greenColor);
+            }
+        }
+    }
+    
+    /**
+     * set audio text field from global information if is possible to use portaudio, coreaudio and ALSA
+     */
+    void setAudioStatusTextField(){
+        Color greenColor = Color.getHSBColor((float)0.39, (float)1, (float)0.8);
+        if(!correctUv){
+            audioStatusTextField.setText(languageBundle.getString("NONE"));
+            audioStatusTextField.setForeground(Color.RED);
+        }else{
+            boolean noAudioSoftware = true;
+            audioStatusTextField.setText("");
+            if(havePortaudio){
+                noAudioSoftware = false;
+                audioStatusTextField.setText("portaudio");
+            }
+            if(haveCoreaudio){
+                if(!noAudioSoftware){
+                    audioStatusTextField.setText(audioStatusTextField.getText() + ", ");
+                }
+                noAudioSoftware = false;
+                audioStatusTextField.setText(audioStatusTextField.getText() + "coreaudio");
+            }
+            if(haveALSA){
+                if(!noAudioSoftware){
+                    audioStatusTextField.setText(audioStatusTextField.getText() + ", ");
+                }
+                noAudioSoftware = false;
+                audioStatusTextField.setText(audioStatusTextField.getText() + "ALSA");
+            }
+            
+            if(noAudioSoftware){
+                audioStatusTextField.setText(languageBundle.getString("NONE"));
+                audioStatusTextField.setForeground(Color.RED);
+            }else{
+                audioStatusTextField.setForeground(greenColor);
+            }
+        }
     }
     
     /**
@@ -2109,9 +2339,9 @@ public final class OptionsMainMenuWindow extends JFrame{
         
         String producerSetting = getVideoSettings(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
         String presentationSetting = getVideoSettings(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, videoDevices);
-        // TODO this is just hack
-        String audioOutSetting  = "portaudio" + getAudioSetting(audioInComboBox, audioIn);
-        String audioInSetting = "portaudio" + getAudioSetting(audioOutComboBox, audioOut);
+        
+        String audioOutSetting  = getAudioSetting(audioInComboBox, audioIn);
+        String audioInSetting = getAudioSetting(audioOutComboBox, audioOut);
         
         int resizeValue;
         try{
@@ -2275,20 +2505,24 @@ public final class OptionsMainMenuWindow extends JFrame{
         testcardFrameSize_255.fps = new ArrayList<>();
         testcardPixelFormat.vfs.add(testcardFrameSize_255);
         
-        VideoFPS testcardFPS_255_15 = new VideoFPS();
-        testcardFPS_255_15.fps = "15";
-        testcardFPS_255_15.setting = "testcard:255:255:15:RGB";
-        testcardFrameSize_255.fps.add(testcardFPS_255_15);
+        for(int i=10;i<=60;i++){
+            VideoFPS testcardFPS_255 = new VideoFPS();
+            testcardFPS_255.fps = Integer.toString(i);
+            testcardFPS_255.setting = "testcard:255:255:" + Integer.toString(i) + ":RGB";
+            testcardFrameSize_255.fps.add(testcardFPS_255);
+        }
         
         VideoFrameSize testcardFrameSize_1024 = new VideoFrameSize();
         testcardFrameSize_1024.widthXheight = "1024x768";
         testcardFrameSize_1024.fps = new ArrayList<>();
         testcardPixelFormat.vfs.add(testcardFrameSize_1024);
         
-        VideoFPS testcardFPS_1024_15 = new VideoFPS();
-        testcardFPS_1024_15.fps = "15";
-        testcardFPS_1024_15.setting = "testcard:1024:768:15:RGB";
-        testcardFrameSize_1024.fps.add(testcardFPS_1024_15);
+        for(int i=10;i<=30;i++){
+            VideoFPS testcardFPS_1024 = new VideoFPS();
+            testcardFPS_1024.fps = Integer.toString(i);
+            testcardFPS_1024.setting = "testcard:1024:768:" + Integer.toString(i) + ":RGB";
+            testcardFrameSize_1024.fps.add(testcardFPS_1024);
+        }
         
         videoDevices.add(testcardDevice);
     }
