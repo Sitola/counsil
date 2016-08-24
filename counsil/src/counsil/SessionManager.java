@@ -20,9 +20,4 @@ public interface SessionManager {
      * Stops the instance of couniverse core
      */
     public void stop();
-
-    /**
-     * Gets status information about connected nodes
-     */
-    public String getStatus();
 }

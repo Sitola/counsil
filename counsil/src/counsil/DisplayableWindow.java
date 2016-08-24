@@ -120,7 +120,7 @@ class DisplayableWindow {
      * Brings physical instance of windows to the front of the screen
      */
     public void bringToTheFront() {
-       //! TODO User32.INSTANCE.BringWindowToTop(window);
+       window.bringToFront();
     }
     
     /**

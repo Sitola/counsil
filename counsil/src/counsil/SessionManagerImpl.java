@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Timer;
@@ -602,99 +601,11 @@ public class SessionManagerImpl implements SessionManager {
 
     }
 
-    private UltraGridConsumerApplication getKeyByValue(Map<UltraGridConsumerApplication, String> map, String value) {
-        for (Entry<UltraGridConsumerApplication, String> entry : map.entrySet()) {
-            if (Objects.equals(value, entry.getValue())) {
-                return entry.getKey();
-            }
-        }
-        return null;
-    }
-
     /**
      * Stops the instance of couniverse core
      */
     @Override
     public void stop() {
         core.stop();
-    }
-
-    /**
-     * Gets status information about connected nodes
-     */
-    @Override
-    public String getStatus() { //! needs to be refactored if used
-
-        String status = new String();
-
-        int studentCount = 0;
-        Boolean teacher = false,
-                interpreter = false,
-                presentation = false,
-                interpreterAudio = false,
-                teacherAudio = false;
-
-        for (String name : consumer2name.values()) {
-
-            String nameToUpper = name.toUpperCase();
-
-            if (nameToUpper.contains("STUDENT")) {
-                studentCount++;
-            } else if (nameToUpper.contains("INTERPRETER")) {
-                if (nameToUpper.contains("AUDIO")) {
-                    interpreterAudio = true;
-                } else {
-                    interpreter = true;
-                }
-            } else if (nameToUpper.contains(TEACHER)) {
-                if (nameToUpper.contains("PRESENTATION")) {
-                    presentation = true;
-                } else if (nameToUpper.contains("AUDIO")) {
-                    teacherAudio = true;
-                } else {
-                    teacher = true;
-                }
-            }
-        }
-
-        status += (languageBundle.getString("INTERPRETER") + " video: ");
-        if (interpreter) {
-            status += (languageBundle.getString("ONLINE") + "\n");
-        } else {
-            status += (languageBundle.getString("OFFLINE") + "\n");
-        }
-
-        status += (languageBundle.getString("INTERPRETER") + " audio: ");
-        if (interpreterAudio) {
-            status += (languageBundle.getString("ONLINE") + "\n");
-        } else {
-            status += (languageBundle.getString("OFFLINE") + "\n");
-        }
-
-        status += (languageBundle.getString(TEACHER) + " video: ");
-        if (teacher) {
-            status += (languageBundle.getString("ONLINE") + "\n");
-        } else {
-            status += (languageBundle.getString("OFFLINE") + "\n");
-        }
-
-        status += (languageBundle.getString(TEACHER) + " audio: ");
-        if (teacherAudio) {
-            status += (languageBundle.getString("ONLINE") + "\n");
-        } else {
-            status += (languageBundle.getString("OFFLINE") + "\n");
-        }
-
-        status += (languageBundle.getString("PRESENTATION") + ": ");
-        if (presentation) {
-            status += (languageBundle.getString("ONLINE") + "\n");
-        } else {
-            status += (languageBundle.getString("OFFLINE") + "\n");
-        }
-
-        status += (languageBundle.getString("STUDENTS") + ": ");
-        status += studentCount;
-
-        return status;
     }
 }
