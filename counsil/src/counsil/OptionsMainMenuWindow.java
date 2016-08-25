@@ -81,6 +81,7 @@ public final class OptionsMainMenuWindow extends JFrame{
     String displaySetting;
     boolean presentationUsed;
     boolean studentOnly;
+    String role;
     
     //need to be global so they can be set from different tab
     JComboBox mainCameraBox;
@@ -104,7 +105,7 @@ public final class OptionsMainMenuWindow extends JFrame{
     /**
      * constructor
      */ 
-    OptionsMainMenuWindow(Font fontButtons, File configurationFile, InitialMenuLayout initialMenuLayout, ResourceBundle languageBundle)
+    OptionsMainMenuWindow(Font fontButtons, File configurationFile, InitialMenuLayout initialMenuLayout, ResourceBundle languageBundle, String role)
     {
         super(languageBundle.getString("COUNSIL_OPTIONS"));
         this.fontButtons = fontButtons;
@@ -133,6 +134,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         raiseHandcolorChooser = new JColorChooser(new Color(0, 0, 0));
         talkingColorChooser = new JColorChooser(new Color(0, 0, 0));
         this.configurationFile = configurationFile;
+        this.role = role;
         myIpSetTextField = new JTextField();
         imt = initialMenuLayout;
         
@@ -644,6 +646,13 @@ public final class OptionsMainMenuWindow extends JFrame{
             presentationUsed = isSelected;
             this.pack();
         });
+        if(!role.equals(languageBundle.getString("TEACHER"))){
+            presentationCheckBox.setEnabled(false);
+            presetationPanel.setVisible(false);
+            testPresentationButton.setVisible(false);
+            presentationUsed = false;
+            this.pack();
+        }
         
         //putting boxes to panel
         mainCameraPanel.setLayout(new GridBagLayout());
@@ -2388,6 +2397,8 @@ public final class OptionsMainMenuWindow extends JFrame{
             newClientConfiguration.put("student only", studentOnly);
         } catch (JSONException ex) {
             Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+            imt.openErrorWindow(languageBundle.getString("ERROR_CANNOT_CREATE_SETTING"));
+            return; //stop saving when error ocure
         }
         
         FileWriter fileWriter;
@@ -2397,6 +2408,8 @@ public final class OptionsMainMenuWindow extends JFrame{
             fileWriter.close();
         } catch (IOException ex) {
             Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+            imt.openErrorWindow(languageBundle.getString("ERROR_CANNOT_SAVE_SETTINGS"));
+            return; //stop saving when error ocure
         }
         
         imt.loadClientConfigurationFromFile();

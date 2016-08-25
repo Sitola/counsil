@@ -155,6 +155,7 @@ public final class InitialMenuLayout{
      */
     InitialMenuLayout(Position centerPosition, File clientConfigurationFile, Font buttonFont) {
         webClient = new WebClient();
+        sm = null;
         
         errorMessageField = null;
         roomPanel = null;
@@ -407,7 +408,7 @@ public final class InitialMenuLayout{
                 optionMainMenuWindow.dispose();
                 optionMainMenuWindow = null;
             }
-            optionMainMenuWindow = new OptionsMainMenuWindow(font, configurationFile, this, languageBundle);
+            optionMainMenuWindow = new OptionsMainMenuWindow(font, configurationFile, this, languageBundle, role);
         });
         JButton nameChangeButton = new JButton(languageBundle.getString("NAME_CHANGE"));
         nameChangeButton.setFont(font);
@@ -1002,12 +1003,13 @@ public final class InitialMenuLayout{
      */
     final void closeCounsil(){
         if(sm == null){
-            System.out.println("noooooooooooooo");
+            Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, "error cannot stop counsil, lost pointer to session manager");
+            openErrorWindow(languageBundle.getString("ERROR_CANNOT_DISCONNECT_FROM_SERVER") + "\n" + languageBundle.getString("PLEASE_EXIT_APPLICATION_BEFORE_FARTHER_USAGE"));
         }else{
             sm.stopCounsil();
-            sm = null;
+            //sm = null;
+            openServerChooseWindow();
         }
-        openServerChooseWindow();
     }
     
     final String shortNameRole(String role){
@@ -1058,8 +1060,10 @@ public final class InitialMenuLayout{
             properties.put("audio", audio);
             properties.put("room", room);
             
-            if(clientConfig.has("presentation producer")){
-                properties.put("presentationProducer", clientConfig.getString("presentation producer"));
+            if(role.equals(languageBundle.getString("TEACHER"))){
+                if(clientConfig.has("presentation producer")){
+                    properties.put("presentationProducer", clientConfig.getString("presentation producer"));
+                }
             }
 
             localNode.put("name", userName);
