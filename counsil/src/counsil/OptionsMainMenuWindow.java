@@ -1122,23 +1122,29 @@ public final class OptionsMainMenuWindow extends JFrame{
         statusPanel.setLayout(new GridBagLayout());
         GridBagConstraints statusPanelConstraints = new GridBagConstraints();
         statusPanelConstraints.weightx = 0.5;
+        statusPanelConstraints.anchor = GridBagConstraints.LINE_END;
         statusPanelConstraints.gridheight = 1;
         statusPanelConstraints.gridwidth = 1;
         statusPanelConstraints.gridx = 0;
         statusPanelConstraints.gridy = 0;
         statusPanel.add(uvStatusTExtFieldInfoTExt, statusPanelConstraints);
+        statusPanelConstraints.anchor = GridBagConstraints.LINE_START;
         statusPanelConstraints.gridx = 1;
         statusPanelConstraints.gridy = 0;
         statusPanel.add(uvStatusTextField, statusPanelConstraints);
+        statusPanelConstraints.anchor = GridBagConstraints.LINE_END;
         statusPanelConstraints.gridx = 0;
         statusPanelConstraints.gridy = 1;
         statusPanel.add(displayStatusTextFieldInfoTExt, statusPanelConstraints);
+        statusPanelConstraints.anchor = GridBagConstraints.LINE_START;
         statusPanelConstraints.gridx = 1;
         statusPanelConstraints.gridy = 1;
         statusPanel.add(displayStatusTextField, statusPanelConstraints);
+        statusPanelConstraints.anchor = GridBagConstraints.LINE_END;
         statusPanelConstraints.gridx = 0;
         statusPanelConstraints.gridy = 2;
         statusPanel.add(audioStatusTextFieldInfoTExt, statusPanelConstraints);
+        statusPanelConstraints.anchor = GridBagConstraints.LINE_START;
         statusPanelConstraints.gridx = 1;
         statusPanelConstraints.gridy = 2;
         statusPanel.add(audioStatusTextField, statusPanelConstraints);
@@ -2000,7 +2006,6 @@ public final class OptionsMainMenuWindow extends JFrame{
             uvStatusTextField.setForeground(Color.red);
             uvStatusTextField.setText(languageBundle.getString("FILE")+ " " + uvFile.getName() + " " + languageBundle.getString("CANNOT_BE_EXECUTED"));
             correctUv = false;
-            return;
         }
         
         boolean correctUvOutput = false;
