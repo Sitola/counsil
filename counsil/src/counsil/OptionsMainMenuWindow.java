@@ -1874,14 +1874,14 @@ public final class OptionsMainMenuWindow extends JFrame{
                     if(!deviceMatcher.group(4).equals("0")){    //have some input chanels
                         AudioDevice new_device = new AudioDevice();
                         new_device.name = deviceMatcher.group(2);
-                        new_device.setting = deviceMatcher.group(1);
+                        new_device.setting = "portaudio" + deviceMatcher.group(1);
                         audioDevices.add(new_device);
                     }
                 }else{
                     if(!deviceMatcher.group(3).equals("0")){    //have some input chanels
                         AudioDevice new_device = new AudioDevice();
                         new_device.name = deviceMatcher.group(2);
-                        new_device.setting = deviceMatcher.group(1);
+                        new_device.setting = "portaudio" + deviceMatcher.group(1);
                         audioDevices.add(new_device);
                     }
                 }
