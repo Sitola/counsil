@@ -115,7 +115,7 @@ public class SessionManagerImpl implements SessionManager {
      */
     private String alertColor;
 
-    /** 
+    /**
      * Color of window highlight while talking
      */
     private String talkColor;
@@ -178,8 +178,9 @@ public class SessionManagerImpl implements SessionManager {
 
     /**
      * Gets string implementation of Color
+     *
      * @param color
-     * @return 
+     * @return
      */
     private String getColorCode(Color color) {
         String colorStringRepresentation = "#" + Integer.toHexString(color.getRed());
@@ -253,7 +254,8 @@ public class SessionManagerImpl implements SessionManager {
         NetworkNode.addPropertyParser("audioConsumer", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("presentationProducer", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("videoConsumer", NodePropertyParser.STRING_PARSER);
-
+        NetworkNode.addPropertyParser("room", NodePropertyParser.STRING_PARSER);
+        
         core = Main.startCoUniverse();
 
         topologyAggregator = TopologyAggregator.getInstance(core);
@@ -434,6 +436,7 @@ public class SessionManagerImpl implements SessionManager {
 
     /**
      * Starts producer from local node
+     *
      * @throws IOException if there is problem during starting Producer
      */
     private void createProducent(String role) throws IOException {
@@ -506,7 +509,7 @@ public class SessionManagerImpl implements SessionManager {
         String name = local.getName() + "-" + content;
         if (content.toUpperCase().contains("VIDEO")) {
             String audio = (String) local.getProperty("audioConsumer");
-            if(local.uuid.equals(node.uuid)) {
+            if (local.uuid.equals(node.uuid)) {
                 audio = null;
             }
             con = createConsumer(
@@ -557,8 +560,13 @@ public class SessionManagerImpl implements SessionManager {
         if (node == null) {
             throw new IllegalArgumentException("node is null");
         }
-        Set<MediaApplication> applications = node.getApplications();
-        for (MediaApplication app : applications) {
+        
+        // in case they have separate rooms just skip searching for apps
+        if (!local.getProperty("room").equals(node.getProperty("room"))) {
+            return;
+        }
+
+        for (MediaApplication app : node.getApplications()) {
             if (app instanceof UltraGridProducerApplication) {
                 UltraGridProducerApplication producer = (UltraGridProducerApplication) app;
                 try {
