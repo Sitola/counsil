@@ -1,14 +1,15 @@
 package counsil;
 
 /**
+ * Listener of the interaction menu
  * @author xdaxner
  */
 public interface InteractionMenuListener {
     
     /**
-     * Listens for raise of the hand
+     * Listens for alert
      */
-    void raiseHandActionPerformed();
+    void alertActionPerformed();
     
     
     /**

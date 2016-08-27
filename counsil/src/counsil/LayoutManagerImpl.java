@@ -23,6 +23,7 @@ import wddman.WDDManException;
 
 /**
  * Represents structure which manipulates with layout
+ *
  * @author xdaxner
  */
 public class LayoutManagerImpl implements LayoutManager {
@@ -30,7 +31,12 @@ public class LayoutManagerImpl implements LayoutManager {
     /**
      * Represents size of inactive border of the window
      */
-    final static int WINDOW_BORDER_OFFSET = 50;
+    private final static int WINDOW_BORDER_OFFSET = 50;
+
+    /**
+     * Represents student string
+     */
+    private static final String STUDENT = "STUDENT";
 
     /**
      * List of current active windows Needs to be locked, parallel access should
@@ -70,8 +76,9 @@ public class LayoutManagerImpl implements LayoutManager {
 
     /**
      * Initializes layout
+     *
      * @param role of this layout
-     * @param iml initialMenuLayout to return when counsil exit
+     * @param initialMenu initialMenuLayout to return when counsil exit
      * @param scaleRatio ratio to be scaled
      * @param layoutFile
      * @param languageBundle
@@ -81,7 +88,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * @throws wddman.WDDManException
      * @throws org.jnativehook.NativeHookException
      */
-    public LayoutManagerImpl(String role, InitialMenuLayout iml, int scaleRatio, File layoutFile, ResourceBundle languageBundle, Font font) throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
+    public LayoutManagerImpl(String role, InitialMenuLayout initialMenu, int scaleRatio, File layoutFile, ResourceBundle languageBundle, Font font) throws JSONException, FileNotFoundException, IOException, WDDManException, NativeHookException {
 
         this.calculator = new LayoutCalculator(role, layoutFile);
         this.scaleRatio = scaleRatio;
@@ -98,17 +105,17 @@ public class LayoutManagerImpl implements LayoutManager {
 
             @Override
             public void run() {
-                try {
+                try {                    
                     if (STUDENT.equals(role.toUpperCase())) {
-                        menu = new InteractionMenuStudentExtension(calculator.getMenuRole(), calculator.getMenuPostion(), iml, languageBundle, font);
+                        menu = new InteractionMenuStudentExtension(calculator.getMenuRole(), calculator.getMenuPostion(), initialMenu, languageBundle, font);
                     } else {
-                        menu = new InteractionMenu(calculator.getMenuRole(), calculator.getMenuPostion(), iml, languageBundle, font);
+                        menu = new InteractionMenu(calculator.getMenuRole(), calculator.getMenuPostion(), initialMenu, languageBundle, font);
                     }
                     menu.publish();
                     menu.addInteractionMenuListener(new InteractionMenuListener() {
 
                         @Override
-                        public void raiseHandActionPerformed() {
+                        public void alertActionPerformed() {
                             layoutManagerListeners.stream().forEach((listener) -> {
                                 listener.alertActionPerformed();
                             });
@@ -188,6 +195,7 @@ public class LayoutManagerImpl implements LayoutManager {
                     window.setWidth(window.getWidth() + scaleRatio);
 
                     window.adjustWindow();
+                    window.bringToTheFront();
 
                 } catch (WDDManException ex) {
                     Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -203,8 +211,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * @param role tole of window user
      */
     @Override
-    public void addNode(String title, String role
-    ) {
+    public void addNode(String title, String role) {
         try {
             synchronized (windows) {
                 windows.add(new DisplayableWindow(wd, title, role));
@@ -220,8 +227,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * @param listener
      */
     @Override
-    public void addLayoutManagerListener(LayoutManagerListener listener
-    ) {
+    public void addLayoutManagerListener(LayoutManagerListener listener) {
         layoutManagerListeners.add(listener);
     }
 
@@ -231,8 +237,7 @@ public class LayoutManagerImpl implements LayoutManager {
      * @param title window title
      */
     @Override
-    public void removeNode(String title
-    ) {
+    public void removeNode(String title) {
         synchronized (windows) {
             for (Iterator<DisplayableWindow> iter = windows.iterator(); iter.hasNext();) {
                 DisplayableWindow window = iter.next();
@@ -351,7 +356,6 @@ public class LayoutManagerImpl implements LayoutManager {
             }
         });
     }
-    private static final String STUDENT = "STUDENT";
 
     /**
      * Registers mouse listener
@@ -361,6 +365,8 @@ public class LayoutManagerImpl implements LayoutManager {
     private void registerMouseListener() throws NativeHookException {
         GlobalScreen.registerNativeHook();
         GlobalScreen.addNativeMouseListener(mouseListener);
+
+        // close all loggers, because of the library spamming
         Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
         logger.setLevel(Level.OFF);
         logger.setUseParentHandlers(false);
@@ -401,8 +407,9 @@ public class LayoutManagerImpl implements LayoutManager {
     }
 
     /**
-     * Gets window by title
-     * Calling the method should be synchronized, parallel access should not be allowed
+     * Gets window by title Calling the method should be synchronized, parallel
+     * access should not be allowed
+     *
      * @param title
      * @return
      */
@@ -416,7 +423,7 @@ public class LayoutManagerImpl implements LayoutManager {
     }
 
     /**
-     * sets position of the menu
+     * Sets position of the menu
      */
     private void setMenuPosition() {
         if (menu != null) {

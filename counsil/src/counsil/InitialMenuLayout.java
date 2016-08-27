@@ -1002,11 +1002,12 @@ public final class InitialMenuLayout{
      * close counsil and re-open initial menu
      */
     final void closeCounsil(){
+
         if(sm == null){
             Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, "error cannot stop counsil, lost pointer to session manager");
             openErrorWindow(languageBundle.getString("ERROR_CANNOT_DISCONNECT_FROM_SERVER") + "\n" + languageBundle.getString("PLEASE_EXIT_APPLICATION_BEFORE_FARTHER_USAGE"));
         }else{
-            sm.stopCounsil();
+            sm.stop();
             //sm = null;
             openServerChooseWindow();
         }

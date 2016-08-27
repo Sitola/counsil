@@ -6,24 +6,21 @@ import java.util.ResourceBundle;
 import javax.swing.JButton;
 
 /**
+ * Represents menu run in application in student state (with additional buttons)
  * @author xdaxner
  */
 public class InteractionMenuStudentExtension extends InteractionMenu {
 
-    private final ResourceBundle languageBundle;
-    
-    /**
-     * 
+    /** 
      * @param role
      * @param position
-     * @param iml  
+     * @param initialMenu  
      * @param languageBundle  
      * @param font  
      */
-    public InteractionMenuStudentExtension(String role, Position position, InitialMenuLayout iml, ResourceBundle languageBundle, Font font) {
+    public InteractionMenuStudentExtension(String role, Position position, InitialMenuLayout initialMenu, ResourceBundle languageBundle, Font font) {
       
-        super(role, position, iml, languageBundle, font);        
-        this.languageBundle = languageBundle;
+        super(role, position, initialMenu, languageBundle, font);    
         buttons.add(createAndInitAlertButton());
     }
  
@@ -47,7 +44,7 @@ public class InteractionMenuStudentExtension extends InteractionMenu {
      */
     private void alertButtonActionPerformed() {
         interactionMenuListeners.stream().forEach((listener) -> {
-            listener.raiseHandActionPerformed();
+            listener.alertActionPerformed();
         });
     }    
 }

@@ -15,6 +15,9 @@ import javax.swing.LayoutStyle;
 import javax.swing.UIManager;
 
 /**
+ * Represents menu run in application in default state (without additional
+ * buttons)
+ *
  * @author xdaxner
  */
 public class InteractionMenu extends JFrame {
@@ -28,7 +31,7 @@ public class InteractionMenu extends JFrame {
      * Instance of initial menu to return after counsil session end
      */
     private final InitialMenuLayout initialMenu;
-    
+
     /**
      * Currently used font
      */
@@ -38,24 +41,26 @@ public class InteractionMenu extends JFrame {
      * List of listeners
      */
     protected final List<InteractionMenuListener> interactionMenuListeners = new ArrayList<>();
-    
+
     /**
      * Currently used language bundle
      */
-    private final ResourceBundle languageBundle;
+    protected final ResourceBundle languageBundle;
 
     /**
      * Creates menu and sets its parameters
      *
      * @param role role of current user
      * @param position menu position
-     * @param iml initial menu to return to
+     * @param initialMenu initial menu to return to
      */
-    InteractionMenu(String role, Position position, InitialMenuLayout iml, ResourceBundle languageBundle, Font font) {
+    InteractionMenu(String role, Position position, InitialMenuLayout initialMenu, ResourceBundle languageBundle, Font font) {
 
         super("CoUnSil");
 
-        initialMenu = iml;
+        this.initialMenu = initialMenu;
+        this.languageBundle = languageBundle;
+        this.font = font;
 
         setLayout(new GridBagLayout());
         setUndecorated(true);
@@ -65,11 +70,10 @@ public class InteractionMenu extends JFrame {
         setLocationRelativeTo(null);
         setLocation(position.x, position.y);
         setDefaultLookAndFeelDecorated(false);
-        this.languageBundle = languageBundle;
-        this.font = font;
+
         overrideJOptionPaneBundle();
     }
-    
+
     /**
      * Initializes menu buttons, adds them to menu and sets menu as visible
      */
@@ -80,8 +84,10 @@ public class InteractionMenu extends JFrame {
     }
 
     /**
-     * Adds interacion menu listener to the list of currently listening listeners
-     * @param listener 
+     * Adds interacion menu listener to the list of currently listening
+     * listeners
+     *
+     * @param listener
      */
     public void addInteractionMenuListener(InteractionMenuListener listener) {
         interactionMenuListeners.add(listener);
@@ -98,7 +104,7 @@ public class InteractionMenu extends JFrame {
 
     /**
      * Adds buttons which are used by all the roles to button list
-     */ 
+     */
     private void addBasicButtons() {
 
         JButton refreshButton = new JButton();
@@ -134,11 +140,11 @@ public class InteractionMenu extends JFrame {
             button.setFont(font);
 
             verticalGroup
-                .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
+                    .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
 
             horizontalGroup
-                .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
+                    .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
         });
 
         // set menu grid and layout
@@ -148,7 +154,7 @@ public class InteractionMenu extends JFrame {
 
         pack();
     }
-    
+
     /**
      * Starts exiting program when "Exit" button is clicked
      */
@@ -168,6 +174,6 @@ public class InteractionMenu extends JFrame {
     private void overrideJOptionPaneBundle() {
         UIManager.put("OptionPane.yesButtonText", languageBundle.getString("YES"));
         UIManager.put("OptionPane.noButtonText", languageBundle.getString("NO"));
-        UIManager.put("OptionPane.cancelButtonText", languageBundle.getString("CANCEL"));        
+        UIManager.put("OptionPane.cancelButtonText", languageBundle.getString("CANCEL"));
     }
 }
