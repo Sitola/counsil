@@ -259,7 +259,7 @@ public final class InitialMenuLayout{
         namePanel.add(setNameSettingField);
         
         //"next" button
-        JButton nextButton = new JButton(languageBundle.getString("NEXT"));
+        JButton nextButton = new JButton(languageBundle.getString("CONTINUE"));
         nextButton.setFont(font);
         nextButton.addActionListener((ActionEvent e) -> {
             if(setNameSettingField.getText().isEmpty()){
@@ -410,7 +410,7 @@ public final class InitialMenuLayout{
             }
             optionMainMenuWindow = new OptionsMainMenuWindow(font, configurationFile, this, languageBundle, role);
         });
-        JButton nameChangeButton = new JButton(languageBundle.getString("NAME_CHANGE"));
+        JButton nameChangeButton = new JButton(languageBundle.getString("USER_CHANGE"));
         nameChangeButton.setFont(font);
         nameChangeButton.addActionListener((ActionEvent event) -> {
             if(optionMainMenuWindow != null){

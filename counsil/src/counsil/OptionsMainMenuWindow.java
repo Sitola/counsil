@@ -82,6 +82,8 @@ public final class OptionsMainMenuWindow extends JFrame{
     boolean presentationUsed;
     boolean studentOnly;
     String role;
+    String audioInSettingConfiguration;
+    String audioOutSettingConfiguration;
     
     //need to be global so they can be set from different tab
     JComboBox mainCameraBox;
@@ -161,6 +163,20 @@ public final class OptionsMainMenuWindow extends JFrame{
         
         configuration = readJsonFile(configurationFile);
         
+        if(configuration.has("audio consumer")){
+            try {
+                audioInSettingConfiguration = configuration.getString("audio consumer");
+            } catch (JSONException ex) {
+                Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        if(configuration.has("audio producer")){
+            try {
+                audioOutSettingConfiguration = configuration.getString("audio producer");
+            } catch (JSONException ex) {
+                Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         raiseHandColor = new Color(255, 0, 0);
         if(configuration.has("raise hand color")){
             JSONObject raiseHandColorJson;
@@ -275,10 +291,12 @@ public final class OptionsMainMenuWindow extends JFrame{
             audioOut = read_audio_devices_in_or_out(uvPathString, false);
         } catch (IOException ex) {
             videoDevices = new ArrayList<>();
+            audioIn = new ArrayList<>();
+            audioOut = new ArrayList<>();
             Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
-        setAudioJComboBox(audioInComboBox, audioIn);
-        setAudioJComboBox(audioOutComboBox, audioOut);
+        setAudioJComboBox(audioInComboBox, audioInSettingConfiguration, audioIn);
+        setAudioJComboBox(audioOutComboBox, audioOutSettingConfiguration, audioOut);
         
         setAllJComboBoxesVideosetting(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, cameraSettingText, videoDevices);
         setAllJComboBoxesVideosetting(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, presentationSettingText, videoDevices);
@@ -939,8 +957,8 @@ public final class OptionsMainMenuWindow extends JFrame{
                 audioOut = new ArrayList<>();
                 Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
-            setAudioJComboBox(audioInComboBox, audioIn);
-            setAudioJComboBox(audioOutComboBox, audioOut);
+            setAudioJComboBox(audioInComboBox, audioInSettingConfiguration, audioIn);
+            setAudioJComboBox(audioOutComboBox, audioOutSettingConfiguration, audioOut);
             setAllJComboBoxesVideosetting(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, cameraSettingText, videoDevices);
             setAllJComboBoxesVideosetting(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, presentationSettingText, videoDevices);
         });
@@ -1715,6 +1733,17 @@ public final class OptionsMainMenuWindow extends JFrame{
     }
     
     /**
+     * set audio combo box
+     */
+    void setAudioJComboBoxAudioBoxes(JComboBox audioBox, String audioSetting, List<AudioDevice> audioDevices){
+        for(int i=0;i<audioDevices.size();i++){
+            if(audioDevices.get(i).setting.equals(audioSetting)){
+                audioBox.setSelectedIndex(i);
+            }
+        }
+    }
+    
+    /**
      * action to do when device comboBox is changed
      * @param devicesBox
      * @param formatBox
@@ -2285,11 +2314,15 @@ public final class OptionsMainMenuWindow extends JFrame{
      * @param audioBox
      * @param audioDevicis 
      */
-    private void setAudioJComboBox(JComboBox audioBox, List<AudioDevice> audioDevicis){
+    private void setAudioJComboBox(JComboBox audioBox, String audioSetting, List<AudioDevice> audioDevicis){
         audioBox.removeAllItems();
         for(int i=0;i<audioDevicis.size();i++){
             audioBox.addItem(audioDevicis.get(i).name);
+            if(audioDevicis.get(i).setting.equals(audioSetting)){
+                audioBox.setSelectedIndex(i);
+            }
         }
+        
     }
     
     /**
