@@ -329,7 +329,7 @@ public class SessionManagerImpl implements SessionManager {
                             talkingNode = null;
                         }
 
-                        if (!currentTalkingName.equals(title)) {
+                        if (currentTalkingName != null && !currentTalkingName.equals(title)) {
 
                             CounsilTimer currentTimer = timers.get(consumer.name);
                             if (currentTimer.task != null) {
