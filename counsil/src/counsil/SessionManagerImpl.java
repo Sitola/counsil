@@ -251,7 +251,7 @@ public class SessionManagerImpl implements SessionManager {
         NetworkNode.addPropertyParser("presentationProducer", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("videoConsumer", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("room", NodePropertyParser.STRING_PARSER);
-        NetworkNode.addPropertyParser("audio", NodePropertyParser.STRING_PARSER);
+        NetworkNode.addPropertyParser("audio", NodePropertyParser.BOOLEAN_PARSER);
         
         core = Main.startCoUniverse();
 
