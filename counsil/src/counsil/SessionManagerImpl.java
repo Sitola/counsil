@@ -119,15 +119,15 @@ public class SessionManagerImpl implements SessionManager {
     private String talkColor;
 
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(15);
-    Map<UltraGridControllerHandle, ScheduledFuture<?>> futures = new HashMap<>();
-     /**
-             * Constructor to initialize LayoutManager
-             *
-             * @param layoutManager
-             * @param talkingColor
-             * @param riseHandColor
-             * @param languageBundle
-             */
+
+    /**
+     * Constructor to initialize LayoutManager
+     *
+     * @param layoutManager
+     * @param talkingColor
+     * @param riseHandColor
+     * @param languageBundle
+     */
 
     public SessionManagerImpl(LayoutManager layoutManager, Color talkingColor, Color riseHandColor, ResourceBundle languageBundle) {
 
@@ -252,7 +252,7 @@ public class SessionManagerImpl implements SessionManager {
         NetworkNode.addPropertyParser("videoConsumer", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("room", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("audio", NodePropertyParser.BOOLEAN_PARSER);
-        
+
         core = Main.startCoUniverse();
 
         topologyAggregator = TopologyAggregator.getInstance(core);
@@ -338,6 +338,9 @@ public class SessionManagerImpl implements SessionManager {
                             CounsilTimer currentTimer = timers.get(messagingConsumer.name);
                             if (currentTimer.task != null) {
                                 currentTimer.task.cancel();
+                                if (currentTimer.future != null) {
+                                    currentTimer.future.cancel(false);
+                                }
                             }
                             currentTimer.timer.purge();
                             // new node TALK!
@@ -406,15 +409,14 @@ public class SessionManagerImpl implements SessionManager {
                         timer.timesFlashed++;
                     } else {
                         alertContinuously(handle, timer, 25000);
-                        futures.get(handle).cancel(false);
+                        timer.future.cancel(false);
                     }
                 }
             }
 
             private void alertConsumer(UltraGridControllerHandle handle, CounsilTimer timer, int duration) {
-
                 timer.timesFlashed = 0;
-                futures.put(handle, executor.scheduleAtFixedRate(new Flasher(handle, timer), 0, duration, TimeUnit.MILLISECONDS));
+                timer.future = executor.scheduleAtFixedRate(new Flasher(handle, timer), 0, duration, TimeUnit.MILLISECONDS);
             }
 
         };
@@ -434,12 +436,12 @@ public class SessionManagerImpl implements SessionManager {
             throw new IllegalArgumentException("Specify video producer in config");
         }
         String audio = (String) local.getProperty("audioProducer");
-        
+
         // If there is an option which forbids audio set it to null
-        if ((Boolean)local.getProperty("audio") == false) {
+        if ((Boolean) local.getProperty("audio") == false) {
             audio = null;
         }
-        
+
         createProducer(TypeOfContent.VIDEO, video, audio, role);
 
         if (TEACHER.equals(role.toUpperCase())) {
@@ -458,13 +460,15 @@ public class SessionManagerImpl implements SessionManager {
             String role
     ) throws IOException {
         ObjectNode prodConfig = core.newApplicationTemplate("producer");
-        String identification = type.toString() + "-" + role;
+        String identification = local.getName() + "-" + type.toString() + "-" + role;
         prodConfig.put("content", identification);
         switch (type) {
             case VIDEO:
                 prodConfig.put("video", videoSettings);
                 // hack
-                if (audioSettings != null) prodConfig.put("audio", audioSettings);
+                if (audioSettings != null) {
+                    prodConfig.put("audio", audioSettings);
+                }
                 break;
             case PRESENTATION:
                 prodConfig.put("video", videoSettings);
@@ -502,12 +506,12 @@ public class SessionManagerImpl implements SessionManager {
         String content = app.getProvidedContentDescriptor();
 
         UltraGridConsumerApplication con = null;
-        String name = content;
+        String name = local.getName() + "-" + content;
         if (content.toUpperCase().contains("VIDEO")) {
             String audio = (String) local.getProperty("audioConsumer");
             //if (local.uuid.equals(node.uuid)) {
-            if (local.getName().equals(node.getName()) || 
-                    (Boolean) local.getProperty("audio") == false) {
+            if (local.getName().equals(node.getName())
+                    || (Boolean) local.getProperty("audio") == false) {
                 audio = null;
             }
             con = createConsumer(
