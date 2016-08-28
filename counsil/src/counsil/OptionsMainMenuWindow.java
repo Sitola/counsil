@@ -1884,9 +1884,9 @@ public final class OptionsMainMenuWindow extends JFrame{
         
         Process uvProcess;
         if(audio_in){
-            uvProcess = new ProcessBuilder(uvAddress, "-r", "portaudio:help").start();
-        }else{
             uvProcess = new ProcessBuilder(uvAddress, "-s", "portaudio:help").start();
+        }else{
+            uvProcess = new ProcessBuilder(uvAddress, "-r", "portaudio:help").start();
         }
         
         InputStream is = uvProcess.getInputStream();
@@ -1937,9 +1937,9 @@ public final class OptionsMainMenuWindow extends JFrame{
         
         Process uvProcess;
         if(audio_in){
-            uvProcess = new ProcessBuilder(uvAddress, "-r", "coreaudio:help").start();
-        }else{
             uvProcess = new ProcessBuilder(uvAddress, "-s", "coreaudio:help").start();
+        }else{
+            uvProcess = new ProcessBuilder(uvAddress, "-r", "coreaudio:help").start();
         }
          
         InputStream is = uvProcess.getInputStream();
@@ -1977,9 +1977,9 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
         Process uvProcess;
         if(audio_in){
-            uvProcess = new ProcessBuilder(uvAddress, "-r", "ALSA:help").start();
-        }else{
             uvProcess = new ProcessBuilder(uvAddress, "-s", "ALSA:help").start();
+        }else{
+            uvProcess = new ProcessBuilder(uvAddress, "-r", "ALSA:help").start();
         }
          
         InputStream is = uvProcess.getInputStream();
