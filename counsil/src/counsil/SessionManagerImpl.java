@@ -248,6 +248,7 @@ public class SessionManagerImpl implements SessionManager {
         NetworkNode.addPropertyParser("presentationProducer", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("videoConsumer", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("room", NodePropertyParser.STRING_PARSER);
+        NetworkNode.addPropertyParser("audio", NodePropertyParser.STRING_PARSER);
         
         core = Main.startCoUniverse();
 
@@ -433,6 +434,12 @@ public class SessionManagerImpl implements SessionManager {
             throw new IllegalArgumentException("Specify video producer in config");
         }
         String audio = (String) local.getProperty("audioProducer");
+        
+        // If there is an option which forbids audio set it to null
+        if ((Boolean)local.getProperty("audio") == false) {
+            audio = null;
+        }
+        
         createProducer(TypeOfContent.VIDEO, video, audio, role);
 
         if (TEACHER.equals(role.toUpperCase())) {
@@ -498,7 +505,8 @@ public class SessionManagerImpl implements SessionManager {
         if (content.toUpperCase().contains("VIDEO")) {
             String audio = (String) local.getProperty("audioConsumer");
             //if (local.uuid.equals(node.uuid)) {
-            if (local.getName().equals(node.getName()) ) {
+            if (local.getName().equals(node.getName()) || 
+                    (Boolean) local.getProperty("audio") == false) {
                 audio = null;
             }
             con = createConsumer(
