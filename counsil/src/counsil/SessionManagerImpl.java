@@ -458,12 +458,13 @@ public class SessionManagerImpl implements SessionManager {
             String role
     ) throws IOException {
         ObjectNode prodConfig = core.newApplicationTemplate("producer");
-        String identification = local.getName() + "-" + type.toString() + "-" + role;
+        String identification = type.toString() + "-" + role;
         prodConfig.put("content", identification);
         switch (type) {
             case VIDEO:
                 prodConfig.put("video", videoSettings);
-                prodConfig.put("audio", audioSettings);
+                // hack
+                if (audioSettings != null) prodConfig.put("audio", audioSettings);
                 break;
             case PRESENTATION:
                 prodConfig.put("video", videoSettings);
@@ -501,7 +502,7 @@ public class SessionManagerImpl implements SessionManager {
         String content = app.getProvidedContentDescriptor();
 
         UltraGridConsumerApplication con = null;
-        String name = local.getName() + "-" + content;
+        String name = content;
         if (content.toUpperCase().contains("VIDEO")) {
             String audio = (String) local.getProperty("audioConsumer");
             //if (local.uuid.equals(node.uuid)) {
