@@ -502,7 +502,8 @@ public class SessionManagerImpl implements SessionManager {
         String name = local.getName() + "-" + content;
         if (content.toUpperCase().contains("VIDEO")) {
             String audio = (String) local.getProperty("audioConsumer");
-            if (local.uuid.equals(node.uuid)) {
+            //if (local.uuid.equals(node.uuid)) {
+            if (local.getName().equals(node.getName()) ) {
                 audio = null;
             }
             con = createConsumer(
