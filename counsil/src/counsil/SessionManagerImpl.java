@@ -301,7 +301,7 @@ public class SessionManagerImpl implements SessionManager {
 
                 if (ALERT.equals(message.type)) {
                     if (handle != null) {
-                        alertConsumer(handle, timers.get(consumer.name));
+                        alertConsumer(handle, timers.get(consumer.name), 1000);
                     }
 
                 } else if (TALK.equals((message.type))) {
@@ -350,14 +350,9 @@ public class SessionManagerImpl implements SessionManager {
 
                     }
                 }
-            }
-
-            private void alertConsumer(UltraGridControllerHandle handle, CounsilTimer timer) {
-                alertConsumerByFlashing(handle, timer, 1000);
-                alertConsumerContinuously(handle, timer, 30000);
-            }
-
-            private void alertConsumerContinuously(UltraGridControllerHandle handle, CounsilTimer counsilTimer, int duration) {
+            }    
+            
+            private void alertContinuously(UltraGridControllerHandle handle, CounsilTimer counsilTimer, int duration) {
                 try {
                     handle.sendCommand("postprocess border:width=10:color=" + alertColor);
                 } catch (InterruptedException | TimeoutException ex) {
@@ -407,7 +402,7 @@ public class SessionManagerImpl implements SessionManager {
                         timer.timesFlashed++;
                     } else {
                         future.cancel(false);
-                        alertConsumerContinuously(handle, timer, 25000);
+                        alertContinuously(handle, timer, 25000);
                     }
                 }
             }
@@ -415,7 +410,7 @@ public class SessionManagerImpl implements SessionManager {
             ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
             ScheduledFuture<?> future;
 
-            private void alertConsumerByFlashing(UltraGridControllerHandle handle, CounsilTimer timer, int duration) {
+            private void alertConsumer(UltraGridControllerHandle handle, CounsilTimer timer, int duration) {
 
                 timer.timesFlashed = 0;
                 future = executor.scheduleAtFixedRate(new Flasher(handle, timer), 0, duration, TimeUnit.MILLISECONDS);
