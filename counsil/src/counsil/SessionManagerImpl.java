@@ -248,7 +248,7 @@ public class SessionManagerImpl implements SessionManager {
         NetworkNode.addPropertyParser("presentationProducer", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("videoConsumer", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("room", NodePropertyParser.STRING_PARSER);
-        
+
         core = Main.startCoUniverse();
 
         topologyAggregator = TopologyAggregator.getInstance(core);
@@ -295,17 +295,17 @@ public class SessionManagerImpl implements SessionManager {
                 Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Received new message {0}", message);
 
                 NetworkNode talker = (NetworkNode) message.content[0];
-                UltraGridConsumerApplication consumer = producer2consumer.get(node2producer.get(talker)[0]);
-                String title = consumer.getName();
-                UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
+                UltraGridConsumerApplication messagingConsumer = producer2consumer.get(node2producer.get(talker)[0]);
+                String messagingTitle = messagingConsumer.getName();
+                UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(messagingConsumer));
 
                 if (ALERT.equals(message.type)) {
                     if (handle != null) {
-                        alertConsumer(handle, timers.get(consumer.name), 1000);
+                        alertConsumer(handle, timers.get(messagingConsumer.name), 1000);
                     }
 
                 } else if (TALK.equals((message.type))) {
-                    if (title != null) {
+                    if (messagingTitle != null) {
 
                         String currentTalkingName = null;
                         // STOP TALKING old node
@@ -329,16 +329,16 @@ public class SessionManagerImpl implements SessionManager {
                             talkingNode = null;
                         }
 
-                        if (currentTalkingName != null && !currentTalkingName.equals(title)) {
+                        if (currentTalkingName == null || !currentTalkingName.equals(messagingTitle)) {
 
-                            CounsilTimer currentTimer = timers.get(consumer.name);
+                            CounsilTimer currentTimer = timers.get(messagingConsumer.name);
                             if (currentTimer.task != null) {
                                 currentTimer.task.cancel();
                             }
                             currentTimer.timer.purge();
                             // new node TALK!
                             talkingNode = talker;
-                            layoutManager.upScale(title);
+                            layoutManager.upScale(messagingTitle);
                             if (handle != null) {
                                 try {
                                     handle.sendCommand("postprocess border:width=10:color=" + talkColor);
@@ -350,8 +350,8 @@ public class SessionManagerImpl implements SessionManager {
 
                     }
                 }
-            }    
-            
+            }
+
             private void alertContinuously(UltraGridControllerHandle handle, CounsilTimer counsilTimer, int duration) {
                 try {
                     handle.sendCommand("postprocess border:width=10:color=" + alertColor);
@@ -498,7 +498,7 @@ public class SessionManagerImpl implements SessionManager {
         if (content.toUpperCase().contains("VIDEO")) {
             String audio = (String) local.getProperty("audioConsumer");
             //if (local.uuid.equals(node.uuid)) {
-            if (local.getName().equals(node.getName()) ) {
+            if (local.getName().equals(node.getName())) {
                 audio = null;
             }
             con = createConsumer(
@@ -543,13 +543,13 @@ public class SessionManagerImpl implements SessionManager {
      * is assigned any Consumer app If not assign one == create consumer
      *
      * @param node where I check applications
-     * @throws IllegalArgumentException if node is null
      */
-    private void checkProducent(NetworkNode node) throws IllegalArgumentException {
+    private void checkProducent(NetworkNode node) {
         if (node == null) {
-            throw new IllegalArgumentException("node is null");
+            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, "node is null");
+            return;
         }
-        
+
         // in case they have separate rooms just skip searching for apps
         if (!local.getProperty("room").equals(node.getProperty("room"))) {
             return;
