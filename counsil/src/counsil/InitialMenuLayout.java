@@ -810,6 +810,21 @@ public final class InitialMenuLayout{
         }
     }
     
+    /**
+     * function to return localized role from unlocalized
+     * @param unlocalizedRole unlocalized role
+     * @return localized role
+     */
+    public String getRoleToLocalization(String unlocalizedRole){
+        if(unlocalizedRole.equals("interpreter")){
+            return languageBundle.getString("INTERPRETER");
+        }else if(unlocalizedRole.equals("teacher")){
+            return languageBundle.getString("TEACHER");
+        }else {
+            return languageBundle.getString("STUDENT");
+        }
+    }
+    
     // TODO: Doplnit popis metody a komentar
     /**
      * function to verify if ip address have correct format
@@ -1025,9 +1040,15 @@ public final class InitialMenuLayout{
     
     /**
      * create nodeConfig.json from others configuration files
+     * @param role unloczlized role
+     * @param audio if to use audio
+     * @param name user name
+     * @param room room name
+     * @throws InterruptedException 
      */
     final void setConfiguration(String role, boolean audio, String name, String room) throws InterruptedException{
         
+        String localizedRole = getRoleToLocalization(role);
         JSONObject infoFromServer = getRoomConfiguraton(room);
         if(infoFromServer == null){
             openErrorWindow(languageBundle.getString("NO_ROOM_CONFIG_ERROR"));
@@ -1041,7 +1062,7 @@ public final class InitialMenuLayout{
             connector.put("serverPort", infoFromServer.getInt("comunication port"));
             connector.put("startServer", false);
 
-            String userName = name + " (" + shortNameRole(role) + infoFromServer.getString("connect number") + ")";
+            String userName = name + " (" + shortNameRole(localizedRole) + infoFromServer.getString("connect number") + ")";
             JSONObject interfaceInside = new JSONObject();
             interfaceInside.put("name", userName);
             interfaceInside.put("address", clientConfig.getString("this ip"));
@@ -1061,7 +1082,7 @@ public final class InitialMenuLayout{
             properties.put("audio", audio);
             properties.put("room", room);
             
-            if(role.equals(languageBundle.getString("TEACHER"))){
+            if(localizedRole.equals(languageBundle.getString("TEACHER"))){
                 if(clientConfig.has("presentation producer")){
                     properties.put("presentationProducer", clientConfig.getString("presentation producer"));
                 }
