@@ -118,14 +118,17 @@ public class SessionManagerImpl implements SessionManager {
      */
     private String talkColor;
 
-    /**
-     * Constructor to initialize LayoutManager
-     *
-     * @param layoutManager
-     * @param talkingColor
-     * @param riseHandColor
-     * @param languageBundle
-     */
+    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(15);
+    Map<UltraGridControllerHandle, ScheduledFuture<?>> futures = new HashMap<>();
+     /**
+             * Constructor to initialize LayoutManager
+             *
+             * @param layoutManager
+             * @param talkingColor
+             * @param riseHandColor
+             * @param languageBundle
+             */
+
     public SessionManagerImpl(LayoutManager layoutManager, Color talkingColor, Color riseHandColor, ResourceBundle languageBundle) {
 
         this.alertColor = getColorCode(riseHandColor);
@@ -296,17 +299,17 @@ public class SessionManagerImpl implements SessionManager {
                 Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Received new message {0}", message);
 
                 NetworkNode talker = (NetworkNode) message.content[0];
-                UltraGridConsumerApplication consumer = producer2consumer.get(node2producer.get(talker)[0]);
-                String title = consumer.getName();
-                UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(consumer));
+                UltraGridConsumerApplication messagingConsumer = producer2consumer.get(node2producer.get(talker)[0]);
+                String messagingTitle = messagingConsumer.getName();
+                UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(messagingConsumer));
 
                 if (ALERT.equals(message.type)) {
                     if (handle != null) {
-                        alertConsumer(handle, timers.get(consumer.name), 1000);
+                        alertConsumer(handle, timers.get(messagingConsumer.name), 1000);
                     }
 
                 } else if (TALK.equals((message.type))) {
-                    if (title != null) {
+                    if (messagingTitle != null) {
 
                         String currentTalkingName = null;
                         // STOP TALKING old node
@@ -330,16 +333,16 @@ public class SessionManagerImpl implements SessionManager {
                             talkingNode = null;
                         }
 
-                        if (currentTalkingName != null && !currentTalkingName.equals(title)) {
+                        if (currentTalkingName == null || !currentTalkingName.equals(messagingTitle)) {
 
-                            CounsilTimer currentTimer = timers.get(consumer.name);
+                            CounsilTimer currentTimer = timers.get(messagingConsumer.name);
                             if (currentTimer.task != null) {
                                 currentTimer.task.cancel();
                             }
                             currentTimer.timer.purge();
                             // new node TALK!
                             talkingNode = talker;
-                            layoutManager.upScale(title);
+                            layoutManager.upScale(messagingTitle);
                             if (handle != null) {
                                 try {
                                     handle.sendCommand("postprocess border:width=10:color=" + talkColor);
@@ -351,8 +354,8 @@ public class SessionManagerImpl implements SessionManager {
 
                     }
                 }
-            }    
-            
+            }
+
             private void alertContinuously(UltraGridControllerHandle handle, CounsilTimer counsilTimer, int duration) {
                 try {
                     handle.sendCommand("postprocess border:width=10:color=" + alertColor);
@@ -402,19 +405,16 @@ public class SessionManagerImpl implements SessionManager {
                         }
                         timer.timesFlashed++;
                     } else {
-                        future.cancel(false);
                         alertContinuously(handle, timer, 25000);
+                        futures.get(handle).cancel(false);
                     }
                 }
             }
 
-            ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-            ScheduledFuture<?> future;
-
             private void alertConsumer(UltraGridControllerHandle handle, CounsilTimer timer, int duration) {
 
                 timer.timesFlashed = 0;
-                future = executor.scheduleAtFixedRate(new Flasher(handle, timer), 0, duration, TimeUnit.MILLISECONDS);
+                futures.put(handle, executor.scheduleAtFixedRate(new Flasher(handle, timer), 0, duration, TimeUnit.MILLISECONDS));
             }
 
         };
@@ -551,13 +551,13 @@ public class SessionManagerImpl implements SessionManager {
      * is assigned any Consumer app If not assign one == create consumer
      *
      * @param node where I check applications
-     * @throws IllegalArgumentException if node is null
      */
-    private void checkProducent(NetworkNode node) throws IllegalArgumentException {
+    private void checkProducent(NetworkNode node) {
         if (node == null) {
-            throw new IllegalArgumentException("node is null");
+            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, "node is null");
+            return;
         }
-        
+
         // in case they have separate rooms just skip searching for apps
         if (!local.getProperty("room").equals(node.getProperty("room"))) {
             return;
