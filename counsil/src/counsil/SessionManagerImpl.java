@@ -298,6 +298,8 @@ public class SessionManagerImpl implements SessionManager {
 
                 NetworkNode talker = (NetworkNode) message.content[0];
                 UltraGridConsumerApplication messagingConsumer = producer2consumer.get(node2producer.get(talker)[0]);
+                // if it is user from different room
+                if (messagingConsumer == null) return;
                 String messagingTitle = messagingConsumer.getName();
                 UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(messagingConsumer));
 
