@@ -54,8 +54,8 @@ public final class OptionsMainMenuWindow extends JFrame{
     JTabbedPane mainTabPanel;
     Font fontButtons;
     List<VideoDevice> videoDevices;
-    List<AudioDevice> audioIn;
-    List<AudioDevice> audioOut;
+    List<AudioDevice> audioConsumers;
+    List<AudioDevice> audioProducers;
     List<IPServerSaved> ipAddresses;
     boolean correctUv;
     boolean havePortaudio;
@@ -113,8 +113,8 @@ public final class OptionsMainMenuWindow extends JFrame{
         this.fontButtons = fontButtons;
         this.languageBundle = languageBundle;
         videoDevices = new ArrayList<>();
-        audioIn = new ArrayList<>();
-        audioOut = new ArrayList<>();
+        audioConsumers = new ArrayList<>();
+        audioProducers = new ArrayList<>();
         ipAddresses = new ArrayList<>();
         correctUv = false;
         havePortaudio = false;
@@ -287,16 +287,16 @@ public final class OptionsMainMenuWindow extends JFrame{
         try {
             videoDevices = loadVideoDevicesAndSettings(uvPathString);
             addTestcrdDevice(videoDevices);
-            audioIn = read_audio_devices_in_or_out(uvPathString, true);
-            audioOut = read_audio_devices_in_or_out(uvPathString, false);
+            audioConsumers = read_audio_devices_in_or_out(uvPathString, true);
+            audioProducers = read_audio_devices_in_or_out(uvPathString, false);
         } catch (IOException ex) {
             videoDevices = new ArrayList<>();
-            audioIn = new ArrayList<>();
-            audioOut = new ArrayList<>();
+            audioConsumers = new ArrayList<>();
+            audioProducers = new ArrayList<>();
             Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
-        setAudioJComboBox(audioInComboBox, audioInSettingConfiguration, audioIn);
-        setAudioJComboBox(audioOutComboBox, audioOutSettingConfiguration, audioOut);
+        setAudioJComboBox(audioInComboBox, audioInSettingConfiguration, audioConsumers);
+        setAudioJComboBox(audioOutComboBox, audioOutSettingConfiguration, audioProducers);
         
         setAllJComboBoxesVideosetting(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, cameraSettingText, videoDevices);
         setAllJComboBoxesVideosetting(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, presentationSettingText, videoDevices);
@@ -949,16 +949,16 @@ public final class OptionsMainMenuWindow extends JFrame{
             try {
                 videoDevices = loadVideoDevicesAndSettings(uvPathString);
                 addTestcrdDevice(videoDevices);
-                audioIn = read_audio_devices_in_or_out(uvPathString, true);
-                audioOut = read_audio_devices_in_or_out(uvPathString, false);
+                audioConsumers = read_audio_devices_in_or_out(uvPathString, true);
+                audioProducers = read_audio_devices_in_or_out(uvPathString, false);
             } catch (IOException ex) {
                 videoDevices = new ArrayList<>();
-                audioIn =  new ArrayList<>();
-                audioOut = new ArrayList<>();
+                audioConsumers =  new ArrayList<>();
+                audioProducers = new ArrayList<>();
                 Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
-            setAudioJComboBox(audioInComboBox, audioInSettingConfiguration, audioIn);
-            setAudioJComboBox(audioOutComboBox, audioOutSettingConfiguration, audioOut);
+            setAudioJComboBox(audioInComboBox, audioInSettingConfiguration, audioConsumers);
+            setAudioJComboBox(audioOutComboBox, audioOutSettingConfiguration, audioProducers);
             setAllJComboBoxesVideosetting(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, cameraSettingText, videoDevices);
             setAllJComboBoxesVideosetting(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, presentationSettingText, videoDevices);
         });
@@ -1843,7 +1843,7 @@ public final class OptionsMainMenuWindow extends JFrame{
     /**
      * read possible audio devices
      * @param uvAddress
-     * @param audio_in
+     * @param audio_in true if read audio in, false if read audio out
      * @return
      * @throws IOException 
      */
@@ -2318,11 +2318,13 @@ public final class OptionsMainMenuWindow extends JFrame{
         audioBox.removeAllItems();
         for(int i=0;i<audioDevicis.size();i++){
             audioBox.addItem(audioDevicis.get(i).name);
+        }
+        for(int i=0;i<audioDevicis.size();i++){
             if(audioDevicis.get(i).setting.equals(audioSetting)){
                 audioBox.setSelectedIndex(i);
+                break;
             }
         }
-        
     }
     
     /**
@@ -2387,8 +2389,8 @@ public final class OptionsMainMenuWindow extends JFrame{
         String producerSetting = getVideoSettings(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
         String presentationSetting = getVideoSettings(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, videoDevices);
         
-        String audioOutSetting  = getAudioSetting(audioInComboBox, audioIn);
-        String audioInSetting = getAudioSetting(audioOutComboBox, audioOut);
+        String audioOutSetting  = getAudioSetting(audioOutComboBox, audioProducers);
+        String audioInSetting = getAudioSetting(audioInComboBox, audioConsumers);
         
         int resizeValue;
         try{
