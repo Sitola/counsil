@@ -118,14 +118,17 @@ public class SessionManagerImpl implements SessionManager {
      */
     private String talkColor;
 
-    /**
-     * Constructor to initialize LayoutManager
-     *
-     * @param layoutManager
-     * @param talkingColor
-     * @param riseHandColor
-     * @param languageBundle
-     */
+    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(15);
+    Map<UltraGridControllerHandle, ScheduledFuture<?>> futures = new HashMap<>();
+     /**
+             * Constructor to initialize LayoutManager
+             *
+             * @param layoutManager
+             * @param talkingColor
+             * @param riseHandColor
+             * @param languageBundle
+             */
+
     public SessionManagerImpl(LayoutManager layoutManager, Color talkingColor, Color riseHandColor, ResourceBundle languageBundle) {
 
         this.alertColor = getColorCode(riseHandColor);
@@ -401,19 +404,16 @@ public class SessionManagerImpl implements SessionManager {
                         }
                         timer.timesFlashed++;
                     } else {
-                        future.cancel(false);
                         alertContinuously(handle, timer, 25000);
+                        futures.get(handle).cancel(false);
                     }
                 }
             }
 
-            ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-            ScheduledFuture<?> future;
-
             private void alertConsumer(UltraGridControllerHandle handle, CounsilTimer timer, int duration) {
 
                 timer.timesFlashed = 0;
-                future = executor.scheduleAtFixedRate(new Flasher(handle, timer), 0, duration, TimeUnit.MILLISECONDS);
+                futures.put(handle, executor.scheduleAtFixedRate(new Flasher(handle, timer), 0, duration, TimeUnit.MILLISECONDS));
             }
 
         };
