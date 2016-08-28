@@ -24,7 +24,6 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -128,7 +127,6 @@ public class SessionManagerImpl implements SessionManager {
      * @param riseHandColor
      * @param languageBundle
      */
-
     public SessionManagerImpl(LayoutManager layoutManager, Color talkingColor, Color riseHandColor, ResourceBundle languageBundle) {
 
         this.alertColor = getColorCode(riseHandColor);
@@ -335,14 +333,11 @@ public class SessionManagerImpl implements SessionManager {
 
                         if (currentTalkingName == null || !currentTalkingName.equals(messagingTitle)) {
 
-                            CounsilTimer currentTimer = timers.get(messagingConsumer.name);
-                            if (currentTimer.task != null) {
-                                currentTimer.task.cancel();
-                                if (currentTimer.future != null) {
-                                    currentTimer.future.cancel(false);
-                                }
+                            CounsilTimer currentTimer = timers.get(messagingConsumer.name);                         
+                            if (currentTimer.future != null) {
+                                currentTimer.future.cancel(true);
                             }
-                            currentTimer.timer.purge();
+                            
                             // new node TALK!
                             talkingNode = talker;
                             layoutManager.upScale(messagingTitle);
@@ -357,28 +352,6 @@ public class SessionManagerImpl implements SessionManager {
 
                     }
                 }
-            }
-
-            private void alertContinuously(UltraGridControllerHandle handle, CounsilTimer counsilTimer, int duration) {
-                try {
-                    handle.sendCommand("postprocess border:width=10:color=" + alertColor);
-                } catch (InterruptedException | TimeoutException ex) {
-                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-                counsilTimer.task = new TimerTask() {
-                    @Override
-                    public void run() {
-                        try {
-                            handle.sendCommand("postprocess flush");
-                            counsilTimer.timer.purge();
-                        } catch (InterruptedException | TimeoutException ex) {
-                            Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-                };
-
-                counsilTimer.timer.schedule(counsilTimer.task, duration);
             }
 
             class Flasher implements Runnable {
@@ -400,7 +373,7 @@ public class SessionManagerImpl implements SessionManager {
                 @Override
                 public void run() {
 
-                    if (timer.timesFlashed != 10) {
+                    if (timer.timesFlashed != 11) {
                         try {
                             handle.sendCommand(COMMAND[timer.timesFlashed % 2]);
                         } catch (InterruptedException | TimeoutException ex) {
@@ -408,8 +381,17 @@ public class SessionManagerImpl implements SessionManager {
                         }
                         timer.timesFlashed++;
                     } else {
-                        alertContinuously(handle, timer, 25000);
                         timer.future.cancel(false);
+                        timer.future = executor.schedule(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    handle.sendCommand("postprocess flush");
+                                } catch (InterruptedException | TimeoutException ex) {
+                                    Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        }, 25000, TimeUnit.MILLISECONDS);
                     }
                 }
             }
