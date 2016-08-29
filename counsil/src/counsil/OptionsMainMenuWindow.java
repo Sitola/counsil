@@ -127,12 +127,15 @@ public final class OptionsMainMenuWindow extends JFrame{
         audioStatusTextField = new JTextField();
         audioStatusTextField.setEditable(false);
         audioStatusTextField.setBackground(this.getBackground());
+        audioStatusTextField.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
         displayStatusTextField = new JTextField();
         displayStatusTextField.setEditable(false);
         displayStatusTextField.setBackground(this.getBackground());
+        displayStatusTextField.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
         uvStatusTextField = new JTextField();
         uvStatusTextField.setEditable(false);
         uvStatusTextField.setBackground(this.getBackground());
+        uvStatusTextField.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
         raiseHandcolorChooser = new JColorChooser(new Color(0, 0, 0));
         talkingColorChooser = new JColorChooser(new Color(0, 0, 0));
         this.configurationFile = configurationFile;
@@ -163,16 +166,16 @@ public final class OptionsMainMenuWindow extends JFrame{
         
         configuration = readJsonFile(configurationFile);
         
-        if(configuration.has("audio consumer")){
+        if(configuration.has("audio producer")){
             try {
-                audioInSettingConfiguration = configuration.getString("audio consumer");
+                audioInSettingConfiguration = configuration.getString("audio producer");
             } catch (JSONException ex) {
                 Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        if(configuration.has("audio producer")){
+        if(configuration.has("audio consumer")){
             try {
-                audioOutSettingConfiguration = configuration.getString("audio producer");
+                audioOutSettingConfiguration = configuration.getString("audio consumer");
             } catch (JSONException ex) {
                 Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -287,16 +290,16 @@ public final class OptionsMainMenuWindow extends JFrame{
         try {
             videoDevices = loadVideoDevicesAndSettings(uvPathString);
             addTestcrdDevice(videoDevices);
-            audioConsumers = read_audio_devices_in_or_out(uvPathString, true);
-            audioProducers = read_audio_devices_in_or_out(uvPathString, false);
+            audioConsumers = read_audio_devices_in_or_out(uvPathString, false);
+            audioProducers = read_audio_devices_in_or_out(uvPathString, true);
         } catch (IOException ex) {
             videoDevices = new ArrayList<>();
             audioConsumers = new ArrayList<>();
             audioProducers = new ArrayList<>();
             Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
-        setAudioJComboBox(audioInComboBox, audioInSettingConfiguration, audioConsumers);
-        setAudioJComboBox(audioOutComboBox, audioOutSettingConfiguration, audioProducers);
+        setAudioJComboBox(audioInComboBox, audioInSettingConfiguration, audioProducers);
+        setAudioJComboBox(audioOutComboBox, audioOutSettingConfiguration, audioConsumers);
         
         setAllJComboBoxesVideosetting(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, cameraSettingText, videoDevices);
         setAllJComboBoxesVideosetting(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, presentationSettingText, videoDevices);
@@ -899,7 +902,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         JTextField serverIpPortChangeInfoText = new JTextField(languageBundle.getString("SERVER_PORT"));
         JTextField uvPathInfoText = new JTextField(languageBundle.getString("UV_PATH"));
         JTextField layoutPathInfoText = new JTextField(languageBundle.getString("LAYOUT_PATH"));
-        JTextField uvStatusTExtFieldInfoTExt = new JTextField(languageBundle.getString("ULTRAGRID"));
+        JTextField uvStatusTextFieldInfoText = new JTextField(languageBundle.getString("ULTRAGRID"));
         JTextField displayStatusTextFieldInfoTExt = new JTextField(languageBundle.getString("DISPLAY_SOFTWARE"));
         JTextField audioStatusTextFieldInfoTExt = new JTextField(languageBundle.getString("AUDIO_SOFTWARE"));
         serverIpAddresChangeTextFieldInfoText.setEditable(false);
@@ -907,7 +910,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         serverIpPortChangeInfoText.setEditable(false);
         uvPathInfoText.setEditable(false);
         layoutPathInfoText.setEditable(false);
-        uvStatusTExtFieldInfoTExt.setEditable(false);
+        uvStatusTextFieldInfoText.setEditable(false);
         displayStatusTextFieldInfoTExt.setEditable(false);
         audioStatusTextFieldInfoTExt.setEditable(false);
         serverIpAddresChangeTextFieldInfoText.setHorizontalAlignment(JTextField.RIGHT);
@@ -915,7 +918,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         serverIpPortChangeInfoText.setHorizontalAlignment(JTextField.RIGHT);
         uvPathInfoText.setHorizontalAlignment(JTextField.RIGHT);
         layoutPathInfoText.setHorizontalAlignment(JTextField.RIGHT);
-        uvStatusTExtFieldInfoTExt.setHorizontalAlignment(JTextField.RIGHT);
+        uvStatusTextFieldInfoText.setHorizontalAlignment(JTextField.RIGHT);
         displayStatusTextFieldInfoTExt.setHorizontalAlignment(JTextField.RIGHT);
         audioStatusTextFieldInfoTExt.setHorizontalAlignment(JTextField.RIGHT);
        
@@ -924,6 +927,9 @@ public final class OptionsMainMenuWindow extends JFrame{
         serverIpPortChangeInfoText.setBorder(BorderFactory.createEmptyBorder());
         uvPathInfoText.setBorder(BorderFactory.createEmptyBorder());
         layoutPathInfoText.setBorder(BorderFactory.createEmptyBorder());
+        uvStatusTextFieldInfoText.setBorder(BorderFactory.createEmptyBorder());
+        displayStatusTextFieldInfoTExt.setBorder(BorderFactory.createEmptyBorder());
+        audioStatusTextFieldInfoTExt.setBorder(BorderFactory.createEmptyBorder());
         
         JComboBox serverIpSelect = new JComboBox();
         serverIpSelect.setEditable(false);
@@ -949,16 +955,16 @@ public final class OptionsMainMenuWindow extends JFrame{
             try {
                 videoDevices = loadVideoDevicesAndSettings(uvPathString);
                 addTestcrdDevice(videoDevices);
-                audioConsumers = read_audio_devices_in_or_out(uvPathString, true);
-                audioProducers = read_audio_devices_in_or_out(uvPathString, false);
+                audioConsumers = read_audio_devices_in_or_out(uvPathString, false);
+                audioProducers = read_audio_devices_in_or_out(uvPathString, true);
             } catch (IOException ex) {
                 videoDevices = new ArrayList<>();
                 audioConsumers =  new ArrayList<>();
                 audioProducers = new ArrayList<>();
                 Logger.getLogger(OptionsMainMenuWindow.class.getName()).log(Level.SEVERE, null, ex);
             }
-            setAudioJComboBox(audioInComboBox, audioInSettingConfiguration, audioConsumers);
-            setAudioJComboBox(audioOutComboBox, audioOutSettingConfiguration, audioProducers);
+            setAudioJComboBox(audioInComboBox, audioInSettingConfiguration, audioProducers);
+            setAudioJComboBox(audioOutComboBox, audioOutSettingConfiguration, audioConsumers);
             setAllJComboBoxesVideosetting(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, cameraSettingText, videoDevices);
             setAllJComboBoxesVideosetting(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, presentationSettingText, videoDevices);
         });
@@ -1116,7 +1122,7 @@ public final class OptionsMainMenuWindow extends JFrame{
         }
         if(languageBundle.containsKey("MISC_TOOL_TIP_UV_STATUS_TEXT")){
             uvStatusTextField.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_UV_STATUS_TEXT"));
-            uvStatusTExtFieldInfoTExt.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_UV_STATUS_TEXT"));
+            uvStatusTextFieldInfoText.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_UV_STATUS_TEXT"));
         }
         if(languageBundle.containsKey("MISC_TOOL_TIP_DISPLAY_STATUS_TEXT")){
             displayStatusTextField.setToolTipText(languageBundle.getString("MISC_TOOL_TIP_DISPLAY_STATUS_TEXT"));
@@ -1139,13 +1145,14 @@ public final class OptionsMainMenuWindow extends JFrame{
         
         statusPanel.setLayout(new GridBagLayout());
         GridBagConstraints statusPanelConstraints = new GridBagConstraints();
+        statusPanelConstraints.insets = new Insets(5, 5, 5, 5);
         statusPanelConstraints.weightx = 0.5;
         statusPanelConstraints.anchor = GridBagConstraints.LINE_END;
         statusPanelConstraints.gridheight = 1;
         statusPanelConstraints.gridwidth = 1;
         statusPanelConstraints.gridx = 0;
         statusPanelConstraints.gridy = 0;
-        statusPanel.add(uvStatusTExtFieldInfoTExt, statusPanelConstraints);
+        statusPanel.add(uvStatusTextFieldInfoText, statusPanelConstraints);
         statusPanelConstraints.anchor = GridBagConstraints.LINE_START;
         statusPanelConstraints.gridx = 1;
         statusPanelConstraints.gridy = 0;
@@ -2389,8 +2396,8 @@ public final class OptionsMainMenuWindow extends JFrame{
         String producerSetting = getVideoSettings(mainCameraBox, mainCameraPixelFormatBox, mainCameraFrameSizeBox, mainCameraFPSBox, videoDevices);
         String presentationSetting = getVideoSettings(presentationBox, presentationPixelFormatBox, presentationFrameSizeBox, presentationFPSBox, videoDevices);
         
-        String audioOutSetting  = getAudioSetting(audioOutComboBox, audioProducers);
-        String audioInSetting = getAudioSetting(audioInComboBox, audioConsumers);
+        String audioOutSetting  = getAudioSetting(audioOutComboBox, audioConsumers);
+        String audioInSetting = getAudioSetting(audioInComboBox, audioProducers);
         
         int resizeValue;
         try{
@@ -2421,8 +2428,8 @@ public final class OptionsMainMenuWindow extends JFrame{
             newClientConfiguration.put("layout path", layoutPathString);
             newClientConfiguration.put("producer settings", producerSetting);
             newClientConfiguration.put("consumer settings", displaySetting);
-            newClientConfiguration.put("audio consumer", audioInSetting);
-            newClientConfiguration.put("audio producer", audioOutSetting);
+            newClientConfiguration.put("audio consumer", audioOutSetting);
+            newClientConfiguration.put("audio producer", audioInSetting);
             if(presentationUsed){
                 newClientConfiguration.put("presentation producer", presentationSetting);
                 newClientConfiguration.put("presentation", presentationUsed);
