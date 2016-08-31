@@ -116,6 +116,11 @@ public class SessionManagerImpl implements SessionManager {
      * Color of window highlight while talking
      */
     private String talkColor;
+    
+    /**
+     * object node containing configuration for couniverse
+     */
+    ObjectNode objectNodeConfig;
 
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(15);
 
@@ -127,7 +132,7 @@ public class SessionManagerImpl implements SessionManager {
      * @param riseHandColor
      * @param languageBundle
      */
-    public SessionManagerImpl(LayoutManager layoutManager, Color talkingColor, Color riseHandColor, ResourceBundle languageBundle) {
+    public SessionManagerImpl(LayoutManager layoutManager, Color talkingColor, Color riseHandColor, ResourceBundle languageBundle, ObjectNode objectNodeConfig) {
 
         this.alertColor = getColorCode(riseHandColor);
         this.talkColor = getColorCode(talkingColor);
@@ -136,6 +141,7 @@ public class SessionManagerImpl implements SessionManager {
         this.alertTimer = new Timer();
         this.languageBundle = languageBundle;
         this.layoutManager = layoutManager;
+        this.objectNodeConfig = objectNodeConfig;
 
         this.layoutManager.addLayoutManagerListener(new LayoutManagerListener() {
 
@@ -251,7 +257,7 @@ public class SessionManagerImpl implements SessionManager {
         NetworkNode.addPropertyParser("room", NodePropertyParser.STRING_PARSER);
         NetworkNode.addPropertyParser("audio", NodePropertyParser.BOOLEAN_PARSER);
 
-        core = Main.startCoUniverse();
+        core = Main.startCoUniverse(objectNodeConfig);
 
         topologyAggregator = TopologyAggregator.getInstance(core);
         local = core.getLocalNode();

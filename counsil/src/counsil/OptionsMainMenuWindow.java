@@ -2464,7 +2464,11 @@ public final class OptionsMainMenuWindow extends JFrame{
         imt.initSettingRoomWindow();
         imt.initErrorWindow();
         imt.initIpSettingWindow();
-        imt.openServerChooseWindow();
+        if(imt.logedIn){
+            imt.openServerChooseWindow();
+        }else{
+            imt.openRoleNameWindow();
+        }
         dispose();
     }
     

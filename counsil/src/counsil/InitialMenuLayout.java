@@ -1,5 +1,7 @@
 package counsil;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -262,6 +264,10 @@ public final class InitialMenuLayout{
         JButton nextButton = new JButton(languageBundle.getString("CONTINUE"));
         nextButton.setFont(font);
         nextButton.addActionListener((ActionEvent e) -> {
+            if(optionMainMenuWindow != null){
+                optionMainMenuWindow.dispose();
+                optionMainMenuWindow = null;
+            }
             if(setNameSettingField.getText().isEmpty()){
                 openErrorWindow(languageBundle.getString("ERROR_EMPTY_NAME"));
             }else{
@@ -273,10 +279,25 @@ public final class InitialMenuLayout{
             }
         });
         
+        //option button
+        JButton optionsButton = new JButton(languageBundle.getString("OPTIONS"));
+        optionsButton.setFont(font);
+        optionsButton.addActionListener((ActionEvent event) -> {
+            if(optionMainMenuWindow != null){
+                optionMainMenuWindow.dispose();
+                optionMainMenuWindow = null;
+            }
+            optionMainMenuWindow = new OptionsMainMenuWindow(font, configurationFile, this, languageBundle, role);
+        });
+        
         //exit button
         JButton exitButton = new JButton(languageBundle.getString("EXIT"));
         exitButton.setFont(font);
         exitButton.addActionListener((ActionEvent e) -> {
+            if(optionMainMenuWindow != null){
+                optionMainMenuWindow.dispose();
+                optionMainMenuWindow = null;
+            }
             System.exit(0);
         });
 
@@ -301,8 +322,11 @@ public final class InitialMenuLayout{
         mainPanelConstraints.gridy = 1;
         mainPanel.add(rolePanel, mainPanelConstraints);
         mainPanelConstraints.gridx = 0;
-        mainPanelConstraints.gridy = 3;
+        mainPanelConstraints.gridy = 2;
         mainPanel.add(nextButton, mainPanelConstraints);
+        mainPanelConstraints.gridx = 0;
+        mainPanelConstraints.gridy = 3;
+        mainPanel.add(optionsButton, mainPanelConstraints);
         mainPanelConstraints.gridx = 0;
         mainPanelConstraints.gridy = 4;
         mainPanel.add(exitButton, mainPanelConstraints);
@@ -505,7 +529,6 @@ public final class InitialMenuLayout{
         errorWindow.setLocation(position.x - errorWindow.getWidth() / 2, position.y - errorWindow.getHeight());
     }
     
-    // TODO: Doplnit popis metody a komentar
     /**
      * initialization of window to set user information before connecting to server
      * user set name, role, room, sound and layout
@@ -902,21 +925,34 @@ public final class InitialMenuLayout{
         return null;
     }
     
+    /**
+     * open role name window
+     */
     void openRoleNameWindow(){
         closeAllWindows();
         roleNameWindow.setVisible(true);
     }
     
+    /**
+     * open server choose window
+     */
     void openServerChooseWindow(){
         closeAllWindows();
         serverChooseWindow.setVisible(true);
     }
     
+    /**
+     * open ip seeting window
+     */
     void openIpSettingWindow(){
         closeAllWindows();
         ipSettingWindow.setVisible(true);
     }
     
+    /**
+     * open error window
+     * @param message print this message in window
+     */
     void openErrorWindow(String message){
         closeAllWindows();
         errorMessageField.setText(message);
@@ -924,6 +960,10 @@ public final class InitialMenuLayout{
         errorWindow.setVisible(true);
     }
     
+    /**
+     * open setting room window
+     * @param roomNameList 
+     */
     void openSettingRoomWindow(JSONObject roomNameList){
         closeAllWindows();
         JSONArray roomList = null;
@@ -1003,10 +1043,11 @@ public final class InitialMenuLayout{
             Color riseHandColor = new Color(riseHandColorJson.getInt("red"), riseHandColorJson.getInt("green"), riseHandColorJson.getInt("blue"));
             JSONObject talkingColorJson = clientConfig.getJSONObject("talking color");
             Color talkingColor = new Color(talkingColorJson.getInt("red"), talkingColorJson.getInt("green"), talkingColorJson.getInt("blue"));
+            ObjectNode configNode = (ObjectNode) new ObjectMapper().readTree(roomConfiguration.toString());
             
             LayoutManagerImpl lm;
             lm = new LayoutManagerImpl(role, this, scaleRatio, layoutFile, languageBundle, font);
-            sm = new SessionManagerImpl(lm, talkingColor, riseHandColor, languageBundle);
+            sm = new SessionManagerImpl(lm, talkingColor, riseHandColor, languageBundle, configNode);
             sm.initCounsil();
         } catch (JSONException | IOException | WDDManException | InterruptedException | NativeHookException ex) {
             Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
@@ -1023,11 +1064,15 @@ public final class InitialMenuLayout{
             openErrorWindow(languageBundle.getString("ERROR_CANNOT_DISCONNECT_FROM_SERVER") + "\n" + languageBundle.getString("PLEASE_EXIT_APPLICATION_BEFORE_FARTHER_USAGE"));
         }else{
             sm.stop();
-            //sm = null;
             openServerChooseWindow();
         }
     }
     
+    /**
+     * function to return short name of set role
+     * @param role role name in current language
+     * @return short name
+     */
     final String shortNameRole(String role){
         if(languageBundle.getString("INTERPRETER").equals(role)){
             return "i";
@@ -1039,7 +1084,7 @@ public final class InitialMenuLayout{
     }
     
     /**
-     * create nodeConfig.json from others configuration files
+     * create roomConfiguration from others configuration files, used for couniverse
      * @param role unloczlized role
      * @param audio if to use audio
      * @param name user name
@@ -1105,29 +1150,21 @@ public final class InitialMenuLayout{
             roomConfiguration.put("connector", connector);
             roomConfiguration.put("localNode", localNode);
             roomConfiguration.put("templates", templates);
-             
-            //VR: Tady jsem to predelal na try(){}, nutno otestovat
-            try (FileWriter file = new FileWriter("nodeConfig.json")) {
-                file.write(roomConfiguration.toString());
-                file.flush();
-                file.close();
-            }
             
-        } catch (JSONException | IOException ex) {
+        } catch (JSONException ex) {
             Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
-    // TODO: Doplnit popis metody a komentar
+
     /**
-     * 
+     * get configuration json
      * @return configuration saved in JSON file
      */
     final JSONObject getConfiguration(){
         return roomConfiguration;
     }
     
-    // TODO: Doplnit popis metody a komentar
     /**
      * read configuration file and save it in JSON
      * @param jsonFile configuration file
@@ -1226,7 +1263,6 @@ class LayoutFile{
     public File file;
 }
 
-// TODO: Doplnit popis metody a komentar
 /*
  * class for limitting length of text, primary use for ip address field
  */
