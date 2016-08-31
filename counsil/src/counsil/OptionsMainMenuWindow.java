@@ -1399,11 +1399,11 @@ public final class OptionsMainMenuWindow extends JFrame{
         
         List<VideoDevice> videoInputs = new ArrayList<>();
         while ((line = br.readLine()) != null) {
-            Pattern devicePattern = Pattern.compile("^(Device (\\d+):.)");
+            Pattern devicePattern = Pattern.compile("^(Device (\\d+):.)(.*)");
             Matcher deviceMatcher = devicePattern.matcher(line);
             if(deviceMatcher.find()){
                 VideoDevice vd = new VideoDevice();
-                vd.name = deviceMatcher.group(1);               
+                vd.name = deviceMatcher.group(3);               
                 vd.device = deviceMatcher.group(2);
                 vd.vpf = new ArrayList<>();
                 videoInputs.add(vd);
