@@ -2384,6 +2384,17 @@ public final class OptionsMainMenuWindow extends JFrame{
         dispose();
     }
 
+    boolean sameDeviceCameraPresentation(JComboBox devicesBoxCamera, JComboBox devicesBoxPresentation){
+        if((devicesBoxCamera.getItemCount() <= 0) && (devicesBoxPresentation.getItemCount() <= 0)){
+            return false;
+        }
+        if(devicesBoxCamera.getSelectedItem().equals(devicesBoxPresentation.getSelectedItem())){    
+            return true;
+        }else{
+            return false;
+        }
+    }
+    
     /**
      * save setting that was changed
      */
@@ -2430,11 +2441,11 @@ public final class OptionsMainMenuWindow extends JFrame{
             newClientConfiguration.put("consumer settings", displaySetting);
             newClientConfiguration.put("audio consumer", audioOutSetting);
             newClientConfiguration.put("audio producer", audioInSetting);
-            if(presentationUsed){
+            if(presentationUsed && !sameDeviceCameraPresentation(mainCameraBox, presentationBox)){
                 newClientConfiguration.put("presentation producer", presentationSetting);
-                newClientConfiguration.put("presentation", presentationUsed);
+                newClientConfiguration.put("presentation", true);
             }else{
-                newClientConfiguration.put("presentation", presentationUsed);
+                newClientConfiguration.put("presentation", false);
             }
             newClientConfiguration.put("language", getLanguage());
             newClientConfiguration.put("raise hand color", raiseHandColorJson);
@@ -2464,6 +2475,13 @@ public final class OptionsMainMenuWindow extends JFrame{
         imt.initSettingRoomWindow();
         imt.initErrorWindow();
         imt.initIpSettingWindow();
+        
+        if(sameDeviceCameraPresentation(mainCameraBox, presentationBox) && presentationUsed){
+            imt.openErrorWindow(languageBundle.getString("ERROR_PRESENTATION_AND_CAMERA_SAME_DEVICE"));
+            dispose();
+            return;
+        }
+        
         if(imt.logedIn){
             imt.openServerChooseWindow();
         }else{
