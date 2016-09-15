@@ -2006,6 +2006,9 @@ public final class OptionsMainMenuWindow extends JFrame{
             }
             
         }
+        AudioDevice pulseAudio = new AudioDevice();
+        pulseAudio.name = "PulseAudio";
+        pulseAudio.setting = "alsa:pusle";
         return audioDevices;
     }
     
