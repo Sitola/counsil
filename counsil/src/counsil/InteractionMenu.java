@@ -107,8 +107,8 @@ public class InteractionMenu extends JFrame {
      */
     private void saveLayoutButtonActionPerformed() {
        
-        JFrame dialogFrame = new JFrame(languageBundle.getString("SAVE_CONFIG"));        
-        String fileName = JOptionPane.showInputDialog(dialogFrame, languageBundle.getString("GET_FILE_NAME"));        
+        JFrame dialogFrame = new JFrame(languageBundle.getString("SAVE_LAYOUT"));        
+        String fileName = JOptionPane.showInputDialog(dialogFrame, languageBundle.getString("SAVE_LAYOUT"));        
                 
         if (!"".equals(fileName.replaceAll("\\s+",""))) {
             interactionMenuListeners.stream().forEach((listener) -> {
