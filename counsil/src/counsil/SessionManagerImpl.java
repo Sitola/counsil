@@ -170,7 +170,7 @@ public class SessionManagerImpl implements SessionManager {
             public void windowChoosenActionPerformed(String windowName) {
                 NetworkNode choosenNode = getNetworkNodeByProducer(getProducerByConsumer(getConsumerByTitle(windowName)));
                 CoUniverseMessage talk = CoUniverseMessage.newInstance(TALK, choosenNode);
-                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission granted for node {0}...", windowName);
+                Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Sending talk permission granted to node {0}...", windowName);
                 core.getConnector().sendMessageToGroup(talk, GroupConnectorID.ALL_NODES);
             }
         });
@@ -538,8 +538,9 @@ public class SessionManagerImpl implements SessionManager {
         }
         cons.put("source", content);
         String name = local.getName() + "-" + content;
+        String windowName = content.split("-")[0];
         cons.put("name", name);
-        cons.put("arguments", "--window-title \"" + name + "\"");
+        cons.put("arguments", "--window-title \"" + windowName + "\"");
         System.out.println(cons.get("source"));
         return (UltraGridConsumerApplication) core.startApplication(cons, "consumer");
     }
