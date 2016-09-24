@@ -73,6 +73,11 @@ public class LayoutManagerImpl implements LayoutManager {
      * Ratio which is applied while scaling windows up/down
      */
     private int scaleRatio;
+    
+    /**
+     * Absolute path to layout folder
+     */
+    private final String layoutFolderPath;
 
     /**
      * Initializes layout
@@ -92,6 +97,7 @@ public class LayoutManagerImpl implements LayoutManager {
 
         this.calculator = new LayoutCalculator(role, layoutFile);
         this.scaleRatio = scaleRatio;
+        this.layoutFolderPath = layoutFile.getParentFile().getAbsolutePath() + "/";
 
         try {
             this.wd = new WDDMan();
@@ -105,13 +111,13 @@ public class LayoutManagerImpl implements LayoutManager {
 
             @Override
             public void run() {
-                try {                    
+                try {
                     if (STUDENT.equals(role.toUpperCase())) {
                         menu = new InteractionMenuStudentExtension(calculator.getMenuRole(), calculator.getMenuPostion(), initialMenu, languageBundle, font);
                     } else {
                         menu = new InteractionMenu(calculator.getMenuRole(), calculator.getMenuPostion(), initialMenu, languageBundle, font);
                     }
-                    menu.publish();
+                    menu.publish();                    
                     menu.addInteractionMenuListener(new InteractionMenuListener() {
 
                         @Override
@@ -125,6 +131,18 @@ public class LayoutManagerImpl implements LayoutManager {
                         public void refreshActionPerformed() {
                             refreshLayout();
                         }
+
+                        @Override
+                        public void saveLayoutActionPerformed(String fileName) {
+
+                            // if no windows are available, do not save layout
+                            if (windows.isEmpty()) return;
+                            
+                            synchronized (windows) {
+                                getCurrentWindowsPositions();
+                                calculator.createAndSaveLayoutFile(layoutFolderPath + fileName + ".json", windows);
+                            }
+                        }                       
                     });
                 } catch (JSONException ex) {
                     Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -377,8 +395,8 @@ public class LayoutManagerImpl implements LayoutManager {
      */
     private DisplayableWindow findClickedWindow(Point position) throws WDDManException {
         synchronized (windows) {
-            for (DisplayableWindow window : windows) {
-                window.loadCurrentInfo();
+            getCurrentWindowsPositions();
+            for (DisplayableWindow window : windows) {               
                 if ((window.getPosition().x + WINDOW_BORDER_OFFSET <= position.x)
                         && (window.getPosition().y + WINDOW_BORDER_OFFSET <= position.y)
                         && (window.getPosition().x + window.getWidth() - WINDOW_BORDER_OFFSET >= position.x)
@@ -388,6 +406,15 @@ public class LayoutManagerImpl implements LayoutManager {
             }
         }
         return null;
+    }
+    
+    /**
+     * Gets current positions of windows
+     */
+    private void getCurrentWindowsPositions() {
+         for (DisplayableWindow window : windows) {
+                window.loadCurrentInfo();
+         }
     }
 
     /**

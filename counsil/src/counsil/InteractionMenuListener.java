@@ -16,4 +16,10 @@ public interface InteractionMenuListener {
      * Listens for layout refresh 
      */
     void refreshActionPerformed();
+
+    /**
+     * Listens for save layout action
+     * @param filePath path to the new layout file
+     */
+    void saveLayoutActionPerformed(String filePath);
 }

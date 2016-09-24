@@ -101,6 +101,21 @@ public class InteractionMenu extends JFrame {
             listener.refreshActionPerformed();
         });
     }
+    
+    /**
+     * Sends saveLayoutActionPerformed to all listening listeners
+     */
+    private void saveLayoutButtonActionPerformed() {
+       
+        JFrame dialogFrame = new JFrame(languageBundle.getString("SAVE_CONFIG"));        
+        String fileName = JOptionPane.showInputDialog(dialogFrame, languageBundle.getString("GET_FILE_NAME"));        
+                
+        if (!"".equals(fileName.replaceAll("\\s+",""))) {
+            interactionMenuListeners.stream().forEach((listener) -> {
+                listener.saveLayoutActionPerformed(fileName);
+            });
+        }
+    }
 
     /**
      * Adds buttons which are used by all the roles to button list
@@ -112,14 +127,21 @@ public class InteractionMenu extends JFrame {
         refreshButton.addActionListener((ActionEvent evt) -> {
             refreshButtonActionPerformed();
         });
-
+        
+        JButton saveLayoutButton = new JButton();
+        saveLayoutButton.setText(languageBundle.getString("SAVE_LAYOUT"));
+        saveLayoutButton.addActionListener((ActionEvent evt) -> {
+            saveLayoutButtonActionPerformed();
+        }); 
+       
         JButton exitButton = new JButton();
         exitButton.setText(languageBundle.getString("EXIT"));
         exitButton.addActionListener((ActionEvent evt) -> {
             exitButtonActionPerformed();
         });
-
+        
         buttons.add(refreshButton);
+        buttons.add(saveLayoutButton);
         buttons.add(exitButton);
     }
 
@@ -140,11 +162,11 @@ public class InteractionMenu extends JFrame {
             button.setFont(font);
 
             verticalGroup
-                    .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
+                .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
 
             horizontalGroup
-                    .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
+                .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
         });
 
         // set menu grid and layout
@@ -175,5 +197,5 @@ public class InteractionMenu extends JFrame {
         UIManager.put("OptionPane.yesButtonText", languageBundle.getString("YES"));
         UIManager.put("OptionPane.noButtonText", languageBundle.getString("NO"));
         UIManager.put("OptionPane.cancelButtonText", languageBundle.getString("CANCEL"));
-    }
+    }    
 }
