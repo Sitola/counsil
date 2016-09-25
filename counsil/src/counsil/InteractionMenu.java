@@ -9,6 +9,7 @@ import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.LayoutStyle;
@@ -101,18 +102,26 @@ public class InteractionMenu extends JFrame {
             listener.refreshActionPerformed();
         });
     }
-    
+
     /**
      * Sends saveLayoutActionPerformed to all listening listeners
      */
     private void saveLayoutButtonActionPerformed() {
-       
-        JFrame dialogFrame = new JFrame(languageBundle.getString("SAVE_LAYOUT"));        
-        String fileName = JOptionPane.showInputDialog(dialogFrame, languageBundle.getString("SAVE_LAYOUT"));        
-                
-        if (!"".equals(fileName.replaceAll("\\s+",""))) {
+
+        JCheckBox useLayout = new JCheckBox(languageBundle.getString("USE_LAYOUT_AFTER_SAVE"));
+        Object[] params = {
+            useLayout,
+            languageBundle.getString("GET_FILE_NAME")};
+
+        String fileName = JOptionPane.showInputDialog(
+                new JFrame(),
+                params,
+                languageBundle.getString("SAVE_LAYOUT"),
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (!"".equals(fileName.replaceAll("\\s+", ""))) {
             interactionMenuListeners.stream().forEach((listener) -> {
-                listener.saveLayoutActionPerformed(fileName);
+                listener.saveLayoutActionPerformed(fileName, useLayout.isSelected());
             });
         }
     }
@@ -127,19 +136,19 @@ public class InteractionMenu extends JFrame {
         refreshButton.addActionListener((ActionEvent evt) -> {
             refreshButtonActionPerformed();
         });
-        
+
         JButton saveLayoutButton = new JButton();
         saveLayoutButton.setText(languageBundle.getString("SAVE_LAYOUT"));
         saveLayoutButton.addActionListener((ActionEvent evt) -> {
             saveLayoutButtonActionPerformed();
-        }); 
-       
+        });
+
         JButton exitButton = new JButton();
         exitButton.setText(languageBundle.getString("EXIT"));
         exitButton.addActionListener((ActionEvent evt) -> {
             exitButtonActionPerformed();
         });
-        
+
         buttons.add(refreshButton);
         buttons.add(saveLayoutButton);
         buttons.add(exitButton);
@@ -162,11 +171,11 @@ public class InteractionMenu extends JFrame {
             button.setFont(font);
 
             verticalGroup
-                .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
+                    .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
 
             horizontalGroup
-                .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
+                    .addComponent(button, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
         });
 
         // set menu grid and layout
@@ -197,5 +206,5 @@ public class InteractionMenu extends JFrame {
         UIManager.put("OptionPane.yesButtonText", languageBundle.getString("YES"));
         UIManager.put("OptionPane.noButtonText", languageBundle.getString("NO"));
         UIManager.put("OptionPane.cancelButtonText", languageBundle.getString("CANCEL"));
-    }    
+    }
 }

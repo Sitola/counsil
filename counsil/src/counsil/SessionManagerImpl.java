@@ -116,7 +116,7 @@ public class SessionManagerImpl implements SessionManager {
      * Color of window highlight while talking
      */
     private String talkColor;
-    
+
     /**
      * object node containing configuration for couniverse
      */
@@ -148,7 +148,12 @@ public class SessionManagerImpl implements SessionManager {
             @Override
             public void alertActionPerformed() {
 
-                if (!canAlert || (talkingNode != null && talkingNode.getName().equals(local.getName()))) {
+                if (!canAlert || (talkingNode != null && talkingNode
+                        .getName()
+                        .split("-")[1]
+                        .equals(local
+                                .getName()
+                                .split("-")[1]))) {
                     return;
                 }
 
@@ -288,7 +293,12 @@ public class SessionManagerImpl implements SessionManager {
             public void onNodeLeft(NetworkNode node) {
                 String nodeName = consumer2name.get(producer2consumer.get(node2producer.get(node)));
                 if (nodeName != null) {
-                    if ((talkingNode != null) && (talkingNode.getName().equals(node.getName()))) {
+                    if ((talkingNode != null) && (talkingNode
+                            .getName()
+                            .split("-")[1]
+                            .equals(node
+                                    .getName()
+                                    .split("-")[1]))) {
                         talkingNode = null;
                     }
                 }
@@ -303,19 +313,23 @@ public class SessionManagerImpl implements SessionManager {
                 Logger.getLogger(SessionManagerImpl.class.getName()).log(Level.SEVERE, "Received new message {0}", message);
 
                 NetworkNode talker = (NetworkNode) message.content[0];
-                
+
                 // if it is user from different room
-                if (!node2producer.containsKey(talker)) return;         
-              
-                UltraGridProducerApplication messagingProducer = node2producer.get(talker)[0];               
-                UltraGridConsumerApplication messagingConsumer = producer2consumer.get(messagingProducer);    
-               
-                String messagingTitle = messagingConsumer.getName();
+                if (!node2producer.containsKey(talker)) {
+                    return;
+                }
+
+                UltraGridProducerApplication messagingProducer = node2producer.get(talker)[0];
+                UltraGridConsumerApplication messagingConsumer = producer2consumer.get(messagingProducer);
+
+                String messagingTitle = messagingConsumer
+                        .getName()
+                        .split("-")[1];
                 UltraGridControllerHandle handle = ((UltraGridControllerHandle) core.getApplicationControllerHandle(messagingConsumer));
 
                 if (ALERT.equals(message.type)) {
                     if (handle != null) {
-                        alertConsumer(handle, timers.get(messagingConsumer.name), 1000);
+                        alertConsumer(handle, timers.get(messagingTitle), 1000);
                     }
 
                 } else if (TALK.equals((message.type))) {
@@ -326,7 +340,9 @@ public class SessionManagerImpl implements SessionManager {
                         if (talkingNode != null) {
 
                             UltraGridConsumerApplication oldConsumer = producer2consumer.get(node2producer.get(talkingNode)[0]);
-                            currentTalkingName = oldConsumer.getName();
+                            currentTalkingName = oldConsumer
+                                    .getName()
+                                    .split("-")[1];
                             if (currentTalkingName != null) {
                                 layoutManager.downScale(currentTalkingName);
                             }
@@ -345,11 +361,11 @@ public class SessionManagerImpl implements SessionManager {
 
                         if (currentTalkingName == null || !currentTalkingName.equals(messagingTitle)) {
 
-                            CounsilTimer currentTimer = timers.get(messagingConsumer.name);                         
+                            CounsilTimer currentTimer = timers.get(messagingTitle);
                             if (currentTimer.future != null) {
                                 currentTimer.future.cancel(true);
                             }
-                            
+
                             // new node TALK!
                             talkingNode = talker;
                             layoutManager.upScale(messagingTitle);
@@ -500,7 +516,8 @@ public class SessionManagerImpl implements SessionManager {
         String content = app.getProvidedContentDescriptor();
 
         UltraGridConsumerApplication con = null;
-        String name = local.getName() + "-" + content;
+        String name = content.split("-")[0];
+        //String name = local.getName() + "-" + content;
         if (content.toUpperCase().contains("VIDEO")) {
             String audio = (String) local.getProperty("audioConsumer");
             //if (local.uuid.equals(node.uuid)) {
@@ -599,7 +616,8 @@ public class SessionManagerImpl implements SessionManager {
         for (UltraGridProducerApplication app : node2producer.get(node)) {
             UltraGridConsumerApplication ugCon = producer2consumer.remove(app);
             if (ugCon != null) {
-                timers.remove(ugCon.name);
+                timers.remove(ugCon.name
+                        .split("-")[1]);
 
                 String removed = consumer2name.remove(ugCon);
 

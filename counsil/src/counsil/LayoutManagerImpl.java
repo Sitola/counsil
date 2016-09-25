@@ -133,14 +133,22 @@ public class LayoutManagerImpl implements LayoutManager {
                         }
 
                         @Override
-                        public void saveLayoutActionPerformed(String fileName) {
+                        public void saveLayoutActionPerformed(String fileName, Boolean useLayout) {
 
                             // if no windows are available, do not save layout
                             if (windows.isEmpty()) return;
                             
+                            String newFileAbsolutePath = layoutFolderPath + fileName + ".json";
+                            
                             synchronized (windows) {
                                 getCurrentWindowsPositions();
-                                calculator.createAndSaveLayoutFile(layoutFolderPath + fileName + ".json", windows);
+                                calculator.createAndSaveLayoutFile(newFileAbsolutePath, windows);
+                            }
+                            
+                           if (useLayout) try {
+                                calculator = new LayoutCalculator(role, new File(newFileAbsolutePath));
+                            } catch (FileNotFoundException | JSONException ex) {
+                                Logger.getLogger(LayoutManagerImpl.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }                       
                     });

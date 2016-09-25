@@ -1,6 +1,5 @@
 package counsil;
 
-import com.sun.jna.platform.win32.User32;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;

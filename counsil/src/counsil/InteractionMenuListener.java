@@ -20,6 +20,7 @@ public interface InteractionMenuListener {
     /**
      * Listens for save layout action
      * @param filePath path to the new layout file
+     * @param useLayout true, if layout should be used in current run
      */
-    void saveLayoutActionPerformed(String filePath);
+    void saveLayoutActionPerformed(String filePath, Boolean useLayout);
 }

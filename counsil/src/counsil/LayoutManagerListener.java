@@ -14,7 +14,6 @@ public interface LayoutManagerListener {
     /**
      * Listens for choosen window
      * @param windowName of window
-     */
-    
+     */    
     void windowChoosenActionPerformed(String windowName); 
 }
