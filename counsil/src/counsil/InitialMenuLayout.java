@@ -105,9 +105,24 @@ public final class InitialMenuLayout{
      */
     boolean studentOnly;
     
+    /**
+     * role
+     */
     String role;
+    
+    /**
+     * name
+     */
     String name;
+    
+    /**
+     * audio check box
+     */
     JCheckBox audioCheckBox;
+    
+    /**
+     * information if user set his name and role and loged in
+     */
     boolean logedIn;
     
     /**

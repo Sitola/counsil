@@ -23,11 +23,17 @@ public class InitialMenu {
      */
     private WDDMan wd;
     
+    /**
+     * initial menu layout
+     */
     InitialMenuLayout menu;
     
+    /**
+     * input json config
+     */
     JSONObject inputConfig;
 
-    public InitialMenu() {
+    public InitialMenu(File clientConfigurationFile) {
         try {
             wd = new WDDMan();            
         } catch (UnsupportedOperatingSystemException ex) {
@@ -49,7 +55,7 @@ public class InitialMenu {
             default: 
                 font = null;
         }
-        File clientConfigurationFile = new File("configs/clientConfig.json");
+        //File this.clientConfigurationFile = clientConfigurationFile;//new File("configs/clientConfig.json");
         
         // create menu
         EventQueue.invokeLater(new Runnable() {
