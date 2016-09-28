@@ -5,6 +5,8 @@
  */
 package counsilserver;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import couniverse.Main;
 import couniverse.clientServerCommunication.ServerConnector;
 import couniverse.core.Core;
@@ -25,7 +27,7 @@ import org.json.JSONObject;
  */
 public class counsilServerCreation {
     
-        
+    
     private Core couniverse;
 
     public counsilServerCreation() {
@@ -35,9 +37,10 @@ public class counsilServerCreation {
     
     public void startServer(JSONObject input){
         //couniverse.core.utils.MyLogger.setup();
-        createConfiguration(input);
+        JSONObject serverConfiguration = createConfiguration(input);
         try{
-            couniverse = Main.startCoUniverse("counsil_server_nodeConfig.json");
+            ObjectNode configNode = (ObjectNode) new ObjectMapper().readTree(serverConfiguration.toString());
+            couniverse = Main.startCoUniverse(configNode);
         } catch (IOException ex) {
             System.err.println("error while creationg server");
             Logger.getLogger(counsilServerCreation.class.getName()).log(Level.SEVERE, null, ex);
@@ -53,7 +56,7 @@ public class counsilServerCreation {
         couniverse.stop();
     }
     
-    public void createConfiguration(JSONObject input){
+    public JSONObject createConfiguration(JSONObject input){
         JSONObject serverConfiguration = new JSONObject();
         JSONObject connector = new JSONObject();
         JSONObject localNode = new JSONObject();
@@ -103,13 +106,10 @@ public class counsilServerCreation {
             serverConfiguration.put("connector", connector);
             serverConfiguration.put("localNode", localNode);
             serverConfiguration.put("templates", templates);
-
-            FileWriter file = new FileWriter("counsil_server_nodeConfig.json");
-            file.write(serverConfiguration.toString());
-            file.flush();
-            file.close();
-        } catch (JSONException | IOException ex) {
+            
+        } catch (JSONException ex) {
             Logger.getLogger(counsilServerCreation.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return serverConfiguration;
     }
 }
