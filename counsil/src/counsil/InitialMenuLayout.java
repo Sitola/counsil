@@ -125,6 +125,8 @@ public final class InitialMenuLayout{
      */
     boolean logedIn;
     
+    boolean layoutDirOk;
+    
     /**
      * 5 main windows
      */
@@ -192,6 +194,7 @@ public final class InitialMenuLayout{
         configurationFile = clientConfigurationFile;
         
         position = centerPosition;
+        layoutDirOk = false;
         
         loadClientConfigurationFromFile();
         
@@ -286,11 +289,19 @@ public final class InitialMenuLayout{
             if(setNameSettingField.getText().isEmpty()){
                 openErrorWindow(languageBundle.getString("ERROR_EMPTY_NAME"));
             }else{
-                logedIn = true;
-                name = setNameSettingField.getText();
-                name = Normalizer.normalize(name, Normalizer.Form.NFD);
-                name = name.replaceAll("[^\\p{ASCII}]", "");            //transform ščťžýáíé.. to sctzyaie..
-                openServerChooseWindow();
+                if(!layoutDirOk){
+                    JOptionPane.showMessageDialog(new Frame(), languageBundle.getString("ERROR_DIRECTORY_DOES_NOT_EXIST"), languageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
+                }else{
+                    if(layoutList.isEmpty()){
+                        JOptionPane.showMessageDialog(new Frame(), languageBundle.getString("ERROR_LAYOUT_NOT_FOUND"), languageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
+                    }else{
+                        logedIn = true;
+                        name = setNameSettingField.getText();
+                        name = Normalizer.normalize(name, Normalizer.Form.NFD);
+                        name = name.replaceAll("[^\\p{ASCII}]", "");            //transform ščťžýáíé.. to sctzyaie..
+                        openServerChooseWindow();
+                    }
+                }
             }
         });
         
@@ -1200,33 +1211,6 @@ public final class InitialMenuLayout{
      */
     void loadClientConfigurationFromFile(){
         clientConfig = readJsonFile(configurationFile);
-        layoutList.clear();
-        if(clientConfig.has("layout path")){
-            try {
-                String layoutPath = clientConfig.getString("layout path");
-                File layoutDir = new File(layoutPath);
-                if(layoutDir.isDirectory()){
-                    File[] filesInLayoutDir = layoutDir.listFiles();
-                    for (File filesInLayoutDir1 : filesInLayoutDir) {
-                        LayoutFile newLayout = new LayoutFile();
-                        if (filesInLayoutDir1.isFile()) {
-                            newLayout.file = filesInLayoutDir1;
-                            newLayout.layoutName = filesInLayoutDir1.getName();
-                            layoutList.add(newLayout);
-                        }
-                    }
-                    if(layoutList.isEmpty()){
-                        JOptionPane.showMessageDialog(new Frame(), languageBundle.getString("ERROR_LAYOUT_NOT_FOUND"), languageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
-                    }
-                }else{
-                    if(!layoutDir.exists()){
-                        JOptionPane.showMessageDialog(new Frame(), languageBundle.getString("ERROR_DIRECTORY_DOES_NOT_EXIST"), languageBundle.getString("ERROR"), JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            } catch (JSONException ex) {
-                Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }       
         String languageResourcesName = "resources_en_EN";
         if(clientConfig.has("language")){
             try {
@@ -1247,6 +1231,31 @@ public final class InitialMenuLayout{
             }
         }
         languageBundle = ResourceBundle.getBundle(languageResourcesName);
+        layoutList.clear();
+        if(clientConfig.has("layout path")){
+            try {
+                String layoutPath = clientConfig.getString("layout path");
+                File layoutDir = new File(layoutPath);
+                if(!layoutDir.exists()){
+                    layoutDirOk = false;
+                }else{
+                    if(layoutDir.isDirectory()){
+                        layoutDirOk = true;
+                        File[] filesInLayoutDir = layoutDir.listFiles();
+                        for (File filesInLayoutDir1 : filesInLayoutDir) {
+                            LayoutFile newLayout = new LayoutFile();
+                            if (filesInLayoutDir1.isFile()) {
+                                newLayout.file = filesInLayoutDir1;
+                                newLayout.layoutName = filesInLayoutDir1.getName();
+                                layoutList.add(newLayout);
+                            }
+                        }
+                    }
+                }
+            } catch (JSONException ex) {
+                Logger.getLogger(InitialMenuLayout.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }       
         try {
             studentOnly = clientConfig.getBoolean("student only");
         } catch (JSONException ex) {
