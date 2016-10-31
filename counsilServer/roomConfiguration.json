@@ -2,31 +2,23 @@
     "server name":"my home server",
     "web server port": 8080,
     "distributor path":"/usr/bin/hd-rum-transcode",
-    "agc":"dummy",
+    "agc":"simple",
     "comunication port":9701,
     "server ip":"147.251.54.45",
     "dummy compress":"",
     "dummy distributor compress":"",
     "rooms":[
         {
-            "name":"room1",
-            "port start":8701,
-            "port end":8801
+            "name":"room1"
         },
         {
-            "name":"room2",
-            "port start":8701,
-            "port end":8801
+            "name":"room2"
         },
         {
-            "name":"room3",
-            "port start":8701,
-            "port end":8801
+            "name":"room3"
         },
         {
-            "name":"room4",
-            "port start":8701,
-            "port end":8801
+            "name":"room4"
         }
     ]
 }
